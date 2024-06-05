@@ -1,0 +1,16 @@
+django>=4.0.3
+django-extensions
+djangorestframework
+djoser
+django-filter
+django-import-export>=4.0.0
+python-dotenv
+supervisor
+celery
+flower
+celery[redis]
+django_celery_beat
+sentry-sdk[django]
+sentry-sdk[celery]
+psycopg2-binary
+drf-spectacular

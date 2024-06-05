@@ -1,0 +1,58 @@
+name: Production Deployment
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - master
+      - main
+    paths-ignore: [ '.github/**', 'docs/**', 'README.md' ]
+
+jobs:
+
+  autotag:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        id: checkout
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: '0'
+
+      - name: Bump version and push tag
+        id: tagger
+        uses: anothrNick/github-tag-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    outputs:
+      out_tag: ${{ steps.tagger.outputs.tag }}
+      out_new_tag: ${{ steps.tagger.outputs.new_tag }}
+      out_part: ${{ steps.tagger.outputs.part }}
+
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: autotag
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          platforms: linux/arm64/v8,linux/amd64
+          push: true
+          tags: ${{ secrets.DOCKER_USER }}/sweepstake:latest,${{ secrets.DOCKER_USER }}/sweepstake:${{ needs.autotag.outputs.out_tag }}

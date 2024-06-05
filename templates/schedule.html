@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Match Schedule{% endblock %}
+
+{% block content %}
+    <div class="hero-schedule">
+        <div class="container marketing bg-white h-100 overflow-auto">
+
+        <div class="row  mt-4 ms-4">
+            <div class="col-4"></div>
+            <div class="col-4 h2">Match Schedule & Results</div>
+            <div class="col-4 text-end"><a class="text-end btn btn-primary text-end" href="/bets/">Change My Matches</a></div>
+        </div>
+
+
+            <div class="container m-3">
+                <hr class="featurette-divider my-4">
+                {% for date, match_lst in match_dict.items %}
+                    <h4>{{ date|date:'l j F o' }}</h4>
+                    {% for match in match_lst %}
+                        <div class="row">
+                            <div class="col-1"></div>
+                            <div class="col-1 text-end">
+                                {{ match.match_time|date:'H:i' }}
+                            </div>
+                            <div class="col-2 text-end">
+                                {% if match.team_a is None %}
+                                    {{ match.team_a_placeholder }}
+                                    <img class="m-2"
+                                         src="https://panenka.uefa.com/panenka/assets/ntc-generic-badge-02.svg"
+                                         height="20px" width="20px">
+                                {% else %}
+                                    {{ match.team_a }}
+                                    <img class="m-2" src="{{ match.team_a.flag }}" height="20px" width="20px">
+                                {% endif %}
+                            </div>
+                            <div class="col-3 text-center">
+                                {% if match.score_a is None or match.score_b is None %}
+                                    -:-
+                                {% else %}
+                                    {{ match.score_a }}:{{ match.score_b }}
+                                {% endif %}
+                            </div>
+                            <div class="col-2 text-start">
+                                {% if match.team_b is None %}
+                                    <img class="m-2"
+                                         src="https://panenka.uefa.com/panenka/assets/ntc-generic-badge-04.svg"
+                                         height="20px" width="20px">
+                                    {{ match.team_b_placeholder }}
+                                {% else %}
+                                    <img class="m-2" src="{{ match.team_b.flag }}" height="20px" width="20px">
+                                    {{ match.team_b }}
+                                {% endif %}
+                            </div>
+                            <div class="col-3"></div>
+                        </div>
+                    {% endfor %}
+                    <hr class="featurette-divider my-4">
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+{% endblock %}

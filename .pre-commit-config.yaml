@@ -1,0 +1,65 @@
+# This file configures the code-style checks and runs unittests before code changes are git committed and pushed to Github (the file pyproject.toml contains additional settings)
+# After git cloning this repo please install all requirements in requirements.txt and requirements-dev.txt and then execute "pre-commit install"
+# Trigger manual run with: pre-commit run --all-files
+# Article that explains this: https://towardsdatascience.com/4-pre-commit-plugins-to-automate-code-reviewing-and-formatting-in-python-c80c6d2e9f5
+
+repos:
+  # General Clean-Up
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-ast
+      - id: check-byte-order-marker
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: pretty-format-json
+        args: [ '--autofix' ]
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+      - id: debug-statements
+      - id: detect-private-key
+      - id: fix-byte-order-marker
+      - id: fix-encoding-pragma
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        args: [ --markdown-linebreak-ext=md ]
+      - id: mixed-line-ending
+      - id: no-commit-to-branch
+        args: [ --branch, master, --branch, main ]
+  # Ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.7
+    hooks:
+      # Run the linter.
+      - id: ruff
+        args: [ --fix ]
+      # Run the formatter.
+      - id: ruff-format
+  # Finds and removes unused import statements
+  - repo: https://github.com/hadialqattan/pycln
+    rev: v2.2.2
+    hooks:
+      - id: pycln
+  # Add static typing to functions/classes
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.5.1
+    hooks:
+      - id: mypy
+        additional_dependencies: [ types-pytz==2023.3.1.1, types-requests==2.31.0.4 ]
+  # Checks codebase for missing docstrings
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.5.0
+    hooks:
+      - id: interrogate
+  # # Run unittests
+  # - repo: local
+  #   hooks:
+  #     - id: unittests
+  #       name: run unit tests
+  #       entry: python -m unittest
+  #       language: system
+  #       pass_filenames: false
+  #       args: [ "discover" ]

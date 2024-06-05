@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Bets{% endblock %}
+
+{% block content %}
+    <div class="hero-my">
+    <div class="container bg-white h-100 overflow-auto">
+    <ul class="pb-2 px-5" style="text-align: left;">
+                    <li class="p-1">ToDo: 1st / 2nd / 3rd Place.</li>
+                    <li class="p-1">ToDo: Group Winners</li>
+                    <li class="p-1">ToDo: Total Points</li>
+                    <li class="p-1">ToDo: Other Peoples' Bets page</li>
+                </ul>
+    <form method="post">
+        {{ formset.management_form }}
+        <div class="row  mt-4 ms-4">
+            <div class="col-4"></div>
+            <div class="col-4 h2">My Matches:</div>
+            <div class="col-4 text-end"><input type="submit" class="btn btn-primary" value="Save Changes"></div>
+        </div>
+        <table>
+                {% for form in formset %}
+                    <div class="row border rounded p-2 my-2 mx-4">
+                        <div class="col-2 fw-bold" style="text-align:center;">
+                            {{ form.match_time.value }}
+                        </div>
+                        <div class="col-2" style="text-align:right;">
+                            {{ form.team_a.value }}
+                            <img class="m-2" src="{{ form.flag_a.value }}" height="25px" width="25px">
+                        </div>
+                        <div class="col-1">
+                            {% if form.editable.value %}
+                                {{ form.bet_a }}
+                            {% else %}
+                                <input type="number" name="form-{{ forloop.counter0 }}-bet_a" class="form-control"
+                                       style="text-align:center;" id="id_form-{{ forloop.counter0 }}-bet_a"
+                                       value="{{ form.bet_a.value }}" disabled>
+                            {% endif %}
+                        </div>
+                        <div class="col-1" style="text-align:center;">
+                            {% if form.score_a.value is not None %}
+                            {{ form.score_a.value }}
+                            {% endif %}
+                        :
+                            {% if form.score_b.value is not None %}
+                            {{ form.score_b.value }}
+                            {% endif %}
+                        </div>
+                        <div class="col-1">
+                            {% if form.editable.value %}
+                                {{ form.bet_b }}
+                            {% else %}
+                                <input type="number" name="form-{{ forloop.counter0 }}-bet_b" class="form-control"
+                                       style="text-align:center;" id="id_form-{{ forloop.counter0 }}-bet_b"
+                                       value="{{ form.bet_b.value }}" disabled>
+                            {% endif %}
+                        </div>
+                        <div class="col-2" style="text-align:left;">
+                            <img class="m-2" src="{{ form.flag_b.value }}" height="25px" width="25px">
+                            {{ form.team_b.value }}
+                        </div>
+                        <div class="col-3 fst-italic text-secondary">
+                            {{ form.text.value }}
+                        </div>
+                    </div>
+                {% endfor %}
+
+        </table>
+    </form>
+    </div>
+</div>
+
+{% endblock %}
