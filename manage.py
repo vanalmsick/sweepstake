@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Django's command-line utility for administrative tasks."""
+
 import os
 import sys
 import datetime
@@ -12,7 +14,7 @@ def __ensure_db_migration_folders_exist():
         "data/db_migrations/__init__.py",
         "data/db_migrations/general/__init__.py",
         "data/db_migrations/competition/__init__.py",
-        #"data/db_migrations/django_celery_beat/__init__.py",
+        # "data/db_migrations/django_celery_beat/__init__.py",
         "data/db_migrations/sessions/__init__.py",
         "data/db_migrations/auth/__init__.py",
         "data/db_migrations/authtoken/__init__.py",
@@ -27,10 +29,9 @@ def __ensure_db_migration_folders_exist():
             open(i, "a").close()
 
 
-
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sweepstake.settings')
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sweepstake.settings")
 
     try:
         from django.core.management import execute_from_command_line
@@ -43,10 +44,7 @@ def main():
     execute_from_command_line(sys.argv)
 
 
-
-
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     INITIAL_ARGV = sys.argv.copy()
 
     __ensure_db_migration_folders_exist()
@@ -64,12 +62,14 @@ if __name__ == '__main__':
 
         # Create Admin
         from general.models import CustomUser
+
         if len(CustomUser.objects.filter(email="admin@admin.local")) == 0:
             print('Create super user "admin"')
             CustomUser.objects.create_superuser(email="admin@admin.local", password="password")
 
         # Load EURO 2024 if empty data
         from competition.models import Tournament
+
         if len(Tournament.objects.all()) == 0:
             print("Add EURO 2024 data")
             sys.argv = [INITIAL_ARGV[0], "add_EURO_2024_data"]
@@ -79,14 +79,12 @@ if __name__ == '__main__':
             sys.argv = [INITIAL_ARGV[0], "add_test_data"]
             main()
 
-
     else:
         print(
             "Django auto-reloader process executes second instance of django. "
             "Please turn-off for production usage by executing: "
             '"python manage.py runserver --noreload"'
-            )
-
+        )
 
     # Run server
     sys.argv = INITIAL_ARGV

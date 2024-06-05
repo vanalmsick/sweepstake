@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ASGI config for sweepstake project.
 
@@ -11,6 +12,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sweepstake.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sweepstake.settings")
 
 application = get_asgi_application()
