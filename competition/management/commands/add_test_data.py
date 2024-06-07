@@ -41,7 +41,7 @@ class Command(BaseCommand):
         test_matches = [
             {
                 "phase": "group",
-                "match_time": "2024-06-01T20:00",
+                "match_time": "2024-06-01T20:00+01:00",
                 "team_a": Participant.objects.get(name="Germany"),
                 "score_a": 4,
                 "score_b": 2,
@@ -60,7 +60,7 @@ class Command(BaseCommand):
             },
             {
                 "phase": "group",
-                "match_time": "2024-06-04T20:00",
+                "match_time": "2024-06-04T20:00+01:00",
                 "team_a": Participant.objects.get(name="England"),
                 "team_b": Participant.objects.get(name="Scotland"),
                 "bets": {
@@ -70,7 +70,7 @@ class Command(BaseCommand):
             },
             {
                 "phase": "group",
-                "match_time": "2024-06-05T20:00",
+                "match_time": "2024-06-05T20:00+01:00",
                 "team_a": Participant.objects.get(name="Germany"),
                 "team_b": Participant.objects.get(name="England"),
                 "winner": "Germany",
