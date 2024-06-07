@@ -39,21 +39,27 @@ class GroupBetForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(GroupBetForm, self).__init__(*args, **kwargs)
+        ADDITIONAL_CHOICES = (
+            [
+                (i.pk, i.name)
+                for i in Participant.objects.filter(group_id=kwargs["initial"]["group_id"]).order_by("name")
+            ]
+            if "initial" in kwargs
+            else []
+        )
         self.fields["bet"] = forms.CharField(
-            label=False,
-            widget=forms.Select(
-                choices=[("", "--- Select Favorite ---")]
-                + [
-                    (i.name, i.name)
-                    for i in Participant.objects.filter(group_id=kwargs["initial"]["group_id"]).order_by("name")
-                ]
-            ),
+            label=False, widget=forms.Select(choices=[("", "--- Select Favorite ---")] + ADDITIONAL_CHOICES)
         )
         self.fields["bet"].widget.attrs.update({"class": "form-control", "style": "text-align:center;"})
 
     group_id = forms.IntegerField(label=False)
     group_name = forms.CharField(label=False, required=False)
     first_match_time = forms.CharField(label=False, required=False)
+
+    flag_1 = forms.URLField(label=False, required=False)
+    flag_2 = forms.URLField(label=False, required=False)
+    flag_3 = forms.URLField(label=False, required=False)
+    flag_4 = forms.URLField(label=False, required=False)
 
     bet = forms.CharField(label=False, widget=forms.Select(choices=[("", "---------")]))
     winner = forms.IntegerField(label=False, required=False)
@@ -77,8 +83,10 @@ def getGroupBetFormSet(user, prefix=None):
     for data_i in data:
         editable = now < data_i.first_match_time
         bet_i = GroupBet.objects.filter(group=data_i, user=user).first()
-        bet_placed = bet_i is not None and bet_i.score_a is not None and bet_i.score_b is not None
-        bet_winner = (None if editable else "-") if bet_i is None else bet_i.score_a
+        bet_placed = bet_i is not None and bet_i.winner is not None
+        bet_winner = (
+            (None if editable else "-/-") if bet_i is None else (bet_i.winner.pk if editable else bet_i.winner.name)
+        )
         points = None if bet_i is None else bet_i.points
 
         if editable:
@@ -92,12 +100,13 @@ def getGroupBetFormSet(user, prefix=None):
         else:
             if points is None:
                 if bet_placed:
-                    text = None
+                    text = "Let's cross your fingers 🤞"
                 else:
                     text = "No bet placed"
             else:
                 text = f"My Points: {points}"
 
+        flags = data_i.participant_set.all().order_by("name").values_list("flag")
         formset_data.append(
             {
                 "group_id": data_i.pk,
@@ -107,6 +116,10 @@ def getGroupBetFormSet(user, prefix=None):
                 "winner": data_i.winner,
                 "text": text,
                 "editable": editable,
+                "flag_1": flags[0][0],
+                "flag_2": flags[1][0],
+                "flag_3": flags[2][0],
+                "flag_4": flags[3][0],
             }
         )
 
@@ -177,7 +190,7 @@ def getMatchBetFormSet(user, random=False, prefix=None):
                     if score_entered:
                         text = "ERROR"
                     else:
-                        text = "Waiting for score"
+                        text = "Let's cross your fingers 🤞"
                 else:
                     text = "No bet placed"
             else:
