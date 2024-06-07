@@ -1,16 +1,51 @@
 # -*- coding: utf-8 -*-
+import datetime
 from django.db import models
 from django.db.models import Q
+from django.conf import settings
 
 from general.models import CustomUser
 
 
 # Create your models here.
+class EmptyStringToNoneField(models.CharField):
+    """mode field to automatically transform empty strings to Null"""
+
+    def get_prep_value(self, value):
+        if value == "" or value == " ":
+            return None
+        return value
+
+
 class Tournament(models.Model):
     """Tournament - the highest level e.g. Football World Cup 2024"""
 
-    name = models.CharField(max_length=30)
+    name = EmptyStringToNoneField(max_length=30, unique=True)
 
+    first_place = models.ForeignKey(
+        "Participant",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        primary_key=False,
+        related_name="tournament_first_place",
+    )
+    second_place = models.ForeignKey(
+        "Participant",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        primary_key=False,
+        related_name="tournament_second_place",
+    )
+    third_place = models.ForeignKey(
+        "Participant",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        primary_key=False,
+        related_name="tournament_third_place",
+    )
     first_match_time = models.DateTimeField(null=True, blank=True)  # type: ignore
 
     @property  # type: ignore
@@ -25,13 +60,25 @@ class Tournament(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+    def save(self, *args, **kwargs):
+        super(Tournament, self).save(*args, **kwargs)
+
+        # Update bet points
+        for bet in self.tournamentbet_set.all():
+            bet_points = bet.get_points()
+            setattr(bet, "points", bet_points)
+            bet.save()
+
 
 class Group(models.Model):
     """2nd highest level for grouping Tournament participants for group-phase"""
 
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, null=False, blank=False)
-    name = models.CharField(max_length=30)
+    name = EmptyStringToNoneField(max_length=30, unique=True)
 
+    winner = models.ForeignKey(
+        "Participant", on_delete=models.SET_NULL, null=True, blank=True, primary_key=False, related_name="group_winner"
+    )
     first_match_time = models.DateTimeField(null=True, blank=True)  # type: ignore
 
     @property  # type: ignore
@@ -43,8 +90,23 @@ class Group(models.Model):
             .match_time
         )
 
+    class Meta:
+        unique_together = (
+            "tournament",
+            "name",
+        )
+
     def __str__(self):
         return f"{self.name}"
+
+    def save(self, *args, **kwargs):
+        super(Group, self).save(*args, **kwargs)
+
+        # Update bet points
+        for bet in self.groupbet_set.all():
+            bet_points = bet.get_points()
+            setattr(bet, "points", bet_points)
+            bet.save()
 
 
 MATCH_PHASES = [
@@ -59,7 +121,7 @@ MATCH_PHASES = [
 class Participant(models.Model):
     """Tournament Participants e.g. countries like Germany, UK, France, etc."""
 
-    name = models.CharField(max_length=30)
+    name = EmptyStringToNoneField(max_length=30, unique=True)
     flag = models.URLField(max_length=300)
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)
 
@@ -70,15 +132,19 @@ class Participant(models.Model):
 class Match(models.Model):
     """Scheduled Matches e.g. on Sunday at 6pm X plays against Y"""
 
-    phase = models.CharField(max_length=5, choices=MATCH_PHASES, null=False, blank=False)
+    phase = EmptyStringToNoneField(max_length=5, choices=MATCH_PHASES, null=False, blank=False)
     match_time = models.DateTimeField(null=False, blank=False)
 
     team_a = models.ForeignKey(Participant, on_delete=models.SET_NULL, null=True, blank=True, related_name="team_a")
-    team_a_placeholder = models.CharField(max_length=30, null=True, blank=True)
+    team_a_placeholder = EmptyStringToNoneField(max_length=30, null=True, blank=True)
     score_a = models.IntegerField(null=True, blank=True)
     team_b = models.ForeignKey(Participant, on_delete=models.SET_NULL, null=True, blank=True, related_name="team_b")
-    team_b_placeholder = models.CharField(max_length=30, null=True, blank=True)
+    team_b_placeholder = EmptyStringToNoneField(max_length=30, null=True, blank=True)
     score_b = models.IntegerField(null=True, blank=True)
+
+    @property
+    def is_editable(self):
+        return settings.TIME_ZONE_OBJ.localize(datetime.datetime.now()) < self.match_time
 
     def __str__(self):
         return f"{self.match_time} ({self.phase.upper()}) {self.team_a_placeholder if self.team_a is None else self.team_a} - {self.team_b_placeholder if self.team_b is None else self.team_b}"
@@ -93,13 +159,13 @@ class Match(models.Model):
         super(Match, self).save(*args, **kwargs)
 
         # Update bet points
-        for bet in self.bet_set.all():
+        for bet in self.matchbet_set.all():
             bet_points = bet.get_points()
             setattr(bet, "points", bet_points)
             bet.save()
 
 
-class Bet(models.Model):
+class MatchBet(models.Model):
     """Single bet placed by user X on match Y that the score will be A:B"""
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False, blank=False, primary_key=False)
@@ -109,6 +175,12 @@ class Bet(models.Model):
     score_b = models.IntegerField(null=True, blank=True)
 
     points = models.IntegerField(null=True, blank=False)
+
+    class Meta:
+        unique_together = (
+            "user",
+            "match",
+        )
 
     def get_points(self):
         """FUnction to calculate points awareded from bet - i.e. how correct was the betted score"""
@@ -127,7 +199,7 @@ class Bet(models.Model):
         # team b won and b was predicted
         elif self.match.score_a < self.match.score_b and self.score_a < self.score_b:
             return 3
-        # no team won and taht was predicted
+        # no team won and that was predicted
         elif self.match.score_a == self.match.score_b and self.score_a == self.score_b:
             return 3
         # no points
@@ -136,4 +208,94 @@ class Bet(models.Model):
 
     def save(self, *args, **kwargs):
         self.points = self.get_points()
-        super(Bet, self).save(*args, **kwargs)
+        super(MatchBet, self).save(*args, **kwargs)
+
+
+class GroupBet(models.Model):
+    """Single bet placed by user X on winner of group Y"""
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False, blank=False, primary_key=False)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=False, blank=False, primary_key=False)
+
+    winner = models.ForeignKey(
+        Participant,
+        on_delete=models.CASCADE,
+        null=False,
+        blank=False,
+        primary_key=False,
+        related_name="group_winner_bet",
+    )
+
+    points = models.IntegerField(null=True, blank=False)
+
+    class Meta:
+        unique_together = (
+            "user",
+            "group",
+        )
+
+    def get_points(self):
+        """Function to calculate points awareded from bet - i.e. how correct was the betted score"""
+        # no match results
+        if self.group.winner is None:
+            return None
+        # correct bet
+        elif self.winner == self.group.winner:
+            return 5
+        # no points
+        else:
+            return 0
+
+    def save(self, *args, **kwargs):
+        self.points = self.get_points()
+        super(GroupBet, self).save(*args, **kwargs)
+
+
+class TournamentBet(models.Model):
+    """Bet who wins the tournament placed by user X"""
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False, blank=False, primary_key=False)
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, null=False, blank=False, primary_key=False)
+
+    winner = models.ForeignKey(
+        Participant,
+        on_delete=models.CASCADE,
+        null=False,
+        blank=False,
+        primary_key=False,
+        related_name="tournament_winner_bet",
+    )
+
+    points = models.IntegerField(null=True, blank=False)
+
+    class Meta:
+        unique_together = (
+            "user",
+            "tournament",
+        )
+
+    def get_points(self):
+        """Function to calculate points awareded from bet - i.e. how correct was the betted score"""
+        # no match results
+        if (
+            self.tournament.first_place is None
+            and self.tournament.second_place is None
+            and self.tournament.third_place is None
+        ):
+            return None
+        # bet equals 1st place
+        elif self.winner == self.tournament.first_place:
+            return 30
+        # bet equals 2nd place
+        elif self.winner == self.tournament.second_place:
+            return 15
+        # bet equals 3rd place
+        elif self.winner == self.tournament.third_place:
+            return 10
+        # no points
+        else:
+            return 0
+
+    def save(self, *args, **kwargs):
+        self.points = self.get_points()
+        super(TournamentBet, self).save(*args, **kwargs)

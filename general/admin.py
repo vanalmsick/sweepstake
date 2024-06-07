@@ -4,13 +4,33 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import CustomUser
-from competition.models import Bet
+from competition.models import MatchBet, GroupBet, TournamentBet
 
 
-class BetInline(admin.TabularInline):
-    """Table of Bets to show in User detail view - i.e. all bets that user placed"""
+class MatchBetInline(admin.TabularInline):
+    """Table of Match Bets to show in User detail view - i.e. all bets that user placed"""
 
-    model = Bet
+    model = MatchBet
+    fk_name = "user"
+    extra = 0
+    readonly_fields = ("points",)
+    can_delete = False
+
+
+class GroupBetInline(admin.TabularInline):
+    """Table of Group Bets to show in User detail view - i.e. all bets that user placed"""
+
+    model = GroupBet
+    fk_name = "user"
+    extra = 0
+    readonly_fields = ("points",)
+    can_delete = False
+
+
+class TournamentBetInline(admin.TabularInline):
+    """Table of Tournament Bets to show in User detail view - i.e. all bets that user placed"""
+
+    model = TournamentBet
     fk_name = "user"
     extra = 0
     readonly_fields = ("points",)
@@ -30,7 +50,7 @@ class CustomUserAdmin(UserAdmin):
         "last_name",
         "is_staff",
     )
-    list_filter = ("is_staff",)
+    list_filter = ("is_staff", "team")
     fieldsets = (
         (
             None,
@@ -40,6 +60,7 @@ class CustomUserAdmin(UserAdmin):
                     "password",
                     "first_name",
                     "last_name",
+                    "team",
                 )
             },
         ),
@@ -64,12 +85,14 @@ class CustomUserAdmin(UserAdmin):
         ),
     )
     inlines = [
-        BetInline,
+        TournamentBetInline,
+        GroupBetInline,
+        MatchBetInline,
     ]
     search_fields = (
-        "email",
         "first_name",
         "last_name",
+        "team",
     )
     ordering = ("email",)
 

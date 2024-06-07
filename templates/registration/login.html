@@ -9,7 +9,15 @@
                 <h2>Log In</h2>
                 <form action="{% url 'log-in' %}" method="post" name="log-in">
                     {% csrf_token %}
-                    {{ form.as_p }}
+                    <div class="mb-3" style="text-align: center; min-width: 375px;">
+                    <div class="form-group mx-auto p-1" style="text-align: left; width: 85%;">
+                        <label for="exampleInputEmail1">Email address</label>
+                        {{ form.username }}
+                    </div>
+                    <div class="form-group mx-auto p-1" style="text-align: left; width: 85%;">
+                        <label for="exampleInputPassword1">Password</label>
+                         {{ form.password }}
+                    </div>
 
                     {% if form.errors %}
                         {% for field in form %}
@@ -26,9 +34,9 @@
                         {% endfor %}
                     {% endif %}
 
-                    <div class="d-flex justify-content-around">
-                        <a class="btn btn-outline-primary m-2" href="{% url 'sign-up' %}">Sign Up</a>
-                        <input type="submit" class="btn btn-primary m-2" value="Log In">
+                    <div class="d-flex justify-content-between mx-auto p-1 mt-3" style="width: 85%;">
+                        <a class="btn btn-outline-primary" href="{% url 'sign-up' %}">Sign Up</a>
+                        <input type="submit" class="btn btn-primary" value="Log In">
                     </div>
                 </form>
             </div>

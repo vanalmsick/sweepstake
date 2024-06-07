@@ -30,7 +30,7 @@ COPY --chown=app_user:app_user / /sweepstake/
 WORKDIR /sweepstake
 
 RUN chown -R app_user:app_user /sweepstake \
-    && chmod 755 /sweepstake
+    && chmod 777 /sweepstake
 
 # Add docker container labels
 LABEL org.opencontainers.image.title="Sweepstake"
@@ -47,10 +47,10 @@ EXPOSE 80
 EXPOSE 5555
 # Expose Port: Supervisord - for dev
 EXPOSE 9001
-# Permanent storage for databse and config files
+# Permanent storage for database and config files
 VOLUME /sweepstake/data
 
-# Configure automatic docker conatiner healthcheck
+# Configure automatic docker container healthcheck
 HEALTHCHECK --interval=5m --timeout=60s --retries=3 --start-period=120s \
     CMD echo Successful Docker Container Healthcheck && curl --max-time 30 --connect-timeout 30 --silent --output /dev/null --show-error --fail http://localhost:80/ || exit 1
 

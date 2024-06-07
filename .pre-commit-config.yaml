@@ -19,16 +19,46 @@ repos:
       - id: check-toml
       - id: check-xml
       - id: check-yaml
+        args:
+          - "--unsafe"
       - id: debug-statements
       - id: detect-private-key
       - id: fix-byte-order-marker
       - id: fix-encoding-pragma
       - id: end-of-file-fixer
+        exclude_types:
+          - svg
+          - pofile
+        exclude: "(^LICENSE$)"
       - id: trailing-whitespace
+        exclude_types:
+          - svg
         args: [ --markdown-linebreak-ext=md ]
       - id: mixed-line-ending
+        args:
+          - "--fix=lf"
       - id: no-commit-to-branch
         args: [ --branch, master, --branch, main ]
+  # Spelling
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.6
+    hooks:
+      - id: codespell
+        args: ["--ignore-words-list", "coo"]
+        exclude: "(^data/)"
+        exclude_types:
+          - pofile
+          - json
+  # JavaScript & HTML Formatter
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: 'v3.1.0'
+    hooks:
+      - id: prettier
+        types_or:
+          - javascript
+          - ts
+          - markdown
+        exclude: "(^Pipfile\\.lock$)"
   # Ruff
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.4.7
@@ -38,6 +68,23 @@ repos:
         args: [ --fix ]
       # Run the formatter.
       - id: ruff-format
+  # # Dockerfile formatter
+  #- repo: https://github.com/AleksaC/hadolint-py
+  #  rev: v2.12.1b3
+  #  hooks:
+  #    - id: hadolint
+  # Shell script formatter
+  - repo: https://github.com/lovesegfault/beautysh
+    rev: v6.2.1
+    hooks:
+      - id: beautysh
+        args:
+          - "--tab"
+  # Check shell scripts
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: "v0.10.0.1"
+    hooks:
+      - id: shellcheck
   # Finds and removes unused import statements
   - repo: https://github.com/hadialqattan/pycln
     rev: v2.2.2
@@ -54,12 +101,3 @@ repos:
     rev: 1.5.0
     hooks:
       - id: interrogate
-  # # Run unittests
-  # - repo: local
-  #   hooks:
-  #     - id: unittests
-  #       name: run unit tests
-  #       entry: python -m unittest
-  #       language: system
-  #       pass_filenames: false
-  #       args: [ "discover" ]

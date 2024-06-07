@@ -10,12 +10,17 @@ class GroupsInline(admin.TabularInline):
 
     model = Group
     fk_name = "tournament"
+    can_delete = False
     extra = 0
 
 
 @admin.register(Tournament)
 class TournamentAdmin(admin.ModelAdmin):
     """Admin view of Tournament - the highest level e.g. Football World Cup 2024"""
+
+    def has_delete_permission(self, request, obj=None):
+        """Block admins form deleting a Tournament"""
+        return False
 
     list_display = [
         "name",
@@ -34,6 +39,8 @@ class ParticipantsAdmin(admin.ModelAdmin):
         "group",
     ]
     ordering = ("name",)
+    list_filter = ("group",)
+    search_fields = ("name",)
 
 
 @admin.register(Match)
@@ -47,3 +54,8 @@ class MatchesAdmin(admin.ModelAdmin):
         "team_b_placeholder",
     ]
     ordering = ("match_time",)
+    list_filter = ("phase",)
+    search_fields = (
+        "team_a_placeholder",
+        "team_b_placeholder",
+    )

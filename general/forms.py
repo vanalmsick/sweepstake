@@ -4,6 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django import forms
 
 from .models import CustomUser
+from .models import USER_TEAMS
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -12,12 +13,14 @@ class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(label=False)
     first_name = forms.CharField(label=False)
     last_name = forms.CharField(label=False)
+    team = forms.CharField(label=False, widget=forms.Select(choices=[("", "---------")] + USER_TEAMS))
     password1 = forms.CharField(label=False, widget=forms.PasswordInput())
     password2 = forms.CharField(label=False, widget=forms.PasswordInput())
 
     email.widget.attrs.update({"class": "form-control", "placeholder": "Enter email"})
     first_name.widget.attrs.update({"class": "form-control", "placeholder": "First name"})
     last_name.widget.attrs.update({"class": "form-control", "placeholder": "Last name"})
+    team.widget.attrs.update({"class": "form-control", "placeholder": "Department"})
     password1.widget.attrs.update({"class": "form-control", "placeholder": "Password"})
     password2.widget.attrs.update({"class": "form-control", "placeholder": "Password"})
 
@@ -45,4 +48,8 @@ class CustomUserChangeForm(UserChangeForm):
 class LoginForm(AuthenticationForm):
     """Form to login user"""
 
-    pass
+    username = forms.EmailField(label=False)
+    password = forms.CharField(label=False, widget=forms.PasswordInput())
+
+    username.widget.attrs.update({"class": "form-control", "placeholder": "Enter email", "autofocus": True})
+    password.widget.attrs.update({"class": "form-control", "placeholder": "Password"})

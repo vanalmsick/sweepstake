@@ -4,70 +4,134 @@
 
 {% block content %}
     <div class="hero-my">
-    <div class="container bg-white h-100 overflow-auto">
-    <ul class="pb-2 px-5" style="text-align: left;">
-                    <li class="p-1">ToDo: 1st / 2nd / 3rd Place.</li>
-                    <li class="p-1">ToDo: Group Winners</li>
-                    <li class="p-1">ToDo: Total Points</li>
-                    <li class="p-1">ToDo: Other Peoples' Bets page</li>
-                </ul>
-    <form method="post">
-        {{ formset.management_form }}
-        <div class="row  mt-4 ms-4">
-            <div class="col-4"></div>
-            <div class="col-4 h2">My Matches:</div>
-            <div class="col-4 text-end"><input type="submit" class="btn btn-primary" value="Save Changes"></div>
-        </div>
-        <table>
-                {% for form in formset %}
-                    <div class="row border rounded p-2 my-2 mx-4">
-                        <div class="col-2 fw-bold" style="text-align:center;">
-                            {{ form.match_time.value }}
-                        </div>
-                        <div class="col-2" style="text-align:right;">
-                            {{ form.team_a.value }}
-                            <img class="m-2" src="{{ form.flag_a.value }}" height="25px" width="25px">
-                        </div>
-                        <div class="col-1">
-                            {% if form.editable.value %}
-                                {{ form.bet_a }}
-                            {% else %}
-                                <input type="number" name="form-{{ forloop.counter0 }}-bet_a" class="form-control"
-                                       style="text-align:center;" id="id_form-{{ forloop.counter0 }}-bet_a"
-                                       value="{{ form.bet_a.value }}" disabled>
-                            {% endif %}
-                        </div>
-                        <div class="col-1" style="text-align:center;">
-                            {% if form.score_a.value is not None %}
-                            {{ form.score_a.value }}
-                            {% endif %}
-                        :
-                            {% if form.score_b.value is not None %}
-                            {{ form.score_b.value }}
-                            {% endif %}
-                        </div>
-                        <div class="col-1">
-                            {% if form.editable.value %}
-                                {{ form.bet_b }}
-                            {% else %}
-                                <input type="number" name="form-{{ forloop.counter0 }}-bet_b" class="form-control"
-                                       style="text-align:center;" id="id_form-{{ forloop.counter0 }}-bet_b"
-                                       value="{{ form.bet_b.value }}" disabled>
-                            {% endif %}
-                        </div>
-                        <div class="col-2" style="text-align:left;">
-                            <img class="m-2" src="{{ form.flag_b.value }}" height="25px" width="25px">
-                            {{ form.team_b.value }}
-                        </div>
-                        <div class="col-3 fst-italic text-secondary">
-                            {{ form.text.value }}
-                        </div>
-                    </div>
-                {% endfor %}
+        <div class="container bg-white h-100 overflow-auto">
+            <ul class="pb-2 px-5" style="text-align: left;">
+                <li class="p-1">ToDo: 1st / 2nd / 3rd Place.</li>
+                <li class="p-1">ToDo: Total Points</li>
+                <li class="p-1">ToDo: Other Peoples' Bets page</li>
+            </ul>
 
-        </table>
-    </form>
+        <hr class="featurette-divider my-4">
+
+            <form action="{% url 'bets' %}" method="post" name="bets">
+                {% csrf_token %}
+                {{ formset.management_form }}
+
+                <div class="row my-2 mx-4">
+                    <div class="col-4 text-start p-0"></div>
+                    <div class="col-4 p-0 h2 text-center">My Group Winners:</div>
+                    <div class="col-4 text-end p-0"><input type="submit" name="submit" class="btn btn-primary"
+                                                           value="Save My Groups"></div>
+                </div>
+
+                <div class="container">
+                    <div class="row">
+                        {% for form in group_formset %}
+                            <div class="col-4 p-2">
+                                <div class="w-75 border rounded p-2 mx-auto">
+                                    <div class="container">
+                                        <div class="row fw-bold pb-1 ps-1">
+                                            {{ form.group_name.value }}
+                                        </div>
+                                        <div class="row">
+                                            {% if form.editable.value %}
+                                                {{ form.bet }}
+                                            {% else %}
+                                                <select name="groups-{{ forloop.counter0 }}-bet" class="form-control" style="text-align:center;" id="id_groups-{{ forloop.counter0 }}-bet" disabled>
+                                                  <option value="" selected="">{{ form.bet.value }}</option>
+                                                </select>
+                                            {% endif %}
+                                        </div>
+                                        {% if form.text %}
+                                        <div class="row fst-italic text-secondary pt-1">
+                                            <small>{{ form.text.value }}</small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </form>
+
+            <hr class="featurette-divider my-4">
+
+            <form action="{% url 'bets' %}" method="post" name="bets">
+                {% csrf_token %}
+                {{ formset.management_form }}
+                <div class="row mt-4 mb-3 mx-4">
+                    <div class="col-4 text-start p-0"><input type="submit" name="random" class="btn btn-outline-primary"
+                                                             value="Random Match Score Generator"></div>
+                    <div class="col-4 p-0 h2 text-center">My Matches:</div>
+                    <div class="col-4 text-end p-0"><input type="submit" name="submit" class="btn btn-primary"
+                                                           value="Save My Matches"></div>
+                </div>
+
+                {% if errors %}
+                    {% for match, match_errors in errors.items %}
+                        {% for field, error in match_errors.items %}
+                            <div class="alert alert-danger">
+                                <strong>Match {{ match }} ({{ field }}): {{ error|escape }}</strong>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                {% endif %}
+
+                <table>
+                    {% for form in match_formset %}
+                        <div class="row border rounded p-2 my-2 mx-4">
+                            <div class="col-2 fw-bold align-middle d-flex">
+                                <span class="my-auto">{{ form.match_time.value }}{{ form.match_id }}</span>
+                            </div>
+                            <div class="col-2" style="text-align:right;">
+                                {{ form.team_a.value }}
+                                <img class="m-2" src="{{ form.flag_a.value }}" height="25px" width="25px">
+                            </div>
+                            <div class="col-1">
+                                {% if form.editable.value %}
+                                    {{ form.bet_a }}
+                                {% else %}
+                                    <input type="number" name="matches-{{ forloop.counter0 }}-bet_a" class="form-control"
+                                           style="text-align:center;" id="id_matches-{{ forloop.counter0 }}-bet_a"
+                                           value="{{ form.bet_a.value }}" disabled>
+                                {% endif %}
+                            </div>
+                            <div class="col-1 d-flex" style="text-align:center;">
+                            <span class="my-auto mx-auto">
+                                {% if form.score_a.value is not None %}
+                                    {{ form.score_a.value }}
+                                {% endif %}
+                                :
+                                {% if form.score_b.value is not None %}
+                                    {{ form.score_b.value }}
+                                {% endif %}
+                            </span>
+                            </div>
+                            <div class="col-1">
+                                {% if form.editable.value %}
+                                    {{ form.bet_b }}
+                                {% else %}
+                                    <input type="number" name="matches-{{ forloop.counter0 }}-bet_b" class="form-control"
+                                           style="text-align:center;" id="id_matches-{{ forloop.counter0 }}-bet_b"
+                                           value="{{ form.bet_b.value }}" disabled>
+                                {% endif %}
+                            </div>
+                            <div class="col-2" style="text-align:left;">
+                                <img class="m-2" src="{{ form.flag_b.value }}" height="25px" width="25px">
+                                {{ form.team_b.value }}
+                            </div>
+                            <div class="col-3 fst-italic text-secondary d-flex">
+                                <span class="my-auto">
+                                {{ form.text.value }}
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                </table>
+            </form>
+        </div>
     </div>
-</div>
 
 {% endblock %}

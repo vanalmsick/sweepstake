@@ -7,6 +7,16 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
 
 
+USER_TEAMS = [
+    ("Credit", "Credit Risk"),
+    ("Market", "Market Risk"),
+    ("Liquidity", "Liquidity Risk"),
+    ("COO", "Risk COO"),
+    ("Capital / Model / Data / RA", "Risk Capital, Model Risk, Risk Analytics, Data"),
+    ("Other", "Other"),
+]
+
+
 class CustomUserManager(BaseUserManager):
     """
     Custom user model manager where email is the unique identifiers
@@ -46,6 +56,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_("email address"), unique=True)
     first_name = models.CharField(max_length=30, null=False, blank=False)
     last_name = models.CharField(max_length=40, null=False, blank=False)
+    team = models.CharField(choices=USER_TEAMS, max_length=30, null=True, blank=True)
 
     username = models.CharField(max_length=40, null=True, blank=True)
 
