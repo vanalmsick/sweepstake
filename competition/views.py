@@ -3,8 +3,8 @@ from django.shortcuts import render
 from django.db.models import Sum
 from django.http import HttpResponseRedirect
 
-
-from .models import Match, MatchBet, GroupBet, TournamentBet
+from general.models import CustomUser
+from .models import Match, MatchBet, Participant, Group, GroupBet, TournamentBet
 from .forms import getMatchBetFormSet, MatchBetFormSet, getGroupBetFormSet, GroupBetFormSet
 
 
@@ -32,6 +32,8 @@ def BetView(request):
     if request.user.id is None:
         return HttpResponseRedirect("/login/")
 
+    user_data = getMyScore(request.user.pk)
+
     # Save/update Request
     errors = {}
     if request.method == "POST":
@@ -42,9 +44,6 @@ def BetView(request):
         if "submit" in request.POST:
             match_formset = MatchBetFormSet(data=request.POST, prefix="matches")
             match_formset.is_valid()
-
-            group_formset = GroupBetFormSet(data=request.POST, prefix="groups")
-            group_formset.is_valid()
 
             for i, form in enumerate(match_formset, 1):
                 if len(form.changed_data) > 1:
@@ -60,18 +59,38 @@ def BetView(request):
                             errors_i["bet_b"] = "Score has to be between 0 and 20"
                         if len(errors_i) == 0:
                             if searched_match.is_editable:
-                                _, _ = MatchBet.objects.update_or_create(
-                                    user=request.user, match=searched_match, score_a=bet_a, score_b=bet_b
-                                )
+                                bet_obj = MatchBet.objects.filter(user=request.user, match=searched_match)
+                                if len(bet_obj) > 0:
+                                    bet_obj = bet_obj[0]
+                                    setattr(bet_obj, "score_a", bet_a)
+                                    setattr(bet_obj, "score_b", bet_b)
+                                    bet_obj.save()
+                                else:
+                                    MatchBet(
+                                        user=request.user, match=searched_match, score_a=bet_a, score_b=bet_b
+                                    ).save()
                         else:
                             errors[i] = errors_i
                     else:
                         errors[i] = form.errors
 
+            group_formset = GroupBetFormSet(data=request.POST, prefix="groups")
+            group_formset.is_valid()
+
             for i, form in enumerate(group_formset, 1):
-                _, _ = MatchBet.objects.update_or_create(
-                    user=request.user, match=searched_match, score_a=bet_a, score_b=bet_b
-                )
+                if form.is_valid():
+                    group_id = form.cleaned_data["group_id"]
+                    bet_winner = form.cleaned_data["bet"]
+                    searched_group = Group.objects.get(pk=group_id)
+                    searched_winner = Participant.objects.get(pk=bet_winner)
+                    if searched_group.is_editable:
+                        bet_obj = GroupBet.objects.filter(user=request.user, group=searched_group)
+                        if len(bet_obj) > 0:
+                            bet_obj = bet_obj[0]
+                            setattr(bet_obj, "winner", searched_winner)
+                            bet_obj.save()
+                        else:
+                            GroupBet(user=request.user, group=searched_group, winner=searched_winner).save()
 
             match_formset = getMatchBetFormSet(user=request.user, prefix="matches")
             group_formset = getGroupBetFormSet(user=request.user, prefix="groups")
@@ -82,56 +101,76 @@ def BetView(request):
         group_formset = getGroupBetFormSet(user=request.user, prefix="groups")
 
     return render(
-        request, "bets.html", {"match_formset": match_formset, "group_formset": group_formset, "errors": errors}
+        request,
+        "bets.html",
+        {
+            "match_formset": match_formset,
+            "group_formset": group_formset,
+            "errors": errors,
+            "user_name": user_data["user__username"],
+            "user_rank": user_data["rank"],
+            "user_points": "-/-" if user_data["total_points"] is None else user_data["total_points"],
+        },
     )
 
 
-def LeaderboardView(request):
-    """View to show leaderboard of users - who predicted the matches best"""
-    combined = {}
+def getLeaderboard():
+    combined = {
+        user.pk: {"user__username": user.username, "user__pk": user.pk, "user__team": user.team, "total_points": None}
+        for user in CustomUser.objects.filter(email__isnull=False)
+    }
 
     all_matches = (
         MatchBet.objects.filter(match__score_a__isnull=False, match__score_b__isnull=False, points__isnull=False)
         .values("user__username", "user__pk", "user__team")
         .annotate(total_points=Sum("points"))
     )
-    combined = {match["user__username"]: match.copy() for match in all_matches}
-
     all_groups = (
         GroupBet.objects.filter(group__winner__isnull=False, points__isnull=False)
         .values("user__username", "user__pk", "user__team")
         .annotate(total_points=Sum("points"))
     )
-    for group in all_groups:
-        user__username = group["user__username"]
-        if user__username in combined:
-            combined[user__username]["total_points"] += group["total_points"]
-        else:
-            combined[user__username] = group.copy()
-
     all_tournaments = (
         TournamentBet.objects.filter(tournament__third_place__isnull=False, points__isnull=False)
         .values("user__username", "user__pk", "user__team")
         .annotate(total_points=Sum("points"))
     )
-    for tournament in all_tournaments:
-        user__username = tournament["user__username"]
-        if user__username in combined:
-            combined[user__username]["total_points"] += tournament["total_points"]
-        else:
-            combined[user__username] = tournament.copy()
+    for dataset in [all_matches, all_groups, all_tournaments]:
+        for datapoint in dataset:
+            user__username = datapoint["user__pk"]
+            total_points = datapoint["total_points"]
+            if combined[user__username]["total_points"] is None:
+                combined[user__username]["total_points"] = total_points
+            else:
+                combined[user__username]["total_points"] += total_points
 
-    combined = sorted(combined.values(), key=lambda d: d["total_points"], reverse=True)
+    combined = sorted(
+        combined.values(), key=lambda d: -1 if d["total_points"] is None else d["total_points"], reverse=True
+    )
     final_ranking = []
     last_points = 1_000_000
     last_position = 0
 
     for i in combined:
         total_points = i["total_points"]
-        if total_points is not None:
+        if total_points is None:
+            _ = i.pop("total_points")
+            final_ranking.append({**i, "rank": "-/-", "total_points": "-/-"})
+        else:
             if total_points < last_points:
                 last_position += 1
                 last_points = total_points
             final_ranking.append({**i, "rank": last_position})
 
-    return render(request, "leaderboard.html", {"ranking": final_ranking})
+    return final_ranking
+
+
+def getMyScore(pk):
+    leaderboard = getLeaderboard()
+    my_score = [i for i in leaderboard if i["user__pk"] == pk]
+    return None if len(my_score) == 0 else my_score[0]
+
+
+def LeaderboardView(request):
+    """View to show leaderboard of users - who predicted the matches best"""
+    return render(request, "leaderboard.html", {"ranking": getLeaderboard()})

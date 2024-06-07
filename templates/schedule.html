@@ -4,13 +4,14 @@
 
 {% block content %}
     <div class="hero-schedule">
-        <div class="container marketing bg-white h-100 overflow-auto">
+        <div class="container marketing bg-white h-100 overflow-auto" style="max-width: 85%;">
 
-        <div class="row  mt-4 ms-4">
-            <div class="col-4"></div>
-            <div class="col-4 h2">Match Schedule & Results</div>
-            <div class="col-4 text-end"><a class="text-end btn btn-primary text-end" href="/bets/">Change My Matches</a></div>
-        </div>
+            <div class="row  mt-4 mx-4">
+                <div class="col-3"></div>
+                <div class="col-6 h2 text-center">Match Schedule & Results</div>
+                <div class="col-3 text-end"><a class="text-end btn btn-primary text-end" href="/bets/">Change My
+                    Matches</a></div>
+            </div>
 
 
             <div class="container m-3">
@@ -18,7 +19,7 @@
                 {% for date, match_lst in match_dict.items %}
                     <h4>{{ date|date:'l j F o' }}</h4>
                     {% for match in match_lst %}
-                        <div class="row">
+                        <div class="row d-flex justify-content-between">
                             <div class="col-1"></div>
                             <div class="col-1 text-end">
                                 {{ match.match_time|date:'H:i' }}
@@ -52,7 +53,7 @@
                                     {{ match.team_b }}
                                 {% endif %}
                             </div>
-                            <div class="col-3"></div>
+                            <div class="col-2"></div>
                         </div>
                     {% endfor %}
                     <hr class="featurette-divider my-4">

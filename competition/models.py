@@ -50,6 +50,7 @@ class Tournament(models.Model):
 
     @property  # type: ignore
     def first_match_time(self):
+        """get the time of the first group match for the property is_editable"""
         return (
             Match.objects.filter(Q(team_a__group__tournament__pk=self.pk) | Q(team_b__group__tournament__pk=self.pk))
             .order_by("match_time")
@@ -58,9 +59,11 @@ class Tournament(models.Model):
         )
 
     def __str__(self):
+        """str print-out of model entry"""
         return f"{self.name}"
 
     def save(self, *args, **kwargs):
+        """when saving also update the connected bets"""
         super(Tournament, self).save(*args, **kwargs)
 
         # Update bet points
@@ -79,16 +82,21 @@ class Group(models.Model):
     winner = models.ForeignKey(
         "Participant", on_delete=models.SET_NULL, null=True, blank=True, primary_key=False, related_name="group_winner"
     )
-    first_match_time = models.DateTimeField(null=True, blank=True)  # type: ignore
 
-    @property  # type: ignore
+    @property
     def first_match_time(self):
+        """get the time of the first group match for the property is_editable"""
         return (
             Match.objects.filter(Q(team_a__group__pk=self.pk) | Q(team_b__group__pk=self.pk))
             .order_by("match_time")
             .first()
             .match_time
         )
+
+    @property
+    def is_editable(self):
+        """check if bet can still be placed or if first group match already started"""
+        return settings.TIME_ZONE_OBJ.localize(datetime.datetime.now()) < self.first_match_time
 
     class Meta:
         unique_together = (
@@ -97,9 +105,11 @@ class Group(models.Model):
         )
 
     def __str__(self):
+        """str print-out of model entry"""
         return f"{self.name}"
 
     def save(self, *args, **kwargs):
+        """when saving also update the connected bets"""
         super(Group, self).save(*args, **kwargs)
 
         # Update bet points
@@ -126,6 +136,7 @@ class Participant(models.Model):
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
+        """str print-out of model entry"""
         return f"{self.name}"
 
 
@@ -144,12 +155,15 @@ class Match(models.Model):
 
     @property
     def is_editable(self):
+        """check if bet can still be placed or if match already started"""
         return settings.TIME_ZONE_OBJ.localize(datetime.datetime.now()) < self.match_time
 
     def __str__(self):
+        """str print-out of model entry"""
         return f"{self.match_time} ({self.phase.upper()}) {self.team_a_placeholder if self.team_a is None else self.team_a} - {self.team_b_placeholder if self.team_b is None else self.team_b}"
 
     def save(self, *args, **kwargs):
+        """when saving also update the connected bets and placeholder team names"""
         # Update placeholder texts
         if self.team_a is not None:
             self.team_a_placeholder = self.team_a.name
@@ -207,6 +221,7 @@ class MatchBet(models.Model):
             return 0
 
     def save(self, *args, **kwargs):
+        """when saving also update the scored points from the connected bets"""
         self.points = self.get_points()
         super(MatchBet, self).save(*args, **kwargs)
 
@@ -247,6 +262,7 @@ class GroupBet(models.Model):
             return 0
 
     def save(self, *args, **kwargs):
+        """when saving also update the scored points from the connected bets"""
         self.points = self.get_points()
         super(GroupBet, self).save(*args, **kwargs)
 
@@ -297,5 +313,6 @@ class TournamentBet(models.Model):
             return 0
 
     def save(self, *args, **kwargs):
+        """when saving also update the scored points from the connected bets"""
         self.points = self.get_points()
         super(TournamentBet, self).save(*args, **kwargs)
