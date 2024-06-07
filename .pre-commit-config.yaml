@@ -44,7 +44,7 @@ repos:
     rev: v2.2.6
     hooks:
       - id: codespell
-        args: ["--ignore-words-list", "coo"]
+        args: ["--ignore-words-list", "coo,ned"]
         exclude: "(^data/)"
         exclude_types:
           - pofile

@@ -55,12 +55,7 @@ class GroupBetForm(forms.Form):
     group_name = forms.CharField(label=False, required=False)
     first_match_time = forms.CharField(label=False, required=False)
 
-    bet = forms.CharField(
-        label=False,
-        widget=forms.Select(
-            choices=[("", "---------")] + [(i.pk, i.name) for i in Participant.objects.all().order_by("name")]
-        ),
-    )
+    bet = forms.CharField(label=False, widget=forms.Select(choices=[("", "---------")]))
     winner = forms.IntegerField(label=False, required=False)
 
     text = forms.CharField(label=False, required=False)
