@@ -4,55 +4,54 @@
 
 {% block content %}
     <div class="hero-my">
-        <div class="container bg-white h-100 overflow-auto" style="max-width: 85%;">
+        <div class="container bg-transparent h-100 overflow-auto" style="max-width: 85%;">
 
-            <div class="row my-2 mx-4 mt-4">
-                <div class="col-4 text-start p-0"></div>
-                <div class="col-4 p-0 h2 text-center">{{ user_name }}</div>
-                <div class="col-4 text-end p-0"><a class="btn btn-outline-primary" href="{% url 'leaderboard' %}">Go to
-                    Leaderborad</a></div>
-            </div>
-            <div class="row my-2 mx-4">
-                <div class="col-4 text-start p-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                         class="bi bi-check-lg" viewBox="0 0 16 16">
-                        <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
-                    </svg>
-                    Stake received
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                         class="bi bi-check-lg" viewBox="0 0 16 16">
-                        <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
-                    </svg>
-                    Email verified
+            <div class="bg-white my-4 p-2 shadow-lg rounded">
+                <div class="row my-2 mx-4">
+                    <div class="col-4 text-start p-0"></div>
+                    <div class="col-4 p-0 h2 text-center">{{ user_name }}</div>
+                    <div class="col-4 text-end p-0"><a class="btn btn-outline-primary" href="{% url 'leaderboard' %}">Go
+                        to
+                        Leaderborad</a></div>
                 </div>
-                <div class="col-4 p-0 text-center">My Rank: {{ user_rank }}</div>
-                <div class="col-4 text-end p-0">Total Points: {{ user_points }}</div>
+                <div class="row mt-2 mb-3 mx-4">
+                    <div class="col-4 text-start p-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-check-lg" viewBox="0 0 16 16">
+                            <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                        </svg>
+                        Stake received
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-check-lg" viewBox="0 0 16 16">
+                            <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                        </svg>
+                        Email verified
+                    </div>
+                    <div class="col-4 p-0 text-center">My Rank: {{ user_rank }}</div>
+                    <div class="col-4 text-end p-0">Total Points: {{ user_points }}</div>
+                </div>
             </div>
 
-            <hr class="featurette-divider mt-4 mb-2">
-            <hr class="featurette-divider mb-4 mt-2">
-
-            <div class="row my-2 mx-4">
+            <div class="bg-white my-4 p-2 shadow-lg rounded">
                 <div class="col-4 text-start p-0"></div>
                 <div class="col-4 p-0 h3 text-center">My Tournament Favorite:</div>
                 <div class="col-4 text-end p-0"><input type="submit" name="submit" class="btn btn-primary"
                                                        value="Save My Favorite"></div>
             </div>
 
-            <hr class="featurette-divider my-4">
-
-            <form action="{% url 'predictions' %}" method="post" name="groups">
+            <form class="bg-white my-4 p-2 shadow-lg rounded" action="{% url 'predictions' %}" method="post"
+                  name="groups">
                 {{ group_formset.management_form }}
                 {% csrf_token %}
 
-                <div class="row my-2 mx-4">
+                <div class="row mt-3 mb-2 mx-4">
                     <div class="col-4 text-start p-0"></div>
                     <div class="col-4 p-0 h3 text-center">My Group Favorites:</div>
                     <div class="col-4 text-end p-0"><input type="submit" name="submit" class="btn btn-primary"
                                                            value="Save My Groups"></div>
                 </div>
 
-                <div class="container">
+                <div class="container mb-2">
                     <div class="row">
                         {% for form in group_formset %}
                             <div class="col-4 p-2">
@@ -97,12 +96,11 @@
                 </div>
             </form>
 
-            <hr class="featurette-divider my-4">
-
-            <form action="{% url 'predictions' %}" method="post" name="matches">
+            <form class="bg-white my-4 p-2 shadow-lg rounded" action="{% url 'predictions' %}" method="post"
+                  name="matches">
                 {{ match_formset.management_form }}
                 {% csrf_token %}
-                <div class="row mt-4 mb-3 mx-4">
+                <div class="row my-3 mx-4">
                     <div class="col-4 text-start p-0"><input type="submit" name="random" class="btn btn-outline-primary"
                                                              value="Random Match Score Generator"></div>
                     <div class="col-4 p-0 h3 text-center">My Matches:</div>
