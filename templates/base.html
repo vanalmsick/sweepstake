@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Django Auth Tutorial{% endblock %}</title>
+    <title>{% block title %}Django Auth Tutorial{% endblock %} | MS Risk 2024 EURO</title>
+    <link rel="icon" href="/static/soccer-ball-svgrepo-com.svg">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -21,7 +22,7 @@
         }
 
         .hero-schedule {
-            background-image: url('/static/pexels-mike-468229-1171084.jpg');
+            background-image: url('/static/pexels-mike-468229-1171084.jpeg');
             box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, .2);
             background-size: cover;
             background-position: center;
@@ -30,7 +31,7 @@
         }
 
         .hero-my {
-            background-image: url('/static/pexels-mat-brown-150387-1084462.jpg');
+            background-image: url('/static/pexels-mat-brown-150387-1084462.jpeg');
             box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, .2);
             background-size: cover;
             background-position: center;
@@ -60,22 +61,22 @@
             text-align: center;
         }
 
-        .input-normal{
-          background-color:transparent;
-          border: 0;
-          font-size: 1em;
+        .input-normal {
+            background-color: transparent;
+            border: 0;
+            font-size: 1em;
             -webkit-appearance: textfield;
-     -moz-appearance: textfield;
-          appearance: textfield;
+            -moz-appearance: textfield;
+            appearance: textfield;
         }
 
-        ssinput[readonly]{
-          background-color:transparent;
-          border: 0;
-          font-size: 1em;
-            -webkit-appearance: textfield;
-     -moz-appearance: textfield;
-          appearance: textfield;
+        .cust-navbar-item {
+            color: rgba(255, 255, 255, 0.8) !important;
+            text-decoration: none !important;
+        }
+
+        .cust-navbar-item:hover {
+            color: rgba(255, 255, 255, 1) !important;
         }
 
 
@@ -87,16 +88,6 @@
 
 <nav class="navbar navbar-expand-md bg-dark sticky-top border-bottom" data-bs-theme="dark">
     <div class="container">
-        <a class="navbar-brand d-md-none" href="/">
-            <svg class="bi" width="24" height="24">
-                <use xlink:href="#aperture"></use>
-            </svg>
-            Aperture
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas"
-                aria-controls="offcanvas" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
         <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas" aria-labelledby="offcanvasLabel">
             <div class="offcanvas-header">
                 <h5 class="offcanvas-title" id="offcanvasLabel">Aperture</h5>
@@ -104,19 +95,19 @@
             </div>
             <div class="offcanvas-body">
                 <ul class="navbar-nav flex-grow-1 justify-content-between">
-                    <li class="nav-item"><a class="nav-link" href="/">
+                    <li class="nav-item cust-navbar-item"><a class="nav-link" href="/">
                         <img src="/static/soccer-ball-svgrepo-com.svg" width="25" height="25" alt=""
                              style="filter: invert(0.8);">
                     </a></li>
-                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/schedule/">Match Schedule</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/leaderboard/">Leaderboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/bets/">My Matches</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/rules/">The Rules</a></li>
+                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="/schedule/">Match Schedule</a></li>
+                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="/leaderboard/">Leaderboard</a></li>
+                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="/bets/">My Matches</a></li>
+                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="/rules/">The Rules</a></li>
                     {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'log-out' %}">Log Out</a></li>
+                        <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'log-out' %}">Log Out</a></li>
                     {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'sign-up' %}">Sign Up</a></li>
+                        <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'sign-up' %}">Sign Up</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -129,11 +120,13 @@
     {% endblock %}
 </main>
 <div class="text-light bg-dark w-100 p-2 m-0">
-  <footer class="d-flex flex-wrap justify-content-around align-items-center py-2">
-      <p class="mb-0">Stock photos with Credit from pexels.com and icons from flaticon.com</p>
-      <a href="/admin/" class="mb-0 link-light">Admin Space</a>
-      <a href="https://githib.com/vanalmsick" class="mb-0 link-light">Source Code</a>
-  </footer>
+    <footer class="d-flex flex-wrap justify-content-around align-items-center py-2">
+
+        <p class="cust-navbar-item mb-0"><small>Stock photos with credit from pexels.com and icons from flaticon.com</small></p>
+        <a href="/admin/" class="cust-navbar-item mb-0" target="_blank"><small>Admin Space</small></a>
+        <a href="https://github.com/vanalmsick/sweepstake" class="cust-navbar-item mb-0" target="_blank"><small>Source Code</small></a>
+
+    </footer>
 </div>
 </body>
 

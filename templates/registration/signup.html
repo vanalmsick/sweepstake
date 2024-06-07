@@ -12,10 +12,9 @@
                     <li class="p-1">You put in how you expect the matches end, who'll be group winner, and EURO
                         Champion.
                     </li>
-                    <li class="p-1">Points are assigned based on "The Rules"-Page.</li>
-                    <li class="p-1">Everyone puts in ￡10 with 1/3 of the pot being donated to charity and 2/3 of the pot
-                        being
-                        distributed among the Top 3 .
+                <li class="p-1">Points are assigned based on <a class="link-light fst-italic" target="_blank" href="{% url 'rules' %}">"The Rules"-Page</a>.</li>
+                    <li class="p-1">Everyone puts ￡5 in the pot with 50% of the pot being donated to charity and 50% of the pot
+                        being distributed among the Top 3 participants.
                     </li>
                 </ul>
                 </p>
@@ -26,15 +25,19 @@
                         <label for="exampleInputEmail1">Email address</label>
                         {{ form.email }}
                         <small id="emailHelp" class="form-text text-light">Only @morganstanley.com email addresses
-                            work.</small>
+                            allowed.</small>
                     </div>
                         <div class="form-group w-75 mx-auto p-1" style="text-align: left;">
                         <label for="exampleInputEmail1">First name</label>
                             {{ form.first_name }}
                     </div>
-                        <div class="form-group w-75 mx-auto p-1 mb-2" style="text-align: left;">
+                    <div class="form-group w-75 mx-auto p-1 mb-1" style="text-align: left;">
                         <label for="exampleInputEmail1">Last name</label>
                             {{ form.last_name }}
+                    </div>
+                        <div class="form-group w-75 mx-auto p-1 mb-2" style="text-align: left;">
+                        <label for="exampleInputEmail1">Team</label>
+                            {{ form.team }}
                     </div>
                     <div class="form-group w-75 mx-auto p-1" style="text-align: left;">
                         <label for="exampleInputPassword1">Password</label>
@@ -62,7 +65,7 @@
                     {% endif %}
 
                     <div class="d-flex justify-content-around w-75 mx-auto p-1">
-                        <a class="btn btn-outline-primary" href="{% url 'log-in' %}">Alredy have an account? Log In</a>
+                        <a class="btn btn-outline-primary" href="{% url 'log-in' %}">Already have an account? Log In</a>
                         <button type="submit" class="btn btn-primary">Sign Up</button>
                     </div>
                 </form>

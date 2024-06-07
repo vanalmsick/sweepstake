@@ -12,8 +12,8 @@
                 <ul class="pb-2 px-5" style="text-align: left;">
                     <li class="p-1">3 Points for predicting a match's winner correct.</li>
                     <li class="p-1">5 Points for predicting a match's final score correct.</li>
-                    <li class="p-1">10 Points for predicting a group's winner correct.</li>
-                    <li class="p-1">30 / 15 / 10 Points for predicting the tournament's 1st / 2nd /3rd place correct.</li>
+                    <li class="p-1">5 Points for predicting a group's winner correct.</li>
+                    <li class="p-1">30 / 15 / 10 Points for predicting the tournament's 1st / 2nd / 3rd place correct.</li>
                 </ul>
                 </p>
             <hr class="featurette-divider my-2" style="border-top: 2px  solid rgb(255, 255, 255);">
@@ -26,7 +26,7 @@
                 {% for row in ranking %}
                 <div class="row">
                     <div class="col-3">{{ row.rank }}</div>
-                <div class="col-6">{{ row.user__username }}</div>
+                <div class="col-6">{{ row.user__username }}{% if row.user__team is not None %} ({{ row.user__team }}){% endif %}</div>
                 <div class="col-3">{{ row.total_points }}</div>
                 </div>
                 <hr class="featurette-divider my-2">
