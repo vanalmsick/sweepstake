@@ -256,7 +256,7 @@ class GroupBet(models.Model):
             return None
         # correct bet
         elif self.winner == self.group.winner:
-            return 5
+            return 8
         # no points
         else:
             return 0
@@ -301,13 +301,13 @@ class TournamentBet(models.Model):
             return None
         # bet equals 1st place
         elif self.winner == self.tournament.first_place:
-            return 30
+            return 25
         # bet equals 2nd place
         elif self.winner == self.tournament.second_place:
             return 15
-        # bet equals 3rd place
-        elif self.winner == self.tournament.third_place:
-            return 10
+        # # bet equals 3rd place
+        # elif self.winner == self.tournament.third_place:
+        #     return 10
         # no points
         else:
             return 0

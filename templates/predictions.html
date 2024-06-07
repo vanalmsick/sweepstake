@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Bets{% endblock %}
+{% block title %}My Predictions{% endblock %}
 
 {% block content %}
     <div class="hero-my">
@@ -41,7 +41,7 @@
 
             <hr class="featurette-divider my-4">
 
-            <form action="{% url 'bets' %}" method="post" name="groups">
+            <form action="{% url 'predictions' %}" method="post" name="groups">
                 {{ group_formset.management_form }}
                 {% csrf_token %}
 
@@ -99,7 +99,7 @@
 
             <hr class="featurette-divider my-4">
 
-            <form action="{% url 'bets' %}" method="post" name="matches">
+            <form action="{% url 'predictions' %}" method="post" name="matches">
                 {{ match_formset.management_form }}
                 {% csrf_token %}
                 <div class="row mt-4 mb-3 mx-4">
