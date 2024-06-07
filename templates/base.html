@@ -100,14 +100,14 @@
                              style="filter: invert(0.8);">
                     </a></li>
                     <li class="nav-item"><a class="nav-link cust-navbar-item" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="/schedule/">Match Schedule</a></li>
-                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="/leaderboard/">Leaderboard</a></li>
-                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="/bets/">My Matches</a></li>
-                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="/rules/">The Rules</a></li>
+                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'schedule' %}">Match Schedule</a></li>
+                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'leaderboard' %}">Leaderboard</a></li>
+                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'predictions' %}">My Predictions</a></li>
+                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'rules' %}">The Rules</a></li>
                     {% if user.is_authenticated %}
                         <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'log-out' %}">Log Out</a></li>
                     {% else %}
-                        <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'sign-up' %}">Sign Up</a></li>
+                        <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'log-in' %}">Log In / Sign Up</a></li>
                     {% endif %}
                 </ul>
             </div>

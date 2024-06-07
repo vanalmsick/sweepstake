@@ -14,7 +14,7 @@ def SignupView(request):
         if form.is_valid():
             username = form.save()
             login(request, username)
-            return redirect("bets")
+            return redirect("predictions")
     else:
         form = CustomUserCreationForm()
     return render(request, "registration/signup.html", {"form": form})
@@ -31,7 +31,7 @@ def LoginView(request):
             try:
                 username = CustomUser.objects.get(email=form.cleaned_data.get("username"))
                 login(request, username)
-                return redirect("bets")
+                return redirect("predictions")
             except Exception as e:
                 message = f"ERROR: {e}"
         else:

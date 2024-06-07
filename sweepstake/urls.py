@@ -26,7 +26,7 @@ urlpatterns = [
     path("", TemplateView.as_view(template_name="home.html"), name="home"),
     path("rules/", TemplateView.as_view(template_name="rules.html"), name="rules"),
     path("schedule/", ScheduleView, name="schedule"),
-    path("bets/", BetView, name="bets"),
+    path("predictions/", BetView, name="predictions"),
     path("leaderboard/", LeaderboardView, name="leaderboard"),
     path("signup/", SignupView, name="sign-up"),
     path("login/", LoginView, name="log-in"),

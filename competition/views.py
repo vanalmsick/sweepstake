@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import Sum
-from django.http import HttpResponseRedirect
 
 from general.models import CustomUser
 from .models import Match, MatchBet, Participant, Group, GroupBet, TournamentBet
@@ -30,7 +29,7 @@ def BetView(request):
 
     # Not logged-in
     if request.user.id is None:
-        return HttpResponseRedirect("/login/")
+        return redirect("log-in")
 
     user_data = getMyScore(request.user.pk)
 
@@ -102,7 +101,7 @@ def BetView(request):
 
     return render(
         request,
-        "bets.html",
+        "predictions.html",
         {
             "match_formset": match_formset,
             "group_formset": group_formset,
