@@ -46,17 +46,21 @@ class Tournament(models.Model):
         primary_key=False,
         related_name="tournament_third_place",
     )
-    first_match_time = models.DateTimeField(null=True, blank=True)  # type: ignore
 
-    @property  # type: ignore
+    @property
     def first_match_time(self):
-        """get the time of the first group match for the property is_editable"""
+        """get the time of the first tournament match for the property is_editable"""
         return (
             Match.objects.filter(Q(team_a__group__tournament__pk=self.pk) | Q(team_b__group__tournament__pk=self.pk))
             .order_by("match_time")
             .first()
             .match_time
         )
+
+    @property
+    def is_editable(self):
+        """check if bet can still be placed or if first group match already started"""
+        return settings.TIME_ZONE_OBJ.localize(datetime.datetime.now()) < self.first_match_time
 
     def __str__(self):
         """str print-out of model entry"""
@@ -276,11 +280,12 @@ class TournamentBet(models.Model):
     winner = models.ForeignKey(
         Participant,
         on_delete=models.CASCADE,
-        null=False,
-        blank=False,
+        null=True,
+        blank=True,
         primary_key=False,
         related_name="tournament_winner_bet",
     )
+    charity = EmptyStringToNoneField(max_length=30, null=True, blank=True)
 
     points = models.IntegerField(null=True, blank=False)
 
@@ -293,17 +298,13 @@ class TournamentBet(models.Model):
     def get_points(self):
         """Function to calculate points awareded from bet - i.e. how correct was the betted score"""
         # no match results
-        if (
-            self.tournament.first_place is None
-            and self.tournament.second_place is None
-            and self.tournament.third_place is None
-        ):
+        if self.tournament.first_place is None and self.tournament.second_place is None:
             return None
         # bet equals 1st place
-        elif self.winner == self.tournament.first_place:
+        elif self.tournament.first_place is not None and self.winner == self.tournament.first_place:
             return 25
         # bet equals 2nd place
-        elif self.winner == self.tournament.second_place:
+        elif self.tournament.second_place is not None and self.winner == self.tournament.second_place:
             return 15
         # # bet equals 3rd place
         # elif self.winner == self.tournament.third_place:

@@ -6,7 +6,7 @@ import random
 from django.conf import settings
 
 # from django.core.validators import MinValueValidator, MaxValueValidator
-from .models import Match, MatchBet, Group, GroupBet, Participant
+from .models import Match, MatchBet, Group, GroupBet, Participant, TournamentBet, Tournament
 
 
 def __days_hours_minutes(td):
@@ -35,7 +35,7 @@ def __random_score_generator(tie=True):
 
 
 class GroupBetForm(forms.Form):
-    """Single group bet from e.g. X will win group Y"""
+    """Single group bet form e.g. X will win group Y"""
 
     def __init__(self, *args, **kwargs):
         super(GroupBetForm, self).__init__(*args, **kwargs)
@@ -62,7 +62,7 @@ class GroupBetForm(forms.Form):
     flag_4 = forms.URLField(label=False, required=False)
 
     bet = forms.CharField(label=False, widget=forms.Select(choices=[("", "---------")]))
-    winner = forms.IntegerField(label=False, required=False)
+    winner = forms.CharField(label=False, required=False)
 
     text = forms.CharField(label=False, required=False)
     editable = forms.BooleanField(label=False, required=False)
@@ -127,7 +127,7 @@ def getGroupBetFormSet(user, prefix=None):
 
 
 class MatchBetForm(forms.Form):
-    """Single match bet from e.g. X plays against Y what does score does user Z predict"""
+    """Single match bet form e.g. X plays against Y what does score does user Z predict"""
 
     match_id = forms.IntegerField(label=False)
     match_time = forms.CharField(label=False, required=False)
@@ -230,3 +230,104 @@ def getMatchBetFormSet(user, random=False, prefix=None):
         )
 
     return MatchBetFormSet(initial=formset_data, prefix=prefix)
+
+
+class ListTextWidget(forms.TextInput):
+    """Input field with suggested options but free text too"""
+
+    def __init__(self, data_list, name, *args, **kwargs):
+        super(ListTextWidget, self).__init__(*args, **kwargs)
+        self._name = name
+        self._list = data_list
+        self.attrs.update({"list": "list__%s" % self._name})
+
+    def render(self, name, value, attrs=None, renderer=None):
+        text_html = super(ListTextWidget, self).render(name, value, attrs=attrs)
+        data_list = '<datalist id="list__%s">' % self._name
+        for item in self._list:
+            data_list += '<option value="%s">' % item
+        data_list += "</datalist>"
+
+        return text_html + data_list
+
+
+CHARITY_SUGGESTIONS = [
+    "The Felix Project",
+    "Children With Cancer UK",
+    "The Climate Group",
+    "WWF (UK)",
+    "Right to Succeed",
+]
+
+
+class TournamentBetForm(forms.Form):
+    """Single Tournament bet form e.g. X will win the Tournament"""
+
+    tournament_id = forms.IntegerField(label=False)
+    tournament_name = forms.CharField(label=False, required=False)
+    first_match_time = forms.CharField(label=False, required=False)
+
+    bet = forms.ModelChoiceField(label=False, required=False, queryset=Participant.objects.all().order_by("name"))
+    winner = forms.CharField(label=False, required=False)
+
+    charity = forms.CharField(label=False, required=False)
+
+    text = forms.CharField(label=False, required=False)
+    editable = forms.BooleanField(label=False, required=False)
+
+    tournament_id.widget.attrs.update({"style": "display: none;visibility: hidden; height: 0; width: 0;"})
+    bet.widget.attrs.update({"class": "form-control", "style": "text-align:center;"})
+
+    def __init__(self, *args, **kwargs):
+        _charity_list = kwargs.pop("data_list", None)
+        _editable = kwargs.get("initial", {"editable": None})["editable"]
+        super(TournamentBetForm, self).__init__(*args, **kwargs)
+
+        # the "name" parameter will allow you to use the same widget more than once in the same
+        # form, not setting this parameter differently will cuse all inputs display the
+        # same list.
+        self.fields["charity"].widget = ListTextWidget(data_list=_charity_list, name="charity-list")
+        self.fields["charity"].widget.attrs.update({"class": "form-control", "style": "text-align:center;"})
+        if _editable is False:
+            self.fields["bet"].widget.attrs.update({"disabled": True})
+
+
+def getTournamentForm(user):
+    tournament = Tournament.objects.all().first()
+    tournament_bet = TournamentBet.objects.filter(user=user).first()
+
+    winner = None if tournament is None else tournament.first_place
+    editable = tournament.is_editable
+
+    bet_placed = tournament_bet is not None and tournament_bet.winner is not None
+    points = None if tournament_bet is None else tournament_bet.points
+
+    if editable:
+        now = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
+        remaining_days, remaining_hours, remaining_minutes = __days_hours_minutes(tournament.first_match_time - now)
+        if remaining_days > 0:
+            text = f"{remaining_days + 1} days left to place bet"
+        elif remaining_hours > 0:
+            text = f"{remaining_hours} hours left to place bet"
+        else:
+            text = f"{remaining_minutes - 1} minutes left to place bet"
+    else:
+        if points is None:
+            if bet_placed:
+                text = "Let's cross your fingers 🤞"
+            else:
+                text = "No bet placed"
+        else:
+            text = f"Winner: {winner} / My Points: {points}"
+
+    form_data = {
+        "tournament_id": tournament.pk,
+        "tournament_name": tournament.name,
+        "first_match_time": tournament.first_match_time.strftime("%a %d %B - %H:%M"),
+        "bet": None if tournament_bet is None else tournament_bet.winner,
+        "winner": winner,
+        "charity": None if tournament_bet is None else tournament_bet.charity,
+        "text": text,
+        "editable": editable,
+    }
+    return TournamentBetForm(initial=form_data, data_list=CHARITY_SUGGESTIONS, prefix="tournament")

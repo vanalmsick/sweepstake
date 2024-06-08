@@ -4,7 +4,15 @@ from django.db.models import Sum
 
 from general.models import CustomUser
 from .models import Match, MatchBet, Participant, Group, GroupBet, TournamentBet
-from .forms import getMatchBetFormSet, MatchBetFormSet, getGroupBetFormSet, GroupBetFormSet
+from .forms import (
+    getMatchBetFormSet,
+    MatchBetFormSet,
+    getGroupBetFormSet,
+    GroupBetFormSet,
+    TournamentBetForm,
+    getTournamentForm,
+    Tournament,
+)
 
 
 # Create your views here.
@@ -39,8 +47,10 @@ def BetView(request):
         if "random" in request.POST:
             match_formset = getMatchBetFormSet(user=request.user, random=True, prefix="matches")
             group_formset = getGroupBetFormSet(user=request.user, prefix="groups")
+            tournament_form = getTournamentForm(user=request.user)
 
         if "submit" in request.POST:
+            # Matches
             match_formset = MatchBetFormSet(data=request.POST, prefix="matches")
             match_formset.is_valid()
 
@@ -56,6 +66,8 @@ def BetView(request):
                             errors_i["bet_a"] = "Score has to be between 0 and 20"
                         if 0 > bet_b or bet_b > 20:
                             errors_i["bet_b"] = "Score has to be between 0 and 20"
+                        if searched_match.phase != "group" and bet_a == bet_b:
+                            errors[i] = {"bet_a & bet_b": "Matches after the group-phase cannot end in a tie!"}
                         if len(errors_i) == 0:
                             if searched_match.is_editable:
                                 bet_obj = MatchBet.objects.filter(user=request.user, match=searched_match)
@@ -73,6 +85,7 @@ def BetView(request):
                     else:
                         errors[i] = form.errors
 
+            # Groups
             group_formset = GroupBetFormSet(data=request.POST, prefix="groups")
             group_formset.is_valid()
 
@@ -91,13 +104,42 @@ def BetView(request):
                         else:
                             GroupBet(user=request.user, group=searched_group, winner=searched_winner).save()
 
+            # Tournament
+            if "Tournament" in request.POST["submit"]:
+                tournament_form = TournamentBetForm(data=request.POST, prefix="tournament")
+                tournament_form.is_valid()
+
+                tournament_update_kwargs = {}
+                if "charity" in tournament_form.cleaned_data:
+                    tournament_update_kwargs["charity"] = tournament_form.cleaned_data["charity"]
+                if "bet" in tournament_form.cleaned_data:
+                    tournament_update_kwargs["winner"] = tournament_form.cleaned_data["bet"]
+                if len(tournament_update_kwargs) > 0:
+                    tournament_id = tournament_form.cleaned_data["tournament_id"]
+                    searched_tournament = Tournament.objects.get(pk=tournament_id)
+                    if searched_tournament.is_editable is False:
+                        tournament_update_kwargs.pop("winner", None)
+                    bet_obj = TournamentBet.objects.filter(user=request.user, tournament=searched_tournament)
+                    if len(bet_obj) > 0:
+                        bet_obj = bet_obj[0]
+                        for field, value in tournament_update_kwargs.items():
+                            setattr(bet_obj, field, value)
+                        bet_obj.save()
+                    else:
+                        TournamentBet(
+                            user=request.user, tournament=searched_tournament, **tournament_update_kwargs
+                        ).save()
+
+            # Fetch updated pre-filled forms
             match_formset = getMatchBetFormSet(user=request.user, prefix="matches")
             group_formset = getGroupBetFormSet(user=request.user, prefix="groups")
+            tournament_form = getTournamentForm(user=request.user)
 
     # View/Edit Request
     else:
         match_formset = getMatchBetFormSet(user=request.user, prefix="matches")
         group_formset = getGroupBetFormSet(user=request.user, prefix="groups")
+        tournament_form = getTournamentForm(user=request.user)
 
     return render(
         request,
@@ -105,6 +147,7 @@ def BetView(request):
         {
             "match_formset": match_formset,
             "group_formset": group_formset,
+            "tournament_form": tournament_form,
             "errors": errors,
             "user_name": user_data["user__username"],
             "user_rank": user_data["rank"],
@@ -130,7 +173,7 @@ def getLeaderboard():
         .annotate(total_points=Sum("points"))
     )
     all_tournaments = (
-        TournamentBet.objects.filter(tournament__third_place__isnull=False, points__isnull=False)
+        TournamentBet.objects.filter(points__isnull=False)
         .values("user__username", "user__pk", "user__team")
         .annotate(total_points=Sum("points"))
     )
