@@ -20,7 +20,14 @@ from django.urls import path
 from django.views.generic.base import TemplateView
 
 from general.views import LoginView, LogoutView, SignupView, VerifyEmailView
-from competition.views import ScheduleView, BetView, LeaderboardView
+from competition.views import (
+    ScheduleView,
+    BetView,
+    LeaderboardView,
+    OthersGroupPredictionsView,
+    OthersTournamentPredictionsView,
+    OthersMatchPredictionsView,
+)
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="home.html"), name="home"),
@@ -28,7 +35,12 @@ urlpatterns = [
     path("schedule/", ScheduleView, name="schedule"),
     path("schedule/country/<str:country_name>/", ScheduleView, name="country-schedule"),
     path("schedule/group/<str:group_name>/", ScheduleView, name="group-schedule"),
-    path("predictions/", BetView, name="predictions"),
+    path("predictions/my/", BetView, name="predictions"),
+    path("predictions/group/<str:group_name>/", OthersGroupPredictionsView, name="group-predictions"),
+    path(
+        "predictions/tournament/<str:tournament_name>/", OthersTournamentPredictionsView, name="tournament-predictions"
+    ),
+    path("predictions/match/<int:match_id>/", OthersMatchPredictionsView, name="match-predictions"),
     path("leaderboard/", LeaderboardView, name="leaderboard"),
     path("signup/", SignupView, name="sign-up"),
     path("verify/<int:user_id>/", VerifyEmailView, name="verify-email"),

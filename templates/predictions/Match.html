@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+    <div class="hero-winner">
+        <div class="hero-text" style="max-width: 80%;">
+            <div class="container p-5 rounded shadow" style="background: rgba(0,0,0,0.7);">
+
+                <div class="row">
+                    <div class="col-3">
+                        <a class="text-end btn btn-outline-primary btn-sm text-end" href="{% url 'leaderboard' %}">Leaderboard</a>
+                    </div>
+                    <div class="col-6 h2 text-center">{{ title }}</div>
+                    <div class="col-3 text-end">
+                        <a class="text-end btn btn-outline-primary btn-sm text-end" href="{% url 'predictions' %}">My
+                            Predictions</a>
+                    </div>
+                </div>
+
+                {% if predictions|length == 0 %}
+
+                    <hr class="featurette-divider my-3">
+                    <div class="row">
+                        <div class="col h6">You will be able to view other people's predictions<br>once the prediction
+                            admission is closed.
+                        </div>
+                    </div>
+                    <hr class="featurette-divider my-2">
+
+                {% else %}
+
+                    <table class="table transparent-table mt-3 mb-0">
+                        <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Last</th>
+                            <th scope="col">Points</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for row in predictions %}
+                            <tr {% if row.is_match %}class="highlighted"{% endif %}>
+                                <td>{{ row.user__username }}
+                                    {% if row.user__team is not None %} ({{ row.user__team }}){% endif %}</td>
+                                <td>{{ row.score_a }}:{{ row.score_b }}</td>
+                                <td>{{ row.points }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

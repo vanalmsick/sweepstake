@@ -183,6 +183,8 @@ class Match(models.Model):
         for bet in self.matchbet_set.all():
             bet_points = bet.get_points()
             setattr(bet, "points", bet_points)
+            goal_difference = bet.get_goal_difference()
+            setattr(bet, "goal_difference", goal_difference)
             bet.save()
 
 
@@ -196,6 +198,7 @@ class MatchBet(models.Model):
     score_b = models.IntegerField(null=True, blank=True)
 
     points = models.IntegerField(null=True, blank=False)
+    goal_difference = models.IntegerField(null=True, blank=False)
 
     class Meta:
         unique_together = (
@@ -204,7 +207,7 @@ class MatchBet(models.Model):
         )
 
     def get_points(self):
-        """FUnction to calculate points awareded from bet - i.e. how correct was the betted score"""
+        """Function to calculate points awareded from bet - i.e. how correct was the betted score"""
         # no match results
         if self.match.score_a is None or self.match.score_b is None:
             return None
@@ -226,6 +229,18 @@ class MatchBet(models.Model):
         # no points
         else:
             return 0
+
+    def get_goal_difference(self):
+        """Function for leaderboard sorting of goal difference"""
+        # Bet - Match Score
+        return (
+            ((self.score_a - self.match.score_a) + (self.score_b - self.match.score_b))
+            if self.score_a is not None
+            and self.score_b is not None
+            and self.match.score_a is not None
+            and self.match.score_b is not None
+            else None
+        )
 
     def save(self, *args, **kwargs):
         """when saving also update the scored points from the connected bets"""

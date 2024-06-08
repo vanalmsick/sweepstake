@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+    <div class="hero-winner">
+        <div class="hero-text" style="max-width: 80%;">
+            <div class="container p-5 rounded shadow" style="background: rgba(0,0,0,0.7);">
+
+                <div class="row">
+                    <div class="col-3">
+                        <a class="text-end btn btn-outline-primary btn-sm text-end" href="{% url 'leaderboard' %}">Leaderboard</a>
+                    </div>
+                    <div class="col-6 h2 text-center">{{ title }}</div>
+                    <div class="col-3 text-end">
+                        <a class="text-end btn btn-outline-primary btn-sm text-end" href="{% url 'predictions' %}">My
+                            Predictions</a>
+                    </div>
+                </div>
+
+                <div clas="row">
+                    {% for prediction, user_lst in predictions.items %}
+                        <hr class="featurette-divider my-3">
+
+                        <div class="row">
+                            <div class="col-3"></div>
+                            <div class="col-6 h4">{{ prediction }}</div>
+                            <div class="col-3 fst-italic text-secondary">
+                                {% if user_lst.0.points is not None %}
+                                    (Points: {{ user_lst.0.points }})
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% for user in user_lst %}
+                            <div class="p-1">{{ user.user__username }} ({{ user.user__team }})</div>
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% if predictions.items|length == 0 %}
+                        <hr class="featurette-divider my-3">
+
+                        <div class="row">
+                            <div class="col h6">You will be able to view other people's predictions<br>once the prediction admission is closed.</div>
+                        </div>
+
+                        <hr class="featurette-divider my-2">
+                    {% endif %}
+
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

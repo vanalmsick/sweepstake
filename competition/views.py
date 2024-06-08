@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.db.models import Sum, Q
 
 from general.models import CustomUser
-from .models import Match, MatchBet, Participant, Group, GroupBet, TournamentBet
+from .models import Match, MatchBet, Participant, Group, GroupBet, TournamentBet, MATCH_PHASES_DICT
 from .forms import (
     getMatchBetFormSet,
     MatchBetFormSet,
@@ -241,3 +241,114 @@ def getMyScore(pk):
 def LeaderboardView(request):
     """View to show leaderboard of users - who predicted the matches best"""
     return render(request, "leaderboard.html", {"ranking": getLeaderboard()})
+
+
+def getOthersNonMatchPredictions(level, filter):
+    title = f"{filter} Predictions"
+    if level == "group":
+        level_obj = Group.objects.filter(name=filter)
+        if len(level_obj) > 0 and level_obj[0].is_editable is False:
+            level_obj = level_obj[0]
+            queryset = GroupBet.objects.filter(group=level_obj).order_by("-points", "winner", "user__username")
+        else:
+            queryset = []
+    elif level == "tournament":
+        level_obj = Tournament.objects.filter(name=filter)
+        if len(level_obj) > 0 and level_obj[0].is_editable is False:
+            level_obj = level_obj[0]
+            queryset = TournamentBet.objects.filter(tournament=level_obj).order_by(
+                "-points", "winner", "user__username"
+            )
+        else:
+            queryset = []
+
+    grouped_queryset = {}
+    for bet in queryset:
+        print()
+        winner_name = bet.winner.name
+        if winner_name not in grouped_queryset:
+            grouped_queryset[winner_name] = []
+        grouped_queryset[winner_name].append(
+            {
+                "user__id": bet.user.id,
+                "user__username": bet.user.username,
+                "user__team": bet.user.team,
+                "points": bet.points,
+            }
+        )
+
+    return {"title": title, "predictions": grouped_queryset}
+
+
+def getOthersMatchPredictions(match_id):
+    match_obj = Match.objects.get(pk=match_id)
+    title = f'{match_obj.match_time.strftime("%a %d %b")} ({match_obj.team_a.group.name if match_obj.phase == "group" else MATCH_PHASES_DICT[match_obj.phase]}): {match_obj.team_a_placeholder} vs. {match_obj.team_b_placeholder} Predictions'
+    if match_obj.is_editable is False:
+        queryset = MatchBet.objects.filter(match=match_obj).order_by(
+            "goal_difference", "-score_a", "score_b", "user__username"
+        )
+        if match_obj.score_a is None or match_obj.score_b is None:
+            best_bet = None
+        else:
+            best_bet = queryset.order_by("-points", "goal_difference").first()
+        predictions = []
+        for bet in queryset:
+            if best_bet is not None and best_bet == bet:
+                predictions.append(
+                    {
+                        "user__id": None,
+                        "user__username": f"MATCH: {match_obj.team_a_placeholder} vs. {match_obj.team_b_placeholder}",
+                        "user__team": None,
+                        "points": "-/-",
+                        "goal_difference": 0,
+                        "score_a": match_obj.score_a,
+                        "score_b": match_obj.score_b,
+                        "is_match": True,
+                    }
+                )
+            predictions.append(
+                {
+                    "user__id": bet.user.id,
+                    "user__username": bet.user.username,
+                    "user__team": bet.user.team,
+                    "points": bet.points,
+                    "goal_difference": bet.goal_difference,
+                    "score_a": bet.score_a,
+                    "score_b": bet.score_b,
+                    "is_match": False,
+                }
+            )
+    else:
+        predictions = []
+
+    return {"title": title, "predictions": predictions}
+
+
+def OthersGroupPredictionsView(request, group_name):
+    """View to see other users' group winner preditions"""
+    # Not logged-in
+    if request.user.id is None:
+        return redirect("log-in")
+    return render(
+        request, "predictions/GroupAndTournament.html", getOthersNonMatchPredictions(level="group", filter=group_name)
+    )
+
+
+def OthersTournamentPredictionsView(request, tournament_name):
+    """View to see other users' tournament winner preditions"""
+    # Not logged-in
+    if request.user.id is None:
+        return redirect("log-in")
+    return render(
+        request,
+        "predictions/GroupAndTournament.html",
+        getOthersNonMatchPredictions(level="tournament", filter=tournament_name),
+    )
+
+
+def OthersMatchPredictionsView(request, match_id):
+    """View to see other users' match preditions"""
+    # Not logged-in
+    if request.user.id is None:
+        return redirect("log-in")
+    return render(request, "predictions/Match.html", getOthersMatchPredictions(match_id=match_id))

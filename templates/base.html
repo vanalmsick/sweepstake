@@ -100,6 +100,41 @@
             background-color: rgba(33, 37, 41, 0.03);
         }
 
+        table.transparent-table td, table.transparent-table th {
+            background-color: transparent;
+            color: white;
+            padding: 8px 20px;
+        }
+
+        table.transparent-table th {
+            border-top: 2px solid rgba(255, 255, 255, 0.25);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.25);
+        }
+
+        table.transparent-table tr {
+            border-top: 1px solid rgba(255, 255, 255, 0.25);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        table.transparent-table tr:hover {
+            background-color: rgba(255,255,255,0.25);
+        }
+
+        table.transparent-table tr.highlighted {
+            background-color: rgba(255,255,255,0.15);
+            font-weight: bold;
+        }
+
+        table.transparent-table td:first-child, table.transparent-table th:first-child {
+            width: 45%;
+            text-align: left;
+        }
+
+        table.transparent-table td:last-child, table.transparent-table th:last-child {
+            width: 45%;
+            text-align: right;
+        }
+
 
     </style>
 

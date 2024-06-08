@@ -13,7 +13,10 @@ class MatchBetInline(admin.TabularInline):
     model = MatchBet
     fk_name = "user"
     extra = 0
-    readonly_fields = ("points",)
+    readonly_fields = (
+        "points",
+        "goal_difference",
+    )
     can_delete = False
 
 
