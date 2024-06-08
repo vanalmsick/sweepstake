@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path
 from django.views.generic.base import TemplateView
 
-from general.views import LoginView, LogoutView, SignupView
+from general.views import LoginView, LogoutView, SignupView, VerifyEmailView
 from competition.views import ScheduleView, BetView, LeaderboardView
 
 urlpatterns = [
@@ -29,6 +29,7 @@ urlpatterns = [
     path("predictions/", BetView, name="predictions"),
     path("leaderboard/", LeaderboardView, name="leaderboard"),
     path("signup/", SignupView, name="sign-up"),
+    path("verify/<int:user_id>/", VerifyEmailView, name="verify-email"),
     path("login/", LoginView, name="log-in"),
     path("logout/", LogoutView, name="log-out"),
     path("admin/", admin.site.urls),
