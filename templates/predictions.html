@@ -10,22 +10,42 @@
                 <div class="row my-2 mx-4">
                     <div class="col-4 text-start p-0"></div>
                     <div class="col-4 p-0 h2 text-center">{{ user_name }}</div>
-                    <div class="col-4 text-end p-0"><a class="btn btn-outline-primary" href="{% url 'leaderboard' %}">Go
-                        to
-                        Leaderborad</a></div>
+                    <div class="col-4 text-end p-0">
+                        <a class="btn btn-outline-primary" href="{% url 'leaderboard' %}">Go to Leaderborad</a>
+                    </div>
                 </div>
                 <div class="row mt-2 mb-3 mx-4">
                     <div class="col-4 text-start p-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                             class="bi bi-check-lg" viewBox="0 0 16 16">
-                            <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
-                        </svg>
-                        Stake received
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                             class="bi bi-check-lg" viewBox="0 0 16 16">
-                            <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
-                        </svg>
-                        Email verified
+                        {% if stake_received %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-check-lg" viewBox="0 0 16 16" style="margin: 0px 0px 2px 0px;">
+                                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                            </svg>
+                            Stake received
+                        {% else %}
+                            <span style="color: #911D21;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-x" viewBox="0 0 16 16" style="margin: 0px 0px 2px 0px;">
+                                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                            </svg>
+                        Stake not yet received
+                            </span>
+                        {% endif %}
+                        {% if email_verified %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-check-lg" viewBox="0 0 16 16" style="margin: 0px 0px 2px 0px;">
+                                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                            </svg>
+                            Email verified
+                        {% else %}
+                            <span style="color: #E6A519;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-x" viewBox="0 0 16 16" style="margin: 0px 0px 2px 0px;">
+                                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                            </svg>
+                        Email not verified
+                            </span>
+                        {% endif %}
                     </div>
                     <div class="col-4 p-0 text-center">My Rank: {{ user_rank }}</div>
                     <div class="col-4 text-end p-0">Total Points: {{ user_points }}</div>
@@ -94,7 +114,7 @@
                                     </div>
                                     {% if tournament_form.text %}
                                         <div class="row fst-italic text-secondary">
-                                            <small>In some browsers double click to see suggestions.</small>
+                                            <small>In some browsers, click twice to see suggestions.</small>
                                         </div>
                                     {% endif %}
                                 </div>
@@ -199,8 +219,9 @@
                 <table>
                     {% for form in match_formset %}
                         <div class="row border rounded p-2 my-2 mx-4 d-flex justify-content-between">
-                            <div class="col-2 fw-bold align-middle d-flex">
-                                <span class="my-auto">{{ form.match_time.value }}{{ form.match_id }}</span>
+                            <div class="col-2 ">
+                                <div class="row fw-bold">{{ form.match_time.value }}{{ form.match_id }}</div>
+                                <small class="row fst-italic text-body-tertiary">({{ form.phase.value }})</small>
                             </div>
                             <div class="col-2" style="text-align:right;">
                                 {{ form.team_a.value }}

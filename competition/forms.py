@@ -6,7 +6,7 @@ import random
 from django.conf import settings
 
 # from django.core.validators import MinValueValidator, MaxValueValidator
-from .models import Match, MatchBet, Group, GroupBet, Participant, TournamentBet, Tournament
+from .models import Match, MatchBet, Group, GroupBet, Participant, TournamentBet, Tournament, MATCH_PHASES_DICT
 
 
 def __days_hours_minutes(td):
@@ -131,6 +131,7 @@ class MatchBetForm(forms.Form):
 
     match_id = forms.IntegerField(label=False)
     match_time = forms.CharField(label=False, required=False)
+    phase = forms.CharField(label=False, required=False)
 
     flag_a = forms.URLField(label=False, required=False)
     team_a = forms.CharField(label=False, required=False)
@@ -212,6 +213,7 @@ def getMatchBetFormSet(user, random=False, prefix=None):
             {
                 "match_id": data_i.pk,
                 "match_time": data_i.match_time.strftime("%a %d %B - %H:%M"),
+                "phase": data_i.team_a.group.name if data_i.phase == "group" else MATCH_PHASES_DICT[data_i.phase],
                 "flag_a": "https://panenka.uefa.com/panenka/assets/ntc-generic-badge-02.svg"
                 if data_i.team_a is None
                 else data_i.team_a.flag,

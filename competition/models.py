@@ -123,13 +123,16 @@ class Group(models.Model):
             bet.save()
 
 
-MATCH_PHASES = [
-    ("group", "Group Phase"),
-    ("8", "Group Finals"),
-    ("4", "Quarter Finals"),
-    ("2", "Semi Finals"),
-    ("1", "Finals"),
-]
+MATCH_PHASES_DICT = {
+    "group": "Group Phase",
+    "8": "Group Finals",
+    "4": "Quarter Finals",
+    "2": "Semi Finals",
+    "1": "Finals",
+}
+
+
+MATCH_PHASES = [(k, v) for k, v in MATCH_PHASES_DICT.items()]
 
 
 class Participant(models.Model):

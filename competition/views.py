@@ -148,6 +148,8 @@ def BetView(request):
             "match_formset": match_formset,
             "group_formset": group_formset,
             "tournament_form": tournament_form,
+            "stake_received": request.user.has_paid,
+            "email_verified": request.user.is_verified,
             "errors": errors,
             "user_name": user_data["user__username"],
             "user_rank": user_data["rank"],
