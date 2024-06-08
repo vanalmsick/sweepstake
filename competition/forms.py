@@ -134,6 +134,7 @@ class MatchBetForm(forms.Form):
     match_id = forms.IntegerField(label=False)
     match_time = forms.CharField(label=False, required=False)
     phase = forms.CharField(label=False, required=False)
+    tv_broadcaster = forms.CharField(label=False, required=False)
 
     flag_a = forms.URLField(label=False, required=False)
     team_a = forms.CharField(label=False, required=False)
@@ -217,6 +218,7 @@ def getMatchBetFormSet(user, random=False, prefix=None, only_not_editable=False)
             {
                 "match_id": data_i.pk,
                 "match_time": data_i.match_time.strftime("%a %d %B - %H:%M"),
+                "tv_broadcaster": data_i.tv_broadcaster,
                 "phase": data_i.team_a.group.name if data_i.phase == "group" else MATCH_PHASES_DICT[data_i.phase],
                 "flag_a": "https://panenka.uefa.com/panenka/assets/ntc-generic-badge-02.svg"
                 if data_i.team_a is None

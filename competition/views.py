@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+import datetime
 from django.shortcuts import render, redirect
 from django.db.models import Sum, Q
+from django.conf import settings
 
 from general.models import CustomUser
-from .models import Match, MatchBet, Participant, Group, GroupBet, TournamentBet, MATCH_PHASES_DICT
+from .models import Match, MatchBet, Participant, Group, GroupBet, TournamentBet, MATCH_PHASES_DICT, BROADCASTER_URLS
 from .forms import (
     getMatchBetFormSet,
     MatchBetFormSet,
@@ -18,6 +20,7 @@ from .forms import (
 # Create your views here.
 def ScheduleView(request, country_name=None, group_name=None):
     """View to see list of scheduled and past matches"""
+    now = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
     if country_name is not None:
         match_lst = Match.objects.filter(
             Q(team_a__name__icontains=country_name) | Q(team_b__name__icontains=country_name)
@@ -35,6 +38,8 @@ def ScheduleView(request, country_name=None, group_name=None):
         if last_date is None or match_i.match_time.date() != last_date:
             last_date = match_i.match_time.date()
             match_lst_date_sorted[last_date] = []
+        match_i.tv_broadcaster__url = BROADCASTER_URLS[match_i.tv_broadcaster]
+        match_i.finished = (match_i.match_time + datetime.timedelta(minutes=90)) < now
         match_lst_date_sorted[last_date].append(match_i)
 
     return render(

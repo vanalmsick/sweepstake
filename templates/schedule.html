@@ -10,9 +10,11 @@
             <div class="row  mt-4 mx-4">
                 <div class="col-3">
                     {% if 'Matches' in title %}
-                        <a class="text-end btn btn-outline-primary text-end" href="{% url 'schedule' %}">See all matches</a>
+                        <a class="text-end btn btn-outline-primary text-end" href="{% url 'schedule' %}">See all
+                            matches</a>
                         {% if group is not None %}
-                            <a class="text-end btn btn-outline-primary text-end" href="{% url 'group-schedule' group_name=group|clean_str %}">See {{ group }}</a>
+                            <a class="text-end btn btn-outline-primary text-end"
+                               href="{% url 'group-schedule' group_name=group|clean_str %}">See {{ group }}</a>
                         {% endif %}
                     {% endif %}
                 </div>
@@ -33,7 +35,8 @@
                             <div class="col-1 text-end">
                                 {{ match.match_time|date:'H:i' }}
                             </div>
-                            <a class="col-2 text-end normal-text-link" href="{% url 'country-schedule' country_name=match.team_a_placeholder|clean_str %}">
+                            <a class="col-2 text-end normal-text-link"
+                               href="{% url 'country-schedule' country_name=match.team_a_placeholder|clean_str %}">
                                 {% if match.team_a is None %}
                                     {{ match.team_a_placeholder }}
                                     <img class="m-2"
@@ -51,7 +54,8 @@
                                     {{ match.score_a }}:{{ match.score_b }}
                                 {% endif %}
                             </div>
-                            <a class="col-2 text-start normal-text-link" href="{% url 'country-schedule' country_name=match.team_b_placeholder|clean_str %}">
+                            <a class="col-2 text-start normal-text-link"
+                               href="{% url 'country-schedule' country_name=match.team_b_placeholder|clean_str %}">
                                 {% if match.team_b is None %}
                                     <img class="m-2"
                                          src="https://panenka.uefa.com/panenka/assets/ntc-generic-badge-04.svg"
@@ -62,7 +66,29 @@
                                     {{ match.team_b }}
                                 {% endif %}
                             </a>
-                            <div class="col-2"></div>
+                            {% if match.finished %}
+                                <a class="col-2 text-secondary normal-text-link" target="_blank"
+                                   href="{% url 'match-predictions' match_id=match.pk %}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
+                                         class="bi bi-box-arrow-up-left" viewBox="0 0 16 16"
+                                         style="margin: 0px 5px 5px 8px;">
+                                        <path fill-rule="evenodd"
+                                              d="M7.364 3.5a.5.5 0 0 1 .5-.5H14.5A1.5 1.5 0 0 1 16 4.5v10a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 3 14.5V7.864a.5.5 0 1 1 1 0V14.5a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5v-10a.5.5 0 0 0-.5-.5H7.864a.5.5 0 0 1-.5-.5"/>
+                                        <path fill-rule="evenodd"
+                                              d="M0 .5A.5.5 0 0 1 .5 0h5a.5.5 0 0 1 0 1H1.707l8.147 8.146a.5.5 0 0 1-.708.708L1 1.707V5.5a.5.5 0 0 1-1 0z"/>
+                                    </svg>
+                                    View predictions
+                                </a>
+                            {% else %}
+                                <a class="col-2 text-secondary normal-text-link" target="_blank"
+                                   {% if match.tv_broadcaster__url is not None %}href="{{ match.tv_broadcaster__url }}"{% endif %}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                         class="bi bi-tv" viewBox="0 0 16 16" style="margin: 0px 5px 3px 8px;">
+                                        <path d="M2.5 13.5A.5.5 0 0 1 3 13h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5M13.991 3l.024.001a1.5 1.5 0 0 1 .538.143.76.76 0 0 1 .302.254c.067.1.145.277.145.602v5.991l-.001.024a1.5 1.5 0 0 1-.143.538.76.76 0 0 1-.254.302c-.1.067-.277.145-.602.145H2.009l-.024-.001a1.5 1.5 0 0 1-.538-.143.76.76 0 0 1-.302-.254C1.078 10.502 1 10.325 1 10V4.009l.001-.024a1.5 1.5 0 0 1 .143-.538.76.76 0 0 1 .254-.302C1.498 3.078 1.675 3 2 3zM14 2H2C0 2 0 4 0 4v6c0 2 2 2 2 2h12c2 0 2-2 2-2V4c0-2-2-2-2-2"/>
+                                    </svg>
+                                    {{ match.tv_broadcaster }}
+                                </a>
+                            {% endif %}
                         </div>
                     {% endfor %}
                     <hr class="featurette-divider my-4">

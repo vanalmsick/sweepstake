@@ -134,6 +134,15 @@ MATCH_PHASES_DICT = {
 
 MATCH_PHASES = [(k, v) for k, v in MATCH_PHASES_DICT.items()]
 
+BROADCASTERS = [("BBC", "BBC"), ("ITV", "ITV"), ("BBC & ITV", "BBC & ITV"), ("tbc", "tbc")]
+BROADCASTER_URLS = {
+    "BBC": "https://www.bbc.co.uk/sport/football",
+    "ITV": "https://www.itv.com/watch",
+    "BBC & ITV": "https://www.bbc.co.uk/sport/football",
+    "tbc": None,
+    None: None,
+}
+
 
 class Participant(models.Model):
     """Tournament Participants e.g. countries like Germany, UK, France, etc."""
@@ -152,6 +161,7 @@ class Match(models.Model):
 
     phase = EmptyStringToNoneField(max_length=5, choices=MATCH_PHASES, null=False, blank=False)
     match_time = models.DateTimeField(null=False, blank=False)
+    tv_broadcaster = EmptyStringToNoneField(max_length=9, choices=BROADCASTERS, null=True, blank=True)
 
     team_a = models.ForeignKey(Participant, on_delete=models.SET_NULL, null=True, blank=True, related_name="team_a")
     team_a_placeholder = EmptyStringToNoneField(max_length=30, null=True, blank=True)

@@ -46,6 +46,7 @@ class Command(BaseCommand):
                 "score_a": 4,
                 "score_b": 2,
                 "team_b": Participant.objects.get(name="Scotland"),
+                "tv_broadcaster": "BBC",
                 "bets": {
                     "user1@admin.local": {"score_a": 4, "score_b": 2},
                     "user2@admin.local": {"score_a": 2, "score_b": 4},
@@ -70,10 +71,11 @@ class Command(BaseCommand):
             },
             {
                 "phase": "group",
-                "match_time": "2024-06-05T20:00+01:00",
+                "match_time": "2024-06-12T20:00+01:00",
                 "team_a": Participant.objects.get(name="Germany"),
                 "team_b": Participant.objects.get(name="England"),
                 "winner": "Germany",
+                "tv_broadcaster": "BBC & ITV",
                 "groups": {
                     "Group B": "Spain",
                     "Group C": "Denmark",

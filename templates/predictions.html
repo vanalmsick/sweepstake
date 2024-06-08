@@ -303,7 +303,8 @@
                             <div class="row border rounded p-2 my-2 mx-4 d-flex justify-content-between">
                                 <div class="col-2 ">
                                     <div class="row fw-bold">{{ form.match_time.value }}{{ form.match_id }}</div>
-                                    <small class="row fst-italic text-body-tertiary">({{ form.phase.value }})</small>
+                                    <small class="row fst-italic text-body-tertiary">({{ form.phase.value }}
+                                        - {{ form.tv_broadcaster.value }})</small>
                                 </div>
                                 <a class="col-2 normal-text-link" style="text-align:right;"
                                    href="{% url 'country-schedule' country_name=form.team_a.value|clean_str %}">

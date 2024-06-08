@@ -87,6 +87,7 @@ class Command(BaseCommand):
                 "match_time": "2024-06-14T20:00+01:00",
                 "team_a": participant_obj_dict["Germany"],
                 "team_b": participant_obj_dict["Scotland"],
+                "tv_broadcaster": "ITV",
             },
             #### 15th ####
             {
@@ -94,18 +95,21 @@ class Command(BaseCommand):
                 "match_time": "2024-06-15T14:00+01:00",
                 "team_a": participant_obj_dict["Hungary"],
                 "team_b": participant_obj_dict["Switzerland"],
+                "tv_broadcaster": "ITV",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-15T17:00+01:00",
                 "team_a": participant_obj_dict["Spain"],
                 "team_b": participant_obj_dict["Croatia"],
+                "tv_broadcaster": "ITV",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-15T20:00+01:00",
                 "team_a": participant_obj_dict["Italy"],
                 "team_b": participant_obj_dict["Albania"],
+                "tv_broadcaster": "BBC",
             },
             #### 16th ####
             {
@@ -113,18 +117,21 @@ class Command(BaseCommand):
                 "match_time": "2024-06-16T14:00+01:00",
                 "team_a": participant_obj_dict["Poland"],
                 "team_b": participant_obj_dict["Netherlands"],
+                "tv_broadcaster": "BBC",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-16T17:00+01:00",
                 "team_a": participant_obj_dict["Slovenia"],
                 "team_b": participant_obj_dict["Denmark"],
+                "tv_broadcaster": "ITV",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-16T20:00+01:00",
                 "team_a": participant_obj_dict["Serbia"],
                 "team_b": participant_obj_dict["England"],
+                "tv_broadcaster": "BBC",
             },
             #### 17th ####
             {
@@ -132,18 +139,21 @@ class Command(BaseCommand):
                 "match_time": "2024-06-17T14:00+01:00",
                 "team_a": participant_obj_dict["Romania"],
                 "team_b": participant_obj_dict["Ukraine"],
+                "tv_broadcaster": "BBC",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-17T17:00+01:00",
                 "team_a": participant_obj_dict["Belgium"],
                 "team_b": participant_obj_dict["Slovakia"],
+                "tv_broadcaster": "ITV",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-17T20:00+01:00",
                 "team_a": participant_obj_dict["Austria"],
                 "team_b": participant_obj_dict["France"],
+                "tv_broadcaster": "ITV",
             },
             #### 18th ####
             {
@@ -151,12 +161,14 @@ class Command(BaseCommand):
                 "match_time": "2024-06-18T17:00+01:00",
                 "team_a": participant_obj_dict["Türkiye"],
                 "team_b": participant_obj_dict["Georgia"],
+                "tv_broadcaster": "BBC",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-18T20:00+01:00",
                 "team_a": participant_obj_dict["Portugal"],
                 "team_b": participant_obj_dict["Czechia"],
+                "tv_broadcaster": "BBC",
             },
             #### 19th ####
             {
@@ -164,18 +176,21 @@ class Command(BaseCommand):
                 "match_time": "2024-06-19T14:00+01:00",
                 "team_a": participant_obj_dict["Croatia"],
                 "team_b": participant_obj_dict["Albania"],
+                "tv_broadcaster": "ITV",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-19T17:00+01:00",
                 "team_a": participant_obj_dict["Germany"],
                 "team_b": participant_obj_dict["Hungary"],
+                "tv_broadcaster": "BBC",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-19T20:00+01:00",
                 "team_a": participant_obj_dict["Scotland"],
                 "team_b": participant_obj_dict["Switzerland"],
+                "tv_broadcaster": "BBC",
             },
             #### 20th ####
             {
@@ -183,18 +198,21 @@ class Command(BaseCommand):
                 "match_time": "2024-06-20T14:00+01:00",
                 "team_a": participant_obj_dict["Slovenia"],
                 "team_b": participant_obj_dict["Serbia"],
+                "tv_broadcaster": "ITV",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-20T17:00+01:00",
                 "team_a": participant_obj_dict["Denmark"],
                 "team_b": participant_obj_dict["England"],
+                "tv_broadcaster": "BBC",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-20T20:00+01:00",
                 "team_a": participant_obj_dict["Spain"],
                 "team_b": participant_obj_dict["Italy"],
+                "tv_broadcaster": "ITV",
             },
             #### 21st ####
             {
@@ -202,18 +220,21 @@ class Command(BaseCommand):
                 "match_time": "2024-06-21T14:00+01:00",
                 "team_a": participant_obj_dict["Slovakia"],
                 "team_b": participant_obj_dict["Ukraine"],
+                "tv_broadcaster": "BBC",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-21T17:00+01:00",
                 "team_a": participant_obj_dict["Poland"],
                 "team_b": participant_obj_dict["Austria"],
+                "tv_broadcaster": "ITV",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-21T20:00+01:00",
                 "team_a": participant_obj_dict["Netherlands"],
                 "team_b": participant_obj_dict["France"],
+                "tv_broadcaster": "BBC",
             },
             #### 22nd ####
             {
@@ -221,18 +242,21 @@ class Command(BaseCommand):
                 "match_time": "2024-06-22T14:00+01:00",
                 "team_a": participant_obj_dict["Georgia"],
                 "team_b": participant_obj_dict["Czechia"],
+                "tv_broadcaster": "BBC",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-22T17:00+01:00",
                 "team_a": participant_obj_dict["Türkiye"],
                 "team_b": participant_obj_dict["Portugal"],
+                "tv_broadcaster": "ITV",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-22T20:00+01:00",
                 "team_a": participant_obj_dict["Belgium"],
                 "team_b": participant_obj_dict["Romania"],
+                "tv_broadcaster": "ITV",
             },
             #### 23rd ####
             {
@@ -240,12 +264,14 @@ class Command(BaseCommand):
                 "match_time": "2024-06-23T20:00+01:00",
                 "team_a": participant_obj_dict["Switzerland"],
                 "team_b": participant_obj_dict["Germany"],
+                "tv_broadcaster": "BBC",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-23T20:00+01:00",
                 "team_a": participant_obj_dict["Scotland"],
                 "team_b": participant_obj_dict["Hungary"],
+                "tv_broadcaster": "BBC",
             },
             #### 24th ####
             {
@@ -253,12 +279,14 @@ class Command(BaseCommand):
                 "match_time": "2024-06-24T20:00+01:00",
                 "team_a": participant_obj_dict["Albania"],
                 "team_b": participant_obj_dict["Spain"],
+                "tv_broadcaster": "BBC",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-24T20:00+01:00",
                 "team_a": participant_obj_dict["Croatia"],
                 "team_b": participant_obj_dict["Italy"],
+                "tv_broadcaster": "BBC",
             },
             #### 25th ####
             {
@@ -266,24 +294,28 @@ class Command(BaseCommand):
                 "match_time": "2024-06-25T17:00+01:00",
                 "team_a": participant_obj_dict["Netherlands"],
                 "team_b": participant_obj_dict["Austria"],
+                "tv_broadcaster": "BBC",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-25T17:00+01:00",
                 "team_a": participant_obj_dict["France"],
                 "team_b": participant_obj_dict["Poland"],
+                "tv_broadcaster": "BBC",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-25T20:00+01:00",
                 "team_a": participant_obj_dict["England"],
                 "team_b": participant_obj_dict["Slovenia"],
+                "tv_broadcaster": "ITV",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-25T20:00+01:00",
                 "team_a": participant_obj_dict["Denmark"],
                 "team_b": participant_obj_dict["Serbia"],
+                "tv_broadcaster": "ITV",
             },
             #### 26th ####
             {
@@ -291,24 +323,28 @@ class Command(BaseCommand):
                 "match_time": "2024-06-26T17:00+01:00",
                 "team_a": participant_obj_dict["Slovakia"],
                 "team_b": participant_obj_dict["Romania"],
+                "tv_broadcaster": "BBC",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-26T17:00+01:00",
                 "team_a": participant_obj_dict["Ukraine"],
                 "team_b": participant_obj_dict["Belgium"],
+                "tv_broadcaster": "BBC",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-26T20:00+01:00",
                 "team_a": participant_obj_dict["Georgia"],
                 "team_b": participant_obj_dict["Portugal"],
+                "tv_broadcaster": "ITV",
             },
             {
                 "phase": "group",
                 "match_time": "2024-06-26T20:00+01:00",
                 "team_a": participant_obj_dict["Czechia"],
                 "team_b": participant_obj_dict["Türkiye"],
+                "tv_broadcaster": "ITV",
             },
             #### 29th - Group Finals ####
             {
@@ -316,12 +352,14 @@ class Command(BaseCommand):
                 "match_time": "2024-06-29T17:00+01:00",
                 "team_a_placeholder": "2nd Group A",
                 "team_b_placeholder": "2nd Group B",
+                "tv_broadcaster": "tbc",
             },
             {
                 "phase": "8",
                 "match_time": "2024-06-29T20:00+01:00",
                 "team_a_placeholder": "1st Group A",
                 "team_b_placeholder": "2nd Group C",
+                "tv_broadcaster": "tbc",
             },
             #### 30th - Group Finals ####
             {
@@ -329,12 +367,14 @@ class Command(BaseCommand):
                 "match_time": "2024-06-30T17:00+01:00",
                 "team_a_placeholder": "1st Group C",
                 "team_b_placeholder": "3rd Group D/E/F",
+                "tv_broadcaster": "tbc",
             },
             {
                 "phase": "8",
                 "match_time": "2024-06-30T20:00+01:00",
                 "team_a_placeholder": "1st Group B",
                 "team_b_placeholder": "3rd Group A/D/E/F",
+                "tv_broadcaster": "tbc",
             },
             #### 1st - Group Finals ####
             {
@@ -342,12 +382,14 @@ class Command(BaseCommand):
                 "match_time": "2024-07-01T17:00+01:00",
                 "team_a_placeholder": "2nd Group D",
                 "team_b_placeholder": "2nd Group E",
+                "tv_broadcaster": "tbc",
             },
             {
                 "phase": "8",
                 "match_time": "2024-07-01T20:00+01:00",
                 "team_a_placeholder": "1st Group F",
                 "team_b_placeholder": "3rd Group A/B/C",
+                "tv_broadcaster": "tbc",
             },
             #### 2nd - Group Finals ####
             {
@@ -355,12 +397,14 @@ class Command(BaseCommand):
                 "match_time": "2024-07-02T17:00+01:00",
                 "team_a_placeholder": "1st Group E",
                 "team_b_placeholder": "3rd Group A/B/C/D",
+                "tv_broadcaster": "tbc",
             },
             {
                 "phase": "8",
                 "match_time": "2024-07-02T20:00+01:00",
                 "team_a_placeholder": "1st Group D",
                 "team_b_placeholder": "2nd Group F",
+                "tv_broadcaster": "tbc",
             },
             #### 5th - Quarter Finals ####
             {
@@ -368,12 +412,14 @@ class Command(BaseCommand):
                 "match_time": "2024-07-05T17:00+01:00",
                 "team_a_placeholder": "W39",
                 "team_b_placeholder": "W37",
+                "tv_broadcaster": "tbc",
             },
             {
                 "phase": "4",
                 "match_time": "2024-07-05T20:00+01:00",
                 "team_a_placeholder": "W41",
                 "team_b_placeholder": "W42",
+                "tv_broadcaster": "tbc",
             },
             #### 6th - Quarter Finals ####
             {
@@ -381,12 +427,14 @@ class Command(BaseCommand):
                 "match_time": "2024-07-06T17:00+01:00",
                 "team_a_placeholder": "W40",
                 "team_b_placeholder": "W38",
+                "tv_broadcaster": "tbc",
             },
             {
                 "phase": "4",
                 "match_time": "2024-07-06T20:00+01:00",
                 "team_a_placeholder": "W43",
                 "team_b_placeholder": "W44",
+                "tv_broadcaster": "tbc",
             },
             #### 9th - Semi Finals ####
             {
@@ -394,6 +442,7 @@ class Command(BaseCommand):
                 "match_time": "2024-07-09T20:00+01:00",
                 "team_a_placeholder": "W45",
                 "team_b_placeholder": "W46",
+                "tv_broadcaster": "tbc",
             },
             #### 10th - Semi Finals ####
             {
@@ -401,6 +450,7 @@ class Command(BaseCommand):
                 "match_time": "2024-07-10T20:00+01:00",
                 "team_a_placeholder": "W47",
                 "team_b_placeholder": "W48",
+                "tv_broadcaster": "tbc",
             },
             #### 14th - Finals ####
             {
@@ -408,6 +458,7 @@ class Command(BaseCommand):
                 "match_time": "2024-07-14T20:00+01:00",
                 "team_a_placeholder": "W49",
                 "team_b_placeholder": "W50",
+                "tv_broadcaster": "BBC & ITV",
             },
         ]
 
