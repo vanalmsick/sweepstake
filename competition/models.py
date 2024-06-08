@@ -46,17 +46,21 @@ class Tournament(models.Model):
         primary_key=False,
         related_name="tournament_third_place",
     )
-    first_match_time = models.DateTimeField(null=True, blank=True)  # type: ignore
 
-    @property  # type: ignore
+    @property
     def first_match_time(self):
-        """get the time of the first group match for the property is_editable"""
+        """get the time of the first tournament match for the property is_editable"""
         return (
             Match.objects.filter(Q(team_a__group__tournament__pk=self.pk) | Q(team_b__group__tournament__pk=self.pk))
             .order_by("match_time")
             .first()
             .match_time
         )
+
+    @property
+    def is_editable(self):
+        """check if bet can still be placed or if first group match already started"""
+        return settings.TIME_ZONE_OBJ.localize(datetime.datetime.now()) < self.first_match_time
 
     def __str__(self):
         """str print-out of model entry"""
@@ -119,13 +123,25 @@ class Group(models.Model):
             bet.save()
 
 
-MATCH_PHASES = [
-    ("group", "Group Phase"),
-    ("8", "Group Finals"),
-    ("4", "Quarter Finals"),
-    ("2", "Semi Finals"),
-    ("1", "Finals"),
-]
+MATCH_PHASES_DICT = {
+    "group": "Group Phase",
+    "8": "Group Finals",
+    "4": "Quarter Finals",
+    "2": "Semi Finals",
+    "1": "Finals",
+}
+
+
+MATCH_PHASES = [(k, v) for k, v in MATCH_PHASES_DICT.items()]
+
+BROADCASTERS = [("BBC", "BBC"), ("ITV", "ITV"), ("BBC & ITV", "BBC & ITV"), ("tbc", "tbc")]
+BROADCASTER_URLS = {
+    "BBC": "https://www.bbc.co.uk/sport/football",
+    "ITV": "https://www.itv.com/watch",
+    "BBC & ITV": "https://www.bbc.co.uk/sport/football",
+    "tbc": None,
+    None: None,
+}
 
 
 class Participant(models.Model):
@@ -145,6 +161,7 @@ class Match(models.Model):
 
     phase = EmptyStringToNoneField(max_length=5, choices=MATCH_PHASES, null=False, blank=False)
     match_time = models.DateTimeField(null=False, blank=False)
+    tv_broadcaster = EmptyStringToNoneField(max_length=9, choices=BROADCASTERS, null=True, blank=True)
 
     team_a = models.ForeignKey(Participant, on_delete=models.SET_NULL, null=True, blank=True, related_name="team_a")
     team_a_placeholder = EmptyStringToNoneField(max_length=30, null=True, blank=True)
@@ -176,6 +193,8 @@ class Match(models.Model):
         for bet in self.matchbet_set.all():
             bet_points = bet.get_points()
             setattr(bet, "points", bet_points)
+            goal_difference = bet.get_goal_difference()
+            setattr(bet, "goal_difference", goal_difference)
             bet.save()
 
 
@@ -189,6 +208,7 @@ class MatchBet(models.Model):
     score_b = models.IntegerField(null=True, blank=True)
 
     points = models.IntegerField(null=True, blank=False)
+    goal_difference = models.IntegerField(null=True, blank=False)
 
     class Meta:
         unique_together = (
@@ -197,7 +217,7 @@ class MatchBet(models.Model):
         )
 
     def get_points(self):
-        """FUnction to calculate points awareded from bet - i.e. how correct was the betted score"""
+        """Function to calculate points awareded from bet - i.e. how correct was the betted score"""
         # no match results
         if self.match.score_a is None or self.match.score_b is None:
             return None
@@ -219,6 +239,18 @@ class MatchBet(models.Model):
         # no points
         else:
             return 0
+
+    def get_goal_difference(self):
+        """Function for leaderboard sorting of goal difference"""
+        # Bet - Match Score
+        return (
+            ((self.score_a - self.match.score_a) + (self.score_b - self.match.score_b))
+            if self.score_a is not None
+            and self.score_b is not None
+            and self.match.score_a is not None
+            and self.match.score_b is not None
+            else None
+        )
 
     def save(self, *args, **kwargs):
         """when saving also update the scored points from the connected bets"""
@@ -276,11 +308,12 @@ class TournamentBet(models.Model):
     winner = models.ForeignKey(
         Participant,
         on_delete=models.CASCADE,
-        null=False,
-        blank=False,
+        null=True,
+        blank=True,
         primary_key=False,
         related_name="tournament_winner_bet",
     )
+    charity = EmptyStringToNoneField(max_length=30, null=True, blank=True)
 
     points = models.IntegerField(null=True, blank=False)
 
@@ -293,17 +326,13 @@ class TournamentBet(models.Model):
     def get_points(self):
         """Function to calculate points awareded from bet - i.e. how correct was the betted score"""
         # no match results
-        if (
-            self.tournament.first_place is None
-            and self.tournament.second_place is None
-            and self.tournament.third_place is None
-        ):
+        if self.tournament.first_place is None and self.tournament.second_place is None:
             return None
         # bet equals 1st place
-        elif self.winner == self.tournament.first_place:
+        elif self.tournament.first_place is not None and self.winner == self.tournament.first_place:
             return 25
         # bet equals 2nd place
-        elif self.winner == self.tournament.second_place:
+        elif self.tournament.second_place is not None and self.winner == self.tournament.second_place:
             return 15
         # # bet equals 3rd place
         # elif self.winner == self.tournament.third_place:

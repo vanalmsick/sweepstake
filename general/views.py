@@ -44,5 +44,14 @@ def LoginView(request):
 
 
 def LogoutView(request):
+    """View to log-out user"""
     logout(request)
     return redirect("home")
+
+
+def VerifyEmailView(request, user_id):
+    """View to verify user email via link"""
+    user = CustomUser.objects.get(pk=user_id)
+    setattr(user, "is_verified", True)
+    user.save()
+    return redirect("predictions")

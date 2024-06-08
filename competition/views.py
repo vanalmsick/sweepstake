@@ -1,16 +1,36 @@
 # -*- coding: utf-8 -*-
+import datetime
 from django.shortcuts import render, redirect
-from django.db.models import Sum
+from django.db.models import Sum, Q
+from django.conf import settings
 
 from general.models import CustomUser
-from .models import Match, MatchBet, Participant, Group, GroupBet, TournamentBet
-from .forms import getMatchBetFormSet, MatchBetFormSet, getGroupBetFormSet, GroupBetFormSet
+from .models import Match, MatchBet, Participant, Group, GroupBet, TournamentBet, MATCH_PHASES_DICT, BROADCASTER_URLS
+from .forms import (
+    getMatchBetFormSet,
+    MatchBetFormSet,
+    getGroupBetFormSet,
+    GroupBetFormSet,
+    TournamentBetForm,
+    getTournamentForm,
+    Tournament,
+)
 
 
 # Create your views here.
-def ScheduleView(request):
+def ScheduleView(request, country_name=None, group_name=None):
     """View to see list of scheduled and past matches"""
-    match_lst = Match.objects.all().order_by("match_time")
+    now = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
+    if country_name is not None:
+        match_lst = Match.objects.filter(
+            Q(team_a__name__icontains=country_name) | Q(team_b__name__icontains=country_name)
+        ).order_by("match_time")
+    elif group_name is not None:
+        match_lst = Match.objects.filter(
+            Q(team_a__group__name__icontains=group_name) | Q(team_b__group__name__icontains=group_name)
+        ).order_by("match_time")
+    else:
+        match_lst = Match.objects.all().order_by("match_time")
 
     match_lst_date_sorted = {}
     last_date = None
@@ -18,14 +38,27 @@ def ScheduleView(request):
         if last_date is None or match_i.match_time.date() != last_date:
             last_date = match_i.match_time.date()
             match_lst_date_sorted[last_date] = []
+        match_i.tv_broadcaster__url = BROADCASTER_URLS[match_i.tv_broadcaster]
+        match_i.finished = (match_i.match_time + datetime.timedelta(minutes=90)) < now
         match_lst_date_sorted[last_date].append(match_i)
 
-    return render(request, "schedule.html", {"match_dict": match_lst_date_sorted})
+    return render(
+        request,
+        "schedule.html",
+        {
+            "match_dict": match_lst_date_sorted,
+            "title": "Tournament Schedule"
+            if country_name is None and group_name is None
+            else f"Matches: {group_name if country_name is None else country_name}",
+            "group": None
+            if country_name is None or len(match_lst_date_sorted) == 0
+            else Participant.objects.get(name__icontains=country_name).group.name,
+        },
+    )
 
 
-def BetView(request):
+def MyBetView(request):
     """Ciew to place user's match score bets"""
-    # ArticleFormSet = formset_factory(ArticleForm)
 
     # Not logged-in
     if request.user.id is None:
@@ -39,8 +72,10 @@ def BetView(request):
         if "random" in request.POST:
             match_formset = getMatchBetFormSet(user=request.user, random=True, prefix="matches")
             group_formset = getGroupBetFormSet(user=request.user, prefix="groups")
+            tournament_form = getTournamentForm(user=request.user)
 
         if "submit" in request.POST:
+            # Matches
             match_formset = MatchBetFormSet(data=request.POST, prefix="matches")
             match_formset.is_valid()
 
@@ -56,6 +91,8 @@ def BetView(request):
                             errors_i["bet_a"] = "Score has to be between 0 and 20"
                         if 0 > bet_b or bet_b > 20:
                             errors_i["bet_b"] = "Score has to be between 0 and 20"
+                        if searched_match.phase != "group" and bet_a == bet_b:
+                            errors[i] = {"bet_a & bet_b": "Matches after the group-phase cannot end in a tie!"}
                         if len(errors_i) == 0:
                             if searched_match.is_editable:
                                 bet_obj = MatchBet.objects.filter(user=request.user, match=searched_match)
@@ -73,6 +110,7 @@ def BetView(request):
                     else:
                         errors[i] = form.errors
 
+            # Groups
             group_formset = GroupBetFormSet(data=request.POST, prefix="groups")
             group_formset.is_valid()
 
@@ -91,13 +129,42 @@ def BetView(request):
                         else:
                             GroupBet(user=request.user, group=searched_group, winner=searched_winner).save()
 
+            # Tournament
+            if "Tournament" in request.POST["submit"]:
+                tournament_form = TournamentBetForm(data=request.POST, prefix="tournament")
+                tournament_form.is_valid()
+
+                tournament_update_kwargs = {}
+                if "charity" in tournament_form.cleaned_data:
+                    tournament_update_kwargs["charity"] = tournament_form.cleaned_data["charity"]
+                if "bet" in tournament_form.cleaned_data:
+                    tournament_update_kwargs["winner"] = tournament_form.cleaned_data["bet"]
+                if len(tournament_update_kwargs) > 0:
+                    tournament_id = tournament_form.cleaned_data["tournament_id"]
+                    searched_tournament = Tournament.objects.get(pk=tournament_id)
+                    if searched_tournament.is_editable is False:
+                        tournament_update_kwargs.pop("winner", None)
+                    bet_obj = TournamentBet.objects.filter(user=request.user, tournament=searched_tournament)
+                    if len(bet_obj) > 0:
+                        bet_obj = bet_obj[0]
+                        for field, value in tournament_update_kwargs.items():
+                            setattr(bet_obj, field, value)
+                        bet_obj.save()
+                    else:
+                        TournamentBet(
+                            user=request.user, tournament=searched_tournament, **tournament_update_kwargs
+                        ).save()
+
+            # Fetch updated pre-filled forms
             match_formset = getMatchBetFormSet(user=request.user, prefix="matches")
             group_formset = getGroupBetFormSet(user=request.user, prefix="groups")
+            tournament_form = getTournamentForm(user=request.user)
 
     # View/Edit Request
     else:
         match_formset = getMatchBetFormSet(user=request.user, prefix="matches")
         group_formset = getGroupBetFormSet(user=request.user, prefix="groups")
+        tournament_form = getTournamentForm(user=request.user)
 
     return render(
         request,
@@ -105,15 +172,53 @@ def BetView(request):
         {
             "match_formset": match_formset,
             "group_formset": group_formset,
+            "tournament_form": tournament_form,
+            "stake_received": request.user.has_paid,
+            "email_verified": request.user.is_verified,
             "errors": errors,
             "user_name": user_data["user__username"],
             "user_rank": user_data["rank"],
             "user_points": "-/-" if user_data["total_points"] is None else user_data["total_points"],
+            "edit": True,
+        },
+    )
+
+
+def OthersBetView(request, other_user_id):
+    """Ciew to place user's match score bets"""
+
+    # Not logged-in
+    if request.user.id is None:
+        return redirect("log-in")
+
+    other_user_obj = CustomUser.objects.get(pk=other_user_id)
+    user_data = getMyScore(pk=other_user_id)
+
+    # View Request
+    match_formset = getMatchBetFormSet(user=other_user_obj, prefix="matches", only_not_editable=True)
+    group_formset = getGroupBetFormSet(user=other_user_obj, prefix="groups", only_not_editable=True)
+    tournament_form = getTournamentForm(user=other_user_obj, charity_editable=False)
+
+    return render(
+        request,
+        "predictions.html",
+        {
+            "match_formset": match_formset,
+            "group_formset": group_formset,
+            "tournament_form": tournament_form,
+            "stake_received": other_user_obj.has_paid,
+            "email_verified": other_user_obj.is_verified,
+            "errors": None,
+            "user_name": user_data["user__username"],
+            "user_rank": user_data["rank"],
+            "user_points": "-/-" if user_data["total_points"] is None else user_data["total_points"],
+            "edit": False,
         },
     )
 
 
 def getLeaderboard():
+    """Generate leaderboard table"""
     combined = {
         user.pk: {"user__username": user.username, "user__pk": user.pk, "user__team": user.team, "total_points": None}
         for user in CustomUser.objects.filter(email__isnull=False)
@@ -130,7 +235,7 @@ def getLeaderboard():
         .annotate(total_points=Sum("points"))
     )
     all_tournaments = (
-        TournamentBet.objects.filter(tournament__third_place__isnull=False, points__isnull=False)
+        TournamentBet.objects.filter(points__isnull=False)
         .values("user__username", "user__pk", "user__team")
         .annotate(total_points=Sum("points"))
     )
@@ -165,6 +270,7 @@ def getLeaderboard():
 
 
 def getMyScore(pk):
+    """Get a user's score and ranking"""
     leaderboard = getLeaderboard()
     my_score = [i for i in leaderboard if i["user__pk"] == pk]
     return None if len(my_score) == 0 else my_score[0]
@@ -172,4 +278,116 @@ def getMyScore(pk):
 
 def LeaderboardView(request):
     """View to show leaderboard of users - who predicted the matches best"""
-    return render(request, "leaderboard.html", {"ranking": getLeaderboard()})
+    return render(
+        request, "leaderboard.html", {"ranking": getLeaderboard(), "logged_in": request.user.is_authenticated}
+    )
+
+
+def getOthersNonMatchPredictions(level, filter):
+    title = f"{filter} Predictions"
+    if level == "group":
+        level_obj = Group.objects.filter(name=filter)
+        if len(level_obj) > 0 and level_obj[0].is_editable is False:
+            level_obj = level_obj[0]
+            queryset = GroupBet.objects.filter(group=level_obj).order_by("-points", "winner", "user__username")
+        else:
+            queryset = []
+    elif level == "tournament":
+        level_obj = Tournament.objects.filter(name=filter)
+        if len(level_obj) > 0 and level_obj[0].is_editable is False:
+            level_obj = level_obj[0]
+            queryset = TournamentBet.objects.filter(tournament=level_obj).order_by(
+                "-points", "winner", "user__username"
+            )
+        else:
+            queryset = []
+
+    grouped_queryset = {}
+    for bet in queryset:
+        winner_name = bet.winner.name
+        if winner_name not in grouped_queryset:
+            grouped_queryset[winner_name] = []
+        grouped_queryset[winner_name].append(
+            {
+                "user__id": bet.user.id,
+                "user__username": bet.user.username,
+                "user__team": bet.user.team,
+                "points": bet.points,
+            }
+        )
+
+    return {"title": title, "predictions": grouped_queryset}
+
+
+def getOthersMatchPredictions(match_id):
+    match_obj = Match.objects.get(pk=match_id)
+    title = f'{match_obj.match_time.strftime("%a %d %b")} ({match_obj.team_a.group.name if match_obj.phase == "group" else MATCH_PHASES_DICT[match_obj.phase]}): {match_obj.team_a_placeholder} vs. {match_obj.team_b_placeholder} Predictions'
+    if match_obj.is_editable is False:
+        queryset = MatchBet.objects.filter(match=match_obj).order_by(
+            "goal_difference", "-score_a", "score_b", "user__username"
+        )
+        if match_obj.score_a is None or match_obj.score_b is None:
+            best_bet = None
+        else:
+            best_bet = queryset.order_by("-points", "goal_difference").first()
+        predictions = []
+        for bet in queryset:
+            if best_bet is not None and best_bet == bet:
+                predictions.append(
+                    {
+                        "user__id": None,
+                        "user__username": f"MATCH: {match_obj.team_a_placeholder} vs. {match_obj.team_b_placeholder}",
+                        "user__team": None,
+                        "points": "-/-",
+                        "goal_difference": 0,
+                        "score_a": match_obj.score_a,
+                        "score_b": match_obj.score_b,
+                        "is_match": True,
+                    }
+                )
+            predictions.append(
+                {
+                    "user__id": bet.user.id,
+                    "user__username": bet.user.username,
+                    "user__team": bet.user.team,
+                    "points": bet.points,
+                    "goal_difference": bet.goal_difference,
+                    "score_a": bet.score_a,
+                    "score_b": bet.score_b,
+                    "is_match": False,
+                }
+            )
+    else:
+        predictions = []
+
+    return {"title": title, "predictions": predictions}
+
+
+def OthersGroupPredictionsView(request, group_name):
+    """View to see other users' group winner preditions"""
+    # Not logged-in
+    if request.user.id is None:
+        return redirect("log-in")
+    return render(
+        request, "predictions/GroupAndTournament.html", getOthersNonMatchPredictions(level="group", filter=group_name)
+    )
+
+
+def OthersTournamentPredictionsView(request, tournament_name):
+    """View to see other users' tournament winner preditions"""
+    # Not logged-in
+    if request.user.id is None:
+        return redirect("log-in")
+    return render(
+        request,
+        "predictions/GroupAndTournament.html",
+        getOthersNonMatchPredictions(level="tournament", filter=tournament_name),
+    )
+
+
+def OthersMatchPredictionsView(request, match_id):
+    """View to see other users' match preditions"""
+    # Not logged-in
+    if request.user.id is None:
+        return redirect("log-in")
+    return render(request, "predictions/Match.html", getOthersMatchPredictions(match_id=match_id))

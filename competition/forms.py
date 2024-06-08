@@ -6,7 +6,7 @@ import random
 from django.conf import settings
 
 # from django.core.validators import MinValueValidator, MaxValueValidator
-from .models import Match, MatchBet, Group, GroupBet, Participant
+from .models import Match, MatchBet, Group, GroupBet, Participant, TournamentBet, Tournament, MATCH_PHASES_DICT
 
 
 def __days_hours_minutes(td):
@@ -15,6 +15,7 @@ def __days_hours_minutes(td):
 
 
 def __random_score_generator(tie=True):
+    """Function that generates reasonable match scores"""
     while True:
         population = {
             "0-0": 7.5,
@@ -35,7 +36,7 @@ def __random_score_generator(tie=True):
 
 
 class GroupBetForm(forms.Form):
-    """Single group bet from e.g. X will win group Y"""
+    """Single group bet form e.g. X will win group Y"""
 
     def __init__(self, *args, **kwargs):
         super(GroupBetForm, self).__init__(*args, **kwargs)
@@ -62,7 +63,7 @@ class GroupBetForm(forms.Form):
     flag_4 = forms.URLField(label=False, required=False)
 
     bet = forms.CharField(label=False, widget=forms.Select(choices=[("", "---------")]))
-    winner = forms.IntegerField(label=False, required=False)
+    winner = forms.CharField(label=False, required=False)
 
     text = forms.CharField(label=False, required=False)
     editable = forms.BooleanField(label=False, required=False)
@@ -74,7 +75,7 @@ class GroupBetForm(forms.Form):
 GroupBetFormSet = formset_factory(GroupBetForm, extra=0)
 
 
-def getGroupBetFormSet(user, prefix=None):
+def getGroupBetFormSet(user, prefix=None, only_not_editable=False):
     """Formset creator to list all groups to bet on"""
     data = Group.objects.all().order_by("name")
     now = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
@@ -82,55 +83,58 @@ def getGroupBetFormSet(user, prefix=None):
 
     for data_i in data:
         editable = now < data_i.first_match_time
-        bet_i = GroupBet.objects.filter(group=data_i, user=user).first()
-        bet_placed = bet_i is not None and bet_i.winner is not None
-        bet_winner = (
-            (None if editable else "-/-") if bet_i is None else (bet_i.winner.pk if editable else bet_i.winner.name)
-        )
-        points = None if bet_i is None else bet_i.points
+        if only_not_editable is False or editable is False:
+            bet_i = GroupBet.objects.filter(group=data_i, user=user).first()
+            bet_placed = bet_i is not None and bet_i.winner is not None
+            bet_winner = (
+                (None if editable else "-/-") if bet_i is None else (bet_i.winner.pk if editable else bet_i.winner.name)
+            )
+            points = None if bet_i is None else bet_i.points
 
-        if editable:
-            remaining_days, remaining_hours, remaining_minutes = __days_hours_minutes(data_i.first_match_time - now)
-            if remaining_days > 0:
-                text = f"{remaining_days + 1} days left to place bet"
-            elif remaining_hours > 0:
-                text = f"{remaining_hours} hours left to place bet"
-            else:
-                text = f"{remaining_minutes - 1} minutes left to place bet"
-        else:
-            if points is None:
-                if bet_placed:
-                    text = "Let's cross your fingers 🤞"
+            if editable:
+                remaining_days, remaining_hours, remaining_minutes = __days_hours_minutes(data_i.first_match_time - now)
+                if remaining_days > 0:
+                    text = f"{remaining_days + 1} days left to place bet"
+                elif remaining_hours > 0:
+                    text = f"{remaining_hours} hours left to place bet"
                 else:
-                    text = "No bet placed"
+                    text = f"{remaining_minutes - 1} minutes left to place bet"
             else:
-                text = f"My Points: {points}"
+                if points is None:
+                    if bet_placed:
+                        text = "Finger crossing 🤞"
+                    else:
+                        text = "No bet placed"
+                else:
+                    text = f"Points earned: {points}"
 
-        flags = data_i.participant_set.all().order_by("name").values_list("flag")
-        formset_data.append(
-            {
-                "group_id": data_i.pk,
-                "group_name": data_i.name,
-                "first_match_time": data_i.first_match_time.strftime("%a %d %B - %H:%M"),
-                "bet": bet_winner,
-                "winner": data_i.winner,
-                "text": text,
-                "editable": editable,
-                "flag_1": flags[0][0],
-                "flag_2": flags[1][0],
-                "flag_3": flags[2][0],
-                "flag_4": flags[3][0],
-            }
-        )
+            flags = data_i.participant_set.all().order_by("name").values_list("flag")
+            formset_data.append(
+                {
+                    "group_id": data_i.pk,
+                    "group_name": data_i.name,
+                    "first_match_time": data_i.first_match_time.strftime("%a %d %B - %H:%M"),
+                    "bet": bet_winner,
+                    "winner": data_i.winner,
+                    "text": text,
+                    "editable": editable,
+                    "flag_1": flags[0][0],
+                    "flag_2": flags[1][0],
+                    "flag_3": flags[2][0],
+                    "flag_4": flags[3][0],
+                }
+            )
 
     return GroupBetFormSet(initial=formset_data, prefix=prefix)
 
 
 class MatchBetForm(forms.Form):
-    """Single match bet from e.g. X plays against Y what does score does user Z predict"""
+    """Single match bet form e.g. X plays against Y what does score does user Z predict"""
 
     match_id = forms.IntegerField(label=False)
     match_time = forms.CharField(label=False, required=False)
+    phase = forms.CharField(label=False, required=False)
+    tv_broadcaster = forms.CharField(label=False, required=False)
 
     flag_a = forms.URLField(label=False, required=False)
     team_a = forms.CharField(label=False, required=False)
@@ -158,10 +162,12 @@ class MatchBetForm(forms.Form):
 MatchBetFormSet = formset_factory(MatchBetForm, extra=0)
 
 
-def getMatchBetFormSet(user, random=False, prefix=None):
+def getMatchBetFormSet(user, random=False, prefix=None, only_not_editable=False):
     """Formset creator to list all matches to bet on"""
     data = Match.objects.all().order_by("match_time")
     now = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
+    if only_not_editable:
+        data = data.filter(match_time__lte=now)
     missing_bets = len(data.filter(match_time__gte=now, matchbet__isnull=True))
     formset_data = []
     remaining_time_used = None
@@ -190,11 +196,11 @@ def getMatchBetFormSet(user, random=False, prefix=None):
                     if score_entered:
                         text = "ERROR"
                     else:
-                        text = "Let's cross your fingers 🤞"
+                        text = "Finger crossing 🤞"
                 else:
                     text = "No bet placed"
             else:
-                text = f"My Points: {points}"
+                text = f"Points earned: {points}"
 
         bet_a = (None if editable else "-") if bet_i is None else bet_i.score_a
         bet_b = (None if editable else "-") if bet_i is None else bet_i.score_b
@@ -212,6 +218,8 @@ def getMatchBetFormSet(user, random=False, prefix=None):
             {
                 "match_id": data_i.pk,
                 "match_time": data_i.match_time.strftime("%a %d %B - %H:%M"),
+                "tv_broadcaster": data_i.tv_broadcaster,
+                "phase": data_i.team_a.group.name if data_i.phase == "group" else MATCH_PHASES_DICT[data_i.phase],
                 "flag_a": "https://panenka.uefa.com/panenka/assets/ntc-generic-badge-02.svg"
                 if data_i.team_a is None
                 else data_i.team_a.flag,
@@ -230,3 +238,110 @@ def getMatchBetFormSet(user, random=False, prefix=None):
         )
 
     return MatchBetFormSet(initial=formset_data, prefix=prefix)
+
+
+class ListTextWidget(forms.TextInput):
+    """Input field with suggested options but free text too"""
+
+    def __init__(self, data_list, name, *args, **kwargs):
+        super(ListTextWidget, self).__init__(*args, **kwargs)
+        self._name = name
+        self._list = data_list
+        self.attrs.update({"list": "list__%s" % self._name})
+
+    def render(self, name, value, attrs=None, renderer=None):
+        text_html = super(ListTextWidget, self).render(name, value, attrs=attrs)
+        data_list = '<datalist id="list__%s">' % self._name
+        for item in self._list:
+            data_list += '<option value="%s">' % item
+        data_list += "</datalist>"
+
+        return text_html + data_list
+
+
+CHARITY_SUGGESTIONS = [
+    "The Felix Project",
+    "Children With Cancer UK",
+    "The Climate Group",
+    "WWF (UK)",
+    "Right to Succeed",
+]
+
+
+class TournamentBetForm(forms.Form):
+    """Single Tournament bet form e.g. X will win the Tournament"""
+
+    tournament_id = forms.IntegerField(label=False)
+    tournament_name = forms.CharField(label=False, required=False)
+    first_match_time = forms.CharField(label=False, required=False)
+
+    bet = forms.ModelChoiceField(label=False, required=False, queryset=Participant.objects.all().order_by("name"))
+    winner = forms.CharField(label=False, required=False)
+
+    charity = forms.CharField(label=False, required=False)
+
+    text = forms.CharField(label=False, required=False)
+    editable = forms.BooleanField(label=False, required=False)
+
+    tournament_id.widget.attrs.update({"style": "display: none;visibility: hidden; height: 0; width: 0;"})
+    bet.widget.attrs.update({"class": "form-control", "style": "text-align:center;"})
+
+    def __init__(self, *args, **kwargs):
+        _charity_list = kwargs.pop("data_list", None)
+        _charity_editable = kwargs.pop("charity_editable", True)
+        _editable = kwargs.get("initial", {"editable": None})["editable"]
+        super(TournamentBetForm, self).__init__(*args, **kwargs)
+
+        # the "name" parameter will allow you to use the same widget more than once in the same
+        # form, not setting this parameter differently will cuse all inputs display the
+        # same list.
+        self.fields["charity"].widget = ListTextWidget(data_list=_charity_list, name="charity-list")
+        self.fields["charity"].widget.attrs.update({"class": "form-control", "style": "text-align:center;"})
+        if _editable is False:
+            self.fields["bet"].widget.attrs.update({"disabled": True})
+        if _charity_editable is False:
+            self.fields["charity"].widget.attrs.update({"disabled": True})
+
+
+def getTournamentForm(user, charity_editable=True):
+    """Form creator to get tournament winner prediction and charity option"""
+    tournament = Tournament.objects.all().first()
+    tournament_bet = TournamentBet.objects.filter(user=user).first()
+
+    winner = None if tournament is None else tournament.first_place
+    editable = tournament.is_editable
+
+    bet_placed = tournament_bet is not None and tournament_bet.winner is not None
+    points = None if tournament_bet is None else tournament_bet.points
+
+    if editable:
+        now = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
+        remaining_days, remaining_hours, remaining_minutes = __days_hours_minutes(tournament.first_match_time - now)
+        if remaining_days > 0:
+            text = f"{remaining_days + 1} days left to place bet"
+        elif remaining_hours > 0:
+            text = f"{remaining_hours} hours left to place bet"
+        else:
+            text = f"{remaining_minutes - 1} minutes left to place bet"
+    else:
+        if points is None:
+            if bet_placed:
+                text = "Finger crossing 🤞"
+            else:
+                text = "No bet placed"
+        else:
+            text = f"Winner: {winner} / Points earned: {points}"
+
+    form_data = {
+        "tournament_id": tournament.pk,
+        "tournament_name": tournament.name,
+        "first_match_time": tournament.first_match_time.strftime("%a %d %B - %H:%M"),
+        "bet": None if tournament_bet is None else tournament_bet.winner,
+        "winner": winner,
+        "charity": None if tournament_bet is None else tournament_bet.charity,
+        "text": text,
+        "editable": editable,
+    }
+    return TournamentBetForm(
+        initial=form_data, data_list=CHARITY_SUGGESTIONS, charity_editable=charity_editable, prefix="tournament"
+    )
