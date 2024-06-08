@@ -26,6 +26,8 @@ urlpatterns = [
     path("", TemplateView.as_view(template_name="home.html"), name="home"),
     path("rules/", TemplateView.as_view(template_name="rules.html"), name="rules"),
     path("schedule/", ScheduleView, name="schedule"),
+    path("schedule/country/<str:country_name>/", ScheduleView, name="country-schedule"),
+    path("schedule/group/<str:group_name>/", ScheduleView, name="group-schedule"),
     path("predictions/", BetView, name="predictions"),
     path("leaderboard/", LeaderboardView, name="leaderboard"),
     path("signup/", SignupView, name="sign-up"),

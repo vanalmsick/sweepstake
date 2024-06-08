@@ -1,16 +1,25 @@
 {% extends "base.html" %}
+{% load cust_str_tags %}
 
-{% block title %}Tournament Schedule{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
     <div class="hero-schedule">
         <div class="container marketing bg-white h-100 overflow-auto" style="max-width: 85%;">
 
             <div class="row  mt-4 mx-4">
-                <div class="col-3"></div>
-                <div class="col-6 h2 text-center">Tournament Schedule</div>
-                <div class="col-3 text-end"><a class="text-end btn btn-primary text-end" href="/bets/">Edit My
-                    Predictions</a></div>
+                <div class="col-3">
+                    {% if 'Matches' in title %}
+                        <a class="text-end btn btn-outline-primary text-end" href="{% url 'schedule' %}">See all matches</a>
+                        {% if group is not None %}
+                            <a class="text-end btn btn-outline-primary text-end" href="{% url 'group-schedule' group_name=group|clean_str %}">See {{ group }}</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div class="col-6 h2 text-center">{{ title }}</div>
+                <div class="col-3 text-end">
+                    <a class="text-end btn btn-primary text-end" href="{% url 'predictions' %}">Edit My Predictions</a>
+                </div>
             </div>
 
 
@@ -24,7 +33,7 @@
                             <div class="col-1 text-end">
                                 {{ match.match_time|date:'H:i' }}
                             </div>
-                            <div class="col-2 text-end">
+                            <a class="col-2 text-end normal-text-link" href="{% url 'country-schedule' country_name=match.team_a_placeholder|clean_str %}">
                                 {% if match.team_a is None %}
                                     {{ match.team_a_placeholder }}
                                     <img class="m-2"
@@ -34,7 +43,7 @@
                                     {{ match.team_a }}
                                     <img class="m-2" src="{{ match.team_a.flag }}" height="20px" width="20px">
                                 {% endif %}
-                            </div>
+                            </a>
                             <div class="col-3 text-center">
                                 {% if match.score_a is None or match.score_b is None %}
                                     -:-
@@ -42,7 +51,7 @@
                                     {{ match.score_a }}:{{ match.score_b }}
                                 {% endif %}
                             </div>
-                            <div class="col-2 text-start">
+                            <a class="col-2 text-start normal-text-link" href="{% url 'country-schedule' country_name=match.team_b_placeholder|clean_str %}">
                                 {% if match.team_b is None %}
                                     <img class="m-2"
                                          src="https://panenka.uefa.com/panenka/assets/ntc-generic-badge-04.svg"
@@ -52,7 +61,7 @@
                                     <img class="m-2" src="{{ match.team_b.flag }}" height="20px" width="20px">
                                     {{ match.team_b }}
                                 {% endif %}
-                            </div>
+                            </a>
                             <div class="col-2"></div>
                         </div>
                     {% endfor %}

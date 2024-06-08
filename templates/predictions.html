@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load cust_str_tags %}
 
 {% block title %}My Predictions{% endblock %}
 
@@ -223,10 +224,10 @@
                                 <div class="row fw-bold">{{ form.match_time.value }}{{ form.match_id }}</div>
                                 <small class="row fst-italic text-body-tertiary">({{ form.phase.value }})</small>
                             </div>
-                            <div class="col-2" style="text-align:right;">
+                            <a class="col-2 normal-text-link" style="text-align:right;" href="{% url 'country-schedule' country_name=form.team_a.value|clean_str %}">
                                 {{ form.team_a.value }}
                                 <img class="m-2" src="{{ form.flag_a.value }}" height="25px" width="25px">
-                            </div>
+                            </a>
                             <div class="col-1 pe-0">
                                 {% if form.editable.value %}
                                     {{ form.bet_a }}
@@ -258,10 +259,10 @@
                                            value="{{ form.bet_b.value }}" disabled>
                                 {% endif %}
                             </div>
-                            <div class="col-2" style="text-align:left;">
+                            <a class="col-2 normal-text-link" style="text-align:left;" href="{% url 'country-schedule' country_name=form.team_b.value|clean_str %}">
                                 <img class="m-2" src="{{ form.flag_b.value }}" height="25px" width="25px">
                                 {{ form.team_b.value }}
-                            </div>
+                            </a>
                             <div class="col-2 fst-italic text-secondary d-flex ps-0">
                                 <span class="my-auto">
                                 {{ form.text.value }}

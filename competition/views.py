@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render, redirect
-from django.db.models import Sum
+from django.db.models import Sum, Q
 
 from general.models import CustomUser
 from .models import Match, MatchBet, Participant, Group, GroupBet, TournamentBet
@@ -16,9 +16,18 @@ from .forms import (
 
 
 # Create your views here.
-def ScheduleView(request):
+def ScheduleView(request, country_name=None, group_name=None):
     """View to see list of scheduled and past matches"""
-    match_lst = Match.objects.all().order_by("match_time")
+    if country_name is not None:
+        match_lst = Match.objects.filter(
+            Q(team_a__name__icontains=country_name) | Q(team_b__name__icontains=country_name)
+        ).order_by("match_time")
+    elif group_name is not None:
+        match_lst = Match.objects.filter(
+            Q(team_a__group__name__icontains=group_name) | Q(team_b__group__name__icontains=group_name)
+        ).order_by("match_time")
+    else:
+        match_lst = Match.objects.all().order_by("match_time")
 
     match_lst_date_sorted = {}
     last_date = None
@@ -28,7 +37,19 @@ def ScheduleView(request):
             match_lst_date_sorted[last_date] = []
         match_lst_date_sorted[last_date].append(match_i)
 
-    return render(request, "schedule.html", {"match_dict": match_lst_date_sorted})
+    return render(
+        request,
+        "schedule.html",
+        {
+            "match_dict": match_lst_date_sorted,
+            "title": "Tournament Schedule"
+            if country_name is None and group_name is None
+            else f"Matches: {group_name if country_name is None else country_name}",
+            "group": None
+            if country_name is None or len(match_lst_date_sorted) == 0
+            else Participant.objects.get(name__icontains=country_name).group.name,
+        },
+    )
 
 
 def BetView(request):
@@ -159,6 +180,7 @@ def BetView(request):
 
 
 def getLeaderboard():
+    """Generate leaderboard table"""
     combined = {
         user.pk: {"user__username": user.username, "user__pk": user.pk, "user__team": user.team, "total_points": None}
         for user in CustomUser.objects.filter(email__isnull=False)
@@ -210,6 +232,7 @@ def getLeaderboard():
 
 
 def getMyScore(pk):
+    """Get a user's score and ranking"""
     leaderboard = getLeaderboard()
     my_score = [i for i in leaderboard if i["user__pk"] == pk]
     return None if len(my_score) == 0 else my_score[0]
