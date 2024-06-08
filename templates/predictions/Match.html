@@ -14,7 +14,7 @@
                     </div>
                     <div class="col-6 h2 text-center">{{ title }}</div>
                     <div class="col-3 text-end">
-                        <a class="text-end btn btn-outline-primary btn-sm text-end" href="{% url 'predictions' %}">My
+                        <a class="text-end btn btn-primary btn-sm text-end" href="{% url 'predictions' %}">My
                             Predictions</a>
                     </div>
                 </div>
@@ -31,7 +31,7 @@
 
                 {% else %}
 
-                    <table class="table transparent-table mt-3 mb-0">
+                    <table class="table transparent-table spaced-table mt-3 mb-0">
                         <thead>
                         <tr>
                             <th scope="col">Name</th>
@@ -41,7 +41,8 @@
                         </thead>
                         <tbody>
                         {% for row in predictions %}
-                            <tr {% if row.is_match %}class="highlighted"{% endif %}>
+                            <tr {% if row.is_match %}class="highlighted"{% else %}class="hover-highlighted"
+                                onclick="window.location='{% url 'others-predictions' other_user_id=row.user__id %}';"{% endif %}>
                                 <td>{{ row.user__username }}
                                     {% if row.user__team is not None %} ({{ row.user__team }}){% endif %}</td>
                                 <td>{{ row.score_a }}:{{ row.score_b }}</td>

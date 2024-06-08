@@ -52,9 +52,8 @@ def ScheduleView(request, country_name=None, group_name=None):
     )
 
 
-def BetView(request):
+def MyBetView(request):
     """Ciew to place user's match score bets"""
-    # ArticleFormSet = formset_factory(ArticleForm)
 
     # Not logged-in
     if request.user.id is None:
@@ -175,6 +174,40 @@ def BetView(request):
             "user_name": user_data["user__username"],
             "user_rank": user_data["rank"],
             "user_points": "-/-" if user_data["total_points"] is None else user_data["total_points"],
+            "edit": True,
+        },
+    )
+
+
+def OthersBetView(request, other_user_id):
+    """Ciew to place user's match score bets"""
+
+    # Not logged-in
+    if request.user.id is None:
+        return redirect("log-in")
+
+    other_user_obj = CustomUser.objects.get(pk=other_user_id)
+    user_data = getMyScore(pk=other_user_id)
+
+    # View Request
+    match_formset = getMatchBetFormSet(user=other_user_obj, prefix="matches", only_not_editable=True)
+    group_formset = getGroupBetFormSet(user=other_user_obj, prefix="groups", only_not_editable=True)
+    tournament_form = getTournamentForm(user=other_user_obj, charity_editable=False)
+
+    return render(
+        request,
+        "predictions.html",
+        {
+            "match_formset": match_formset,
+            "group_formset": group_formset,
+            "tournament_form": tournament_form,
+            "stake_received": other_user_obj.has_paid,
+            "email_verified": other_user_obj.is_verified,
+            "errors": None,
+            "user_name": user_data["user__username"],
+            "user_rank": user_data["rank"],
+            "user_points": "-/-" if user_data["total_points"] is None else user_data["total_points"],
+            "edit": False,
         },
     )
 
@@ -240,7 +273,9 @@ def getMyScore(pk):
 
 def LeaderboardView(request):
     """View to show leaderboard of users - who predicted the matches best"""
-    return render(request, "leaderboard.html", {"ranking": getLeaderboard()})
+    return render(
+        request, "leaderboard.html", {"ranking": getLeaderboard(), "logged_in": request.user.is_authenticated}
+    )
 
 
 def getOthersNonMatchPredictions(level, filter):
@@ -264,7 +299,6 @@ def getOthersNonMatchPredictions(level, filter):
 
     grouped_queryset = {}
     for bet in queryset:
-        print()
         winner_name = bet.winner.name
         if winner_name not in grouped_queryset:
             grouped_queryset[winner_name] = []

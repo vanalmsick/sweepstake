@@ -6,8 +6,25 @@
 
     <div class="hero-winner">
         <div class="hero-text" style="max-width: 80%;">
-            <div class="p-5 rounded shadow" style="background: rgba(0,0,0,0.7);">
-                <h2>The Leaderboard</h2>
+            <div class="container p-5 rounded shadow" style="background: rgba(0,0,0,0.7);">
+
+                <div class="row">
+                    <div class="col-3">
+                        {% if logged_in %}
+                            <a class="text-end btn btn-outline-primary btn-sm text-end" href="{% url 'schedule' %}">Match
+                                Schedule</a>
+                        {% endif %}
+                    </div>
+                    <div class="col-6 h2 text-center">The Leaderboard</div>
+                    <div class="col-3 text-end">
+                        {% if logged_in %}
+                            <a class="text-end btn btn-primary btn-sm text-end" href="{% url 'predictions' %}">
+                                My Predictions
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
                 <p><a class="link-light fst-italic" href="{% url 'rules' %}">The Rules</a> summarized:<br>
                 <ul class="pb-2 px-5" style="text-align: left;">
                     <li class="p-1">3 Points for predicting a match's winner correct.</li>
@@ -17,24 +34,31 @@
                     </li>
                 </ul>
                 </p>
-                <hr class="featurette-divider my-2" style="border-top: 2px  solid rgb(255, 255, 255);">
-                <div class="row fw-bold">
-                    <div class="col-3">#</div>
-                    <div class="col-6">Name</div>
-                    <div class="col-3">Points</div>
-                </div>
-                <hr class="featurette-divider my-2" style="border-top: 2px  solid rgb(255, 255, 255);">
-                {% for row in ranking %}
-                    <div class="row">
-                        <div class="col-3">{{ row.rank }}</div>
-                        <div class="col-6">
-                            {{ row.user__username }}
-                            {% if row.user__team is not None %} ({{ row.user__team }}){% endif %}
-                        </div>
-                        <div class="col-3">{{ row.total_points }}</div>
-                    </div>
-                    <hr class="featurette-divider my-2">
-                {% endfor %}
+
+
+                <table class="table transparent-table mt-3 mb-0">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Points</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in ranking %}
+                        <tr class="hover-highlighted"
+                            onclick="window.location='{% url 'others-predictions' other_user_id=row.user__pk %}';">
+                            <td>{{ row.rank }}</td>
+                            <td>
+                                {{ row.user__username }}
+                                {% if row.user__team is not None %} ({{ row.user__team }}){% endif %}
+                            </td>
+                            <td>{{ row.total_points }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
 
             </div>
         </div>

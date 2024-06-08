@@ -14,7 +14,7 @@
                     </div>
                     <div class="col-6 h2 text-center">{{ title }}</div>
                     <div class="col-3 text-end">
-                        <a class="text-end btn btn-outline-primary btn-sm text-end" href="{% url 'predictions' %}">My
+                        <a class="text-end btn btn-primary btn-sm text-end" href="{% url 'predictions' %}">My
                             Predictions</a>
                     </div>
                 </div>
@@ -33,7 +33,12 @@
                             </div>
                         </div>
                         {% for user in user_lst %}
-                            <div class="p-1">{{ user.user__username }} ({{ user.user__team }})</div>
+                            <a class="normal-text-link"
+                               href="{% url 'others-predictions' other_user_id=user.user__id %}" style="width:100%;">
+                                <div class="p-1 w-100 hover-highlighted">{{ user.user__username }}
+                                    ({{ user.user__team }})
+                                </div>
+                            </a>
                         {% endfor %}
                     {% endfor %}
 
@@ -41,7 +46,9 @@
                         <hr class="featurette-divider my-3">
 
                         <div class="row">
-                            <div class="col h6">You will be able to view other people's predictions<br>once the prediction admission is closed.</div>
+                            <div class="col h6">You will be able to view other people's predictions<br>once the
+                                prediction admission is closed.
+                            </div>
                         </div>
 
                         <hr class="featurette-divider my-2">

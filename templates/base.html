@@ -9,7 +9,8 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="2024 EURO Prediction Game — MS Risk">
-    <meta property="og:description" content="Predict the next champion, group winners and match outcomes to win the pot.">
+    <meta property="og:description"
+          content="Predict the next champion, group winners and match outcomes to win the pot.">
     <meta property="og:image" content="/static/link_preview.jpg">
 
     <link rel="icon" href="/static/soccer-ball-svgrepo-com.svg">
@@ -89,11 +90,11 @@
         }
 
         .normal-text-link {
-          color: inherit;
-          text-decoration: inherit;
+            color: inherit;
+            text-decoration: inherit;
             border-radius: 0.375rem;
-  -moz-border-radius: 0.375rem;
-  -webkit-border-radius: 0.375rem;
+            -moz-border-radius: 0.375rem;
+            -webkit-border-radius: 0.375rem;
         }
 
         .normal-text-link:hover {
@@ -116,21 +117,22 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.25);
         }
 
-        table.transparent-table tr:hover {
-            background-color: rgba(255,255,255,0.25);
+        .hover-highlighted:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+            cursor: pointer;
         }
 
         table.transparent-table tr.highlighted {
-            background-color: rgba(255,255,255,0.15);
+            background-color: rgba(255, 255, 255, 0.15);
             font-weight: bold;
         }
 
-        table.transparent-table td:first-child, table.transparent-table th:first-child {
+        table.spaced-table td:first-child, table.spaced-table th:first-child {
             width: 45%;
             text-align: left;
         }
 
-        table.transparent-table td:last-child, table.transparent-table th:last-child {
+        table.spaced-table td:last-child, table.spaced-table th:last-child {
             width: 45%;
             text-align: right;
         }
@@ -156,14 +158,20 @@
                              style="filter: invert(0.8);">
                     </a></li>
                     <li class="nav-item"><a class="nav-link cust-navbar-item" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'schedule' %}">Match Schedule</a></li>
-                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'leaderboard' %}">Leaderboard</a></li>
-                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'predictions' %}">My Predictions</a></li>
-                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'rules' %}">The Rules</a></li>
+                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'schedule' %}">Match
+                        Schedule</a></li>
+                    <li class="nav-item"><a class="nav-link cust-navbar-item"
+                                            href="{% url 'leaderboard' %}">Leaderboard</a></li>
+                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'predictions' %}">My
+                        Predictions</a></li>
+                    <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'rules' %}">The Rules</a>
+                    </li>
                     {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'log-out' %}">Log Out</a></li>
+                        <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'log-out' %}">Log Out</a>
+                        </li>
                     {% else %}
-                        <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'log-in' %}">Log In / Sign Up</a></li>
+                        <li class="nav-item"><a class="nav-link cust-navbar-item" href="{% url 'log-in' %}">Log In /
+                            Sign Up</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -178,9 +186,14 @@
 <div class="text-light bg-dark w-100 p-2 m-0">
     <footer class="d-flex flex-wrap justify-content-around align-items-center py-2">
 
-        <p class="cust-navbar-item mb-0"><small>Stock photos with credit from <a href="https://www.pexels.com" class="cust-navbar-item" target="_blank" title="photos">pexels.com</a> and icons from  <a href="https://www.flaticon.com" class="cust-navbar-item" target="_blank" title="icons">flaticon.com</a></small></p>
+        <p class="cust-navbar-item mb-0"><small>Stock photos with credit from <a href="https://www.pexels.com"
+                                                                                 class="cust-navbar-item"
+                                                                                 target="_blank" title="photos">pexels.com</a>
+            and icons from <a href="https://www.flaticon.com" class="cust-navbar-item" target="_blank" title="icons">flaticon.com</a></small>
+        </p>
         <a href="/admin/" class="cust-navbar-item mb-0" target="_blank"><small>Admin Space</small></a>
-        <a href="https://github.com/vanalmsick/sweepstake" class="cust-navbar-item mb-0" target="_blank"><small>Source Code</small></a>
+        <a href="https://github.com/vanalmsick/sweepstake" class="cust-navbar-item mb-0" target="_blank"><small>Source
+            Code</small></a>
 
     </footer>
 </div>

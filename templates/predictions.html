@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load cust_str_tags %}
 
-{% block title %}My Predictions{% endblock %}
+{% block title %}{% if edit %}My {% else %}{{ user_name }}'s {% endif %}Predictions{% endblock %}
 
 {% block content %}
     <div class="hero-my">
@@ -9,7 +9,11 @@
 
             <div class="bg-white my-4 p-2 shadow-lg rounded">
                 <div class="row my-2 mx-4">
-                    <div class="col-4 text-start p-0"></div>
+                    <div class="col-4 text-start p-0">
+                        {% if edit is False %}
+                            <a class="btn btn-primary" href="{% url 'predictions' %}">Go to My Predictions</a>
+                        {% endif %}
+                    </div>
                     <div class="col-4 p-0 h2 text-center">{{ user_name }}</div>
                     <div class="col-4 text-end p-0">
                         <a class="btn btn-outline-primary" href="{% url 'leaderboard' %}">Go to Leaderborad</a>
@@ -17,40 +21,50 @@
                 </div>
                 <div class="row mt-2 mb-3 mx-4">
                     <div class="col-4 text-start p-0">
-                        {% if stake_received %}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                 class="bi bi-check-lg" viewBox="0 0 16 16" style="margin: 0px 0px 2px 0px;">
-                                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
-                            </svg>
-                            Stake received
-                        {% else %}
-                            <span style="color: #911D21;">
+                        {% if edit %}
+                            {% if stake_received %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                     class="bi bi-check-lg" viewBox="0 0 16 16" style="margin: 0px 0px 2px 0px;">
+                                    <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                                </svg>
+                                Stake received
+                            {% else %}
+                                <span style="color: #911D21;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                  class="bi bi-x" viewBox="0 0 16 16" style="margin: 0px 0px 2px 0px;">
                                   <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                             </svg>
                         Stake not yet received
                             </span>
-                        {% endif %}
-                        {% if email_verified %}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                 class="bi bi-check-lg" viewBox="0 0 16 16" style="margin: 0px 0px 2px 0px;">
-                                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
-                            </svg>
-                            Email verified
-                        {% else %}
-                            <span style="color: #E6A519;">
+                            {% endif %}
+                            {% if email_verified %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                     class="bi bi-check-lg" viewBox="0 0 16 16" style="margin: 0px 0px 2px 0px;">
+                                    <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                                </svg>
+                                Email verified
+                            {% else %}
+                                <span style="color: #E6A519;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                  class="bi bi-x" viewBox="0 0 16 16" style="margin: 0px 0px 2px 0px;">
                                   <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                             </svg>
                         Email not verified
                             </span>
+                            {% endif %}
                         {% endif %}
                     </div>
-                    <div class="col-4 p-0 text-center">My Rank: {{ user_rank }}</div>
+                    <div class="col-4 p-0 text-center">{% if edit %}My {% endif %}Rank: {{ user_rank }}</div>
                     <div class="col-4 text-end p-0">Total Points: {{ user_points }}</div>
                 </div>
+
+                {% if edit is False %}
+                    <div class="row rounded mb-3 mx-4 p-3 text-center text-secondary"
+                         style="background-color: #ffffbb;">
+                        <span>You will only be able to view other people's predictions once the respective prediction admission is closed.</span>
+                    </div>
+                {% endif %}
+
             </div>
 
             <form class="bg-white my-4 p-2 shadow-lg rounded" action="{% url 'predictions' %}" method="post"
@@ -58,9 +72,12 @@
                 {% csrf_token %}
                 <div class="row mt-3 mb-2 mx-4">
                     <div class="col-4 text-start p-0"></div>
-                    <div class="col-4 p-0 h3 text-center">My Tournament:</div>
-                    <div class="col-4 text-end p-0"><input type="submit" name="submit" class="btn btn-primary"
-                                                           value="Save Tournament"></div>
+                    <div class="col-4 p-0 h3 text-center">{% if edit %}My {% endif %}Tournament:</div>
+                    <div class="col-4 text-end p-0">
+                        {% if edit %}
+                            <input type="submit" name="submit" class="btn btn-primary" value="Save Tournament">
+                        {% endif %}
+                    </div>
                 </div>
 
                 <div class="row fst-italic text-secondary text-center mb-1">
@@ -71,57 +88,61 @@
 
                 <div class="container mb-2">
                     <div class="row">
-                        <div class="col-6 p-2">
-                            <div class="w-75 border rounded m-2 mx-auto">
-                                <a class="normal-text-link"
-                                        {% if tournament_form.editable.value is False %}
-                                   href="{% url 'tournament-predictions' tournament_name=tournament_form.tournament_name.value|clean_str %}"
-                                        {% endif %}>
-                                    <div class="p-3">
-                                        <div class="container">
-                                            <div class="row fw-bold pb-2 ps-1">
-                                                <div class="col-10 ps-0">
-                                                    {{ tournament_form.tournament_name.value }}
-                                                    Champion
-                                                    {% if tournament_form.editable.value is False %}
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                                             fill="currentColor"
-                                                             class="bi bi-box-arrow-up-right text-secondary"
-                                                             viewBox="0 0 16 16" style="margin: 0px 0px 5px 8px;">
-                                                            <path fill-rule="evenodd"
-                                                                  d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
-                                                            <path fill-rule="evenodd"
-                                                                  d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
-                                                        </svg>
-                                                    {% endif %}
-                                                    {{ tournament_form.tournament_id }}
+                        {% if editable or tournament_form.editable.value is False %}
+                            <div class="col-6 p-2">
+                                <div class="w-75 border rounded m-2 mx-auto">
+                                    <a class="normal-text-link"
+                                            {% if tournament_form.editable.value is False %}
+                                       href="{% url 'tournament-predictions' tournament_name=tournament_form.tournament_name.value|clean_str %}"
+                                            {% endif %}>
+                                        <div class="p-3">
+                                            <div class="container">
+                                                <div class="row fw-bold pb-2 ps-1">
+                                                    <div class="col-10 ps-0">
+                                                        {{ tournament_form.tournament_name.value }}
+                                                        Champion
+                                                        {% if tournament_form.editable.value is False %}
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14"
+                                                                 height="14"
+                                                                 fill="currentColor"
+                                                                 class="bi bi-box-arrow-up-right text-secondary"
+                                                                 viewBox="0 0 16 16" style="margin: 0px 0px 5px 8px;">
+                                                                <path fill-rule="evenodd"
+                                                                      d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
+                                                                <path fill-rule="evenodd"
+                                                                      d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
+                                                            </svg>
+                                                        {% endif %}
+                                                        {{ tournament_form.tournament_id }}
+                                                    </div>
+                                                    <div class="col-2 pe-1 text-end">
+                                                        <img class="m-0" src="/static/trophy.png" height="30px"
+                                                             width="30px">
+                                                    </div>
                                                 </div>
-                                                <div class="col-2 pe-1 text-end">
-                                                    <img class="m-0" src="/static/trophy.png" height="30px"
-                                                         width="30px">
-                                                </div>
-                                            </div>
 
-                                            <div class="row py-2">
-                                                {{ tournament_form.bet }}
-                                            </div>
-                                            {% if tournament_form.text %}
-                                                <div class="row fst-italic text-secondary">
-                                                    <small>{{ tournament_form.text.value }}</small>
+                                                <div class="row py-2">
+                                                    {{ tournament_form.bet }}
                                                 </div>
-                                            {% endif %}
+                                                {% if tournament_form.text %}
+                                                    <div class="row fst-italic text-secondary">
+                                                        <small>{{ tournament_form.text.value }}</small>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
                                         </div>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
+                        {% endif %}
 
                         <div class="col-6 p-2">
                             <div class="w-75 border rounded p-3 m-2 mx-auto">
                                 <div class="container">
                                     <div class="row fw-bold pb-2 ps-1">
                                         <div class="col-10 ps-0">
-                                            My Charity <span class="fst-italic text-secondary">(If I Win)</span>
+                                            {% if edit %}My {% endif %}Charity {% if edit %}
+                                            <span class="fst-italic text-secondary">(If I Win)</span>{% endif %}
                                         </div>
                                         <div class="col-2 pe-1 text-end">
                                             <img class="m-0" src="/static/empathy.png" height="30px"
@@ -133,7 +154,9 @@
                                     </div>
                                     {% if tournament_form.text %}
                                         <div class="row fst-italic text-secondary">
-                                            <small>In some browsers, click twice to see suggestions.</small>
+                                            {% if edit %}
+                                                <small>In some browsers, click twice to see suggestions.</small>
+                                            {% endif %}
                                         </div>
                                     {% endif %}
                                 </div>
@@ -145,139 +168,159 @@
 
             </form>
 
-            <form class="bg-white my-4 p-2 shadow-lg rounded" action="{% url 'predictions' %}" method="post"
-                  name="groups">
-                {{ group_formset.management_form }}
-                {% csrf_token %}
+            {% if group_formset|length != 0 %}
+                <form class="bg-white my-4 p-2 shadow-lg rounded" action="{% url 'predictions' %}" method="post"
+                      name="groups">
+                    {{ group_formset.management_form }}
+                    {% csrf_token %}
 
-                <div class="row mt-3 mb-2 mx-4">
-                    <div class="col-4 text-start p-0"></div>
-                    <div class="col-4 p-0 h3 text-center">My Group Favorites:</div>
-                    <div class="col-4 text-end p-0"><input type="submit" name="submit" class="btn btn-primary"
-                                                           value="Save My Groups"></div>
-                </div>
+                    <div class="row mt-3 mb-2 mx-4">
+                        <div class="col-4 text-start p-0"></div>
+                        <div class="col-4 p-0 h3 text-center">{% if edit %}My {% endif %}Group Favorites:</div>
+                        <div class="col-4 text-end p-0">
+                            {% if edit %}
+                                <input type="submit" name="submit" class="btn btn-primary"
+                                       value="Save {% if edit %}My {% endif %}Groups">
+                            {% endif %}
+                        </div>
+                    </div>
 
-                <div class="row fst-italic text-secondary text-center mb-1">
-                    <small>Probability of predicting a group winner is 25%. With 6 groups, a completely random pick is
-                        expected to result in 1.5 correct predictions. Can you beat randomness?</small>
-                </div>
+                    <div class="row fst-italic text-secondary text-center mb-1">
+                        <small>Probability of predicting a group winner is 25%. With 6 groups, a completely random pick
+                            is
+                            expected to result in 1.5 correct predictions. Can you beat randomness?</small>
+                    </div>
 
-                <div class="container mb-2">
-                    <div class="row">
-                        {% for form in group_formset %}
-                            <div class="col-4 p-2">
-                                <div class="w-75 border rounded m-2 mx-auto">
-                                    <a class="normal-text-link"
-                                            {% if form.editable.value is False %}
-                                       href="{% url 'group-predictions' group_name=form.group_name.value|clean_str %}"
-                                            {% endif %}>
-                                        <div class="p-3">
-                                            <div class="container">
-                                                <div class="row fw-bold pb-2 ps-1">
-                                                    <div class="col-6 ps-0">
-                                                        <span>{{ form.group_name.value }}</span>
-                                                        {% if form.editable.value is False %}
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14"
-                                                                 height="14" fill="currentColor"
-                                                                 class="bi bi-box-arrow-up-right text-secondary"
-                                                                 viewBox="0 0 16 16" style="margin: 0px 0px 5px 8px;">
-                                                                <path fill-rule="evenodd"
-                                                                      d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
-                                                                <path fill-rule="evenodd"
-                                                                      d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
-                                                            </svg>
+                    <div class="container mb-2">
+                        <div class="row">
+                            {% for form in group_formset %}
+                                <div class="col-4 p-2">
+                                    <div class="w-75 border rounded m-2 mx-auto">
+                                        <a class="normal-text-link"
+                                                {% if form.editable.value is False %}
+                                           href="{% url 'group-predictions' group_name=form.group_name.value|clean_str %}"
+                                                {% endif %}>
+                                            <div class="p-3">
+                                                <div class="container">
+                                                    <div class="row fw-bold pb-2 ps-1">
+                                                        <div class="col-6 ps-0">
+                                                            <span>{{ form.group_name.value }}</span>
+                                                            {% if form.editable.value is False %}
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14"
+                                                                     height="14" fill="currentColor"
+                                                                     class="bi bi-box-arrow-up-right text-secondary"
+                                                                     viewBox="0 0 16 16"
+                                                                     style="margin: 0px 0px 5px 8px;">
+                                                                    <path fill-rule="evenodd"
+                                                                          d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
+                                                                    <path fill-rule="evenodd"
+                                                                          d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
+                                                                </svg>
+                                                            {% endif %}
+                                                            {{ form.group_id }}
+                                                        </div>
+                                                        <div class="col-6 pe-1 text-end">
+                                                            <img class="m-0" src="{{ form.flag_1.value }}" height="25px"
+                                                                 width="25px">
+                                                            <img class="m-0" src="{{ form.flag_2.value }}" height="25px"
+                                                                 width="25px">
+                                                            <img class="m-0" src="{{ form.flag_3.value }}" height="25px"
+                                                                 width="25px">
+                                                            <img class="m-0" src="{{ form.flag_4.value }}" height="25px"
+                                                                 width="25px">
+                                                        </div>
+                                                    </div>
+                                                    <div class="row py-2">
+                                                        {% if form.editable.value %}
+                                                            {{ form.bet }}
+                                                        {% else %}
+                                                            <select name="groups-{{ forloop.counter0 }}-bet"
+                                                                    class="form-control"
+                                                                    style="text-align:center;"
+                                                                    id="id_groups-{{ forloop.counter0 }}-bet" disabled>
+                                                                <option value=""
+                                                                        selected="">{{ form.bet.value }}</option>
+                                                            </select>
                                                         {% endif %}
-                                                        {{ form.group_id }}
                                                     </div>
-                                                    <div class="col-6 pe-1 text-end">
-                                                        <img class="m-0" src="{{ form.flag_1.value }}" height="25px"
-                                                             width="25px">
-                                                        <img class="m-0" src="{{ form.flag_2.value }}" height="25px"
-                                                             width="25px">
-                                                        <img class="m-0" src="{{ form.flag_3.value }}" height="25px"
-                                                             width="25px">
-                                                        <img class="m-0" src="{{ form.flag_4.value }}" height="25px"
-                                                             width="25px">
-                                                    </div>
-                                                </div>
-                                                <div class="row py-2">
-                                                    {% if form.editable.value %}
-                                                        {{ form.bet }}
-                                                    {% else %}
-                                                        <select name="groups-{{ forloop.counter0 }}-bet"
-                                                                class="form-control"
-                                                                style="text-align:center;"
-                                                                id="id_groups-{{ forloop.counter0 }}-bet" disabled>
-                                                            <option value="" selected="">{{ form.bet.value }}</option>
-                                                        </select>
+                                                    {% if form.text %}
+                                                        <div class="row fst-italic text-secondary">
+                                                            <small>{{ form.text.value }}</small>
+                                                        </div>
                                                     {% endif %}
                                                 </div>
-                                                {% if form.text %}
-                                                    <div class="row fst-italic text-secondary">
-                                                        <small>{{ form.text.value }}</small>
-                                                    </div>
-                                                {% endif %}
                                             </div>
-                                        </div>
-                                    </a>
+                                        </a>
+                                    </div>
                                 </div>
-                            </div>
-                        {% endfor %}
+                            {% endfor %}
+                        </div>
                     </div>
-                </div>
-            </form>
+                </form>
+            {% endif %}
 
-            <form class="bg-white my-4 p-2 shadow-lg rounded" action="{% url 'predictions' %}" method="post"
-                  name="matches">
-                {{ match_formset.management_form }}
-                {% csrf_token %}
-                <div class="row my-3 mx-4">
-                    <div class="col-4 text-start p-0"><input type="submit" name="random" class="btn btn-outline-primary"
-                                                             value="Random Match Score Generator"></div>
-                    <div class="col-4 p-0 h3 text-center">My Matches:</div>
-                    <div class="col-4 text-end p-0"><input type="submit" name="submit" class="btn btn-primary"
-                                                           value="Save My Matches"></div>
-                </div>
+            {% if match_formset|length != 0 %}
+                <form class="bg-white my-4 p-2 shadow-lg rounded" action="{% url 'predictions' %}" method="post"
+                      name="matches">
+                    {{ match_formset.management_form }}
+                    {% csrf_token %}
+                    <div class="row my-3 mx-4">
+                        <div class="col-4 text-start p-0">
+                            {% if edit %}
+                                <input type="submit" name="random" class="btn btn-outline-primary"
+                                       value="Random Match Score Generator">
+                            {% endif %}
+                        </div>
+                        <div class="col-4 p-0 h3 text-center">{% if edit %}My {% endif %}Matches:</div>
+                        <div class="col-4 text-end p-0">
+                            {% if edit %}
+                                <input type="submit" name="submit" class="btn btn-primary"
+                                       value="Save {% if edit %}My {% endif %}Matches">
+                            {% endif %}
+                        </div>
+                    </div>
 
-                {% if errors %}
-                    {% for match, match_errors in errors.items %}
-                        {% for field, error in match_errors.items %}
-                            <div class="alert alert-danger">
-                                <strong>Match {{ match }} ({{ field }}): {{ error|escape }}</strong>
-                            </div>
+                    {% if errors %}
+                        {% for match, match_errors in errors.items %}
+                            {% for field, error in match_errors.items %}
+                                <div class="alert alert-danger">
+                                    <strong>Match {{ match }} ({{ field }}): {{ error|escape }}</strong>
+                                </div>
+                            {% endfor %}
                         {% endfor %}
-                    {% endfor %}
-                {% endif %}
+                    {% endif %}
 
-                <div class="row fst-italic text-secondary text-center mb-3">
-                    <small>Probability of predicting a match winner is 33% for the group-phase and 50% thereafter. With
-                        36 group-phase matches and 15 other,<br>a completely random pick is expected to result in 19.5
-                        correct match winners. Can you beat randomness?</small>
-                </div>
+                    <div class="row fst-italic text-secondary text-center mb-3">
+                        <small>Probability of predicting a match winner is 33% for the group-phase and 50% thereafter.
+                            With
+                            36 group-phase matches and 15 other,<br>a completely random pick is expected to result in
+                            19.5
+                            correct match winners. Can you beat randomness?</small>
+                    </div>
 
-                <table>
-                    {% for form in match_formset %}
-                        <div class="row border rounded p-2 my-2 mx-4 d-flex justify-content-between">
-                            <div class="col-2 ">
-                                <div class="row fw-bold">{{ form.match_time.value }}{{ form.match_id }}</div>
-                                <small class="row fst-italic text-body-tertiary">({{ form.phase.value }})</small>
-                            </div>
-                            <a class="col-2 normal-text-link" style="text-align:right;"
-                               href="{% url 'country-schedule' country_name=form.team_a.value|clean_str %}">
-                                {{ form.team_a.value }}
-                                <img class="m-2" src="{{ form.flag_a.value }}" height="25px" width="25px">
-                            </a>
-                            <div class="col-1 pe-0">
-                                {% if form.editable.value %}
-                                    {{ form.bet_a }}
-                                {% else %}
-                                    <input type="number" name="matches-{{ forloop.counter0 }}-bet_a"
-                                           class="form-control"
-                                           style="text-align:center;" id="id_matches-{{ forloop.counter0 }}-bet_a"
-                                           value="{{ form.bet_a.value }}" disabled>
-                                {% endif %}
-                            </div>
-                            <div class="col-1 d-flex" style="text-align:center;">
+                    <table>
+                        {% for form in match_formset %}
+                            <div class="row border rounded p-2 my-2 mx-4 d-flex justify-content-between">
+                                <div class="col-2 ">
+                                    <div class="row fw-bold">{{ form.match_time.value }}{{ form.match_id }}</div>
+                                    <small class="row fst-italic text-body-tertiary">({{ form.phase.value }})</small>
+                                </div>
+                                <a class="col-2 normal-text-link" style="text-align:right;"
+                                   href="{% url 'country-schedule' country_name=form.team_a.value|clean_str %}">
+                                    {{ form.team_a.value }}
+                                    <img class="m-2" src="{{ form.flag_a.value }}" height="25px" width="25px">
+                                </a>
+                                <div class="col-1 pe-0">
+                                    {% if form.editable.value %}
+                                        {{ form.bet_a }}
+                                    {% else %}
+                                        <input type="number" name="matches-{{ forloop.counter0 }}-bet_a"
+                                               class="form-control"
+                                               style="text-align:center;" id="id_matches-{{ forloop.counter0 }}-bet_a"
+                                               value="{{ form.bet_a.value }}" disabled>
+                                    {% endif %}
+                                </div>
+                                <div class="col-1 d-flex" style="text-align:center;">
                             <span class="my-auto mx-auto">
                                 {% if form.score_a.value is not None %}
                                     {{ form.score_a.value }}
@@ -287,48 +330,49 @@
                                     {{ form.score_b.value }}
                                 {% endif %}
                             </span>
-                            </div>
-                            <div class="col-1 ps-0">
-                                {% if form.editable.value %}
-                                    {{ form.bet_b }}
-                                {% else %}
-                                    <input type="number" name="matches-{{ forloop.counter0 }}-bet_b"
-                                           class="form-control"
-                                           style="text-align:center;" id="id_matches-{{ forloop.counter0 }}-bet_b"
-                                           value="{{ form.bet_b.value }}" disabled>
-                                {% endif %}
-                            </div>
-                            <a class="col-2 normal-text-link" style="text-align:left;"
-                               href="{% url 'country-schedule' country_name=form.team_b.value|clean_str %}">
-                                <img class="m-2" src="{{ form.flag_b.value }}" height="25px" width="25px">
-                                {{ form.team_b.value }}
-                            </a>
-                            <div class="col-2 fst-italic text-secondary px-0">
-                            <a class="w-100 h-100 d-flex normal-text-link"
+                                </div>
+                                <div class="col-1 ps-0">
+                                    {% if form.editable.value %}
+                                        {{ form.bet_b }}
+                                    {% else %}
+                                        <input type="number" name="matches-{{ forloop.counter0 }}-bet_b"
+                                               class="form-control"
+                                               style="text-align:center;" id="id_matches-{{ forloop.counter0 }}-bet_b"
+                                               value="{{ form.bet_b.value }}" disabled>
+                                    {% endif %}
+                                </div>
+                                <a class="col-2 normal-text-link" style="text-align:left;"
+                                   href="{% url 'country-schedule' country_name=form.team_b.value|clean_str %}">
+                                    <img class="m-2" src="{{ form.flag_b.value }}" height="25px" width="25px">
+                                    {{ form.team_b.value }}
+                                </a>
+                                <div class="col-2 fst-italic text-secondary px-0">
+                                    <a class="w-100 h-100 d-flex normal-text-link"
                                             {% if form.editable.value is False %}
                                        href="{% url 'match-predictions' match_id=form.match_id.value %}"
                                             {% endif %}>
                                 <span class="my-auto ms-3">
                                 {{ form.text.value }}
                                 </span>
-                                {% if form.editable.value is False %}
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                         fill="currentColor"
-                                         class="bi bi-box-arrow-up-right text-secondary my-auto ms-auto me-3"
-                                         viewBox="0 0 16 16" style="margin: 0px 0px 5px 8px;">
-                                        <path fill-rule="evenodd"
-                                              d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
-                                        <path fill-rule="evenodd"
-                                              d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
-                                    </svg>
-                                {% endif %}
-                            </a>
+                                        {% if form.editable.value is False %}
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                 fill="currentColor"
+                                                 class="bi bi-box-arrow-up-right text-secondary my-auto ms-auto me-3"
+                                                 viewBox="0 0 16 16" style="margin: 0px 0px 5px 8px;">
+                                                <path fill-rule="evenodd"
+                                                      d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
+                                                <path fill-rule="evenodd"
+                                                      d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
+                                            </svg>
+                                        {% endif %}
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
 
-                </table>
-            </form>
+                    </table>
+                </form>
+            {% endif %}
         </div>
     </div>
 
