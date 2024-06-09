@@ -30,10 +30,7 @@ COPY --chown=app_user:app_user / /sweepstake/
 WORKDIR /sweepstake
 
 RUN chown -R app_user:app_user /sweepstake \
-    && chmod -R 777 /sweepstake
-
-# Collect static files
-RUN python ./manage.py collectstatic
+    && chmod -R 775 /sweepstake
 
 # Add docker container labels
 LABEL org.opencontainers.image.title="Sweepstake"
