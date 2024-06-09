@@ -134,7 +134,7 @@ def welcome_email(user_obj):
 def user_welcome_email_post_save(sender, instance, created, *args, **kwargs):
     """When a new user is created send an welcome email"""
     if created:
-        welcome_email.apply_async((instance))
+        welcome_email.apply_async((instance,))
 
 
 def bs_tag_visible(element):

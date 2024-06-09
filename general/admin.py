@@ -112,11 +112,16 @@ def send_test_email(modeladmin, request, queryset):
     for test_template in queryset:
         print(f"Sending test email triggered by {user_obj.username}")
         if test_template.name == "daily_email":
-            daily_matchday_email(user_obj, override_date="2024-06-15")
+            daily_matchday_email.apply_async(
+                (
+                    user_obj,
+                    "2024-06-15",
+                )
+            )
         elif test_template.name == "welcome_email":
-            welcome_email(user_obj)
+            welcome_email.apply_async((user_obj,))
         elif test_template.name == "final_reminder":
-            last_admission_email(user_obj)
+            last_admission_email.apply_async((user_obj,))
 
 
 @admin.register(EmailTemplates)
