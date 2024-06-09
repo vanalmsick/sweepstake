@@ -18,6 +18,7 @@ def delete_dynamic_cached_pages(
         "leaderboard",
     ],
 ):
+    """delete cached pages - used e.g. if match scores are entered"""
     print("Deleting cached dynamic pages")
     cache_keys = cache_keys = cache._cache.get_client().keys(f"*{settings.CACHES['default']['KEY_PREFIX']}*")
     for key in cache_keys:
@@ -103,3 +104,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
         # Update Leaderboard view
         delete_dynamic_cached_pages(prefix_lst=["leaderboard"])
+
+
+class EmailTemplates(models.Model):
+    """Email Templates"""
+
+    name = models.CharField(max_length=30, unique=True)
+    email_subject = models.CharField(max_length=30, blank=True, null=True)
+    html = models.TextField()

@@ -16,3 +16,4 @@ psycopg2-binary
 drf-spectacular
 gunicorn
 whitenoise
+beautifulsoup4

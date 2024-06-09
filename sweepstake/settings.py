@@ -200,3 +200,15 @@ if (sentry_sdk_url := os.environ.get("SENTRY_URL", None)) is not None:
     """
 else:
     SENTRY_SCRIPT_HEAD = ""
+
+
+# Emails
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("EMAIL_HOST", None)
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 25))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", None)
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", None)
+EMAIL_USE_TLS = None if (use_ssl := os.environ.get("EMAIL_USE_TLS", None)) is None else bool(use_ssl)
+EMAIL_USE_SSL = None if (use_ssl := os.environ.get("EMAIL_USE_SSL", None)) is None else bool(use_ssl)
+EMAIL_FROM = os.environ.get("EMAIL_FROM", None)
+EMAIL_REPLY_TO = None if (reply_email := os.environ.get("EMAIL_REPLY_TO", None)) is None else reply_email.split(",")
