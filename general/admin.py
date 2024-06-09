@@ -6,7 +6,6 @@ from django.contrib.auth.models import Group
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import CustomUser, EmailTemplates
 from competition.models import MatchBet, GroupBet, TournamentBet
-from competition.tasks import last_admission_email, daily_matchday_email
 
 
 class MatchBetInline(admin.TabularInline):
@@ -113,17 +112,27 @@ def send_test_email(modeladmin, request, queryset):
     for test_template in queryset:
         print(f"Sending test email triggered by {user_obj.username}")
         if test_template.name == "daily_email":
-            daily_matchday_email.apply_async(
-                (
+            celery.execute.send_task(
+                "competition.tasks.daily_matchday_email",
+                args=[
                     user_obj.pk,
                     "2024-06-15",
-                )
+                ],
             )
         elif test_template.name == "welcome_email":
-            # welcome_email.apply_async((user_obj.pk,))
-            celery.execute.send_task("competition.tasks.welcome_email", args=[user_obj.pk], kwargs={})
+            celery.execute.send_task(
+                "competition.tasks.welcome_email",
+                args=[
+                    user_obj.pk,
+                ],
+            )
         elif test_template.name == "final_reminder":
-            last_admission_email.apply_async((user_obj.pk,))
+            celery.execute.send_task(
+                "competition.tasks.last_admission_email",
+                args=[
+                    user_obj.pk,
+                ],
+            )
 
 
 @admin.register(EmailTemplates)

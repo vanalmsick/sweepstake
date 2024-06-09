@@ -4,6 +4,7 @@ import datetime
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import celery
 from sweepstake.celery import app
 from django.conf import settings
 from bs4 import BeautifulSoup
@@ -23,12 +24,12 @@ def daily_emails():
     # first match is tomorrow
     if first_match_date - datetime.timedelta(days=1) == today:
         print("Sending final reminder emails today")
-        email_to_send = last_admission_email
+        email_to_send = "last_admission_email"
 
     # today are matches
     elif len(upcomming_matches) > 0:
         print("Sending daily match emails today")
-        email_to_send = daily_matchday_email
+        email_to_send = "daily_matchday_email"
 
     # if emails are send out today
     if email_to_send is not None:
@@ -37,7 +38,13 @@ def daily_emails():
         prev_email_eta += datetime.timedelta(minute=1)
 
         for i, user in enumerate(user_lst):
-            email_to_send.apply_async((user.pk), eta=prev_email_eta)
+            celery.execute.send_task(
+                email_to_send,
+                args=[
+                    user.pk,
+                ],
+                eta=prev_email_eta,
+            )
             if i < 3:
                 prev_email_eta += datetime.timedelta(minute=5)
             else:
@@ -47,7 +54,7 @@ def daily_emails():
 @app.task()
 def daily_matchday_email(user_pk, override_date=None):
     """Email to remind the users to put in predictions for today's matches"""
-    user_obj = CustomUser.objects.get(user_pk)
+    user_obj = CustomUser.objects.get(pk=user_pk)
     today = datetime.datetime.today()
     if override_date is not None:
         today = "2024-06-15"
@@ -87,7 +94,7 @@ def daily_matchday_email(user_pk, override_date=None):
 @app.task()
 def last_admission_email(user_pk):
     """Email to remind users that tomorrow the first match kicks-off and they need to put in predictions"""
-    user_obj = CustomUser.objects.get(user_pk)
+    user_obj = CustomUser.objects.get(pk=user_pk)
     email_template = EmailTemplates.objects.get(name="final_reminder")
     email_subject = email_template.email_subject
     email_body = email_template.html
@@ -111,7 +118,7 @@ def last_admission_email(user_pk):
 @app.task()
 def welcome_email(user_pk):
     """Welcome with email verification and payment instructions"""
-    user_obj = CustomUser.objects.get(user_pk)
+    user_obj = CustomUser.objects.get(pk=user_pk)
     email_template = EmailTemplates.objects.get(name="welcome_email")
     email_subject = email_template.email_subject
     email_body = email_template.html
@@ -137,7 +144,12 @@ def welcome_email(user_pk):
 def user_welcome_email_post_save(sender, instance, created, *args, **kwargs):
     """When a new user is created send an welcome email"""
     if created and "admin" not in instance.email and "local" not in instance.email:
-        welcome_email.apply_async((instance.pk,))
+        celery.execute.send_task(
+            "competition.tasks.welcome_email",
+            args=[
+                instance.pk,
+            ],
+        )
 
 
 def bs_tag_visible(element):
