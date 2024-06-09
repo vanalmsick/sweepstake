@@ -4,6 +4,7 @@
 
 **/data/**
 .myppy_cache/
+productionfiles/
 
 
 ### Python template

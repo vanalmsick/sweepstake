@@ -30,7 +30,7 @@ SECRET_KEY = "django-insecure-t4@++_fy&@8e670&&s)6p+2glp-o&ms2&_&hc6b!z64q(4pueq
 DEBUG = True
 
 MAIN_HOST = os.environ.get("MAIN_HOST", "http://localhost")
-HOSTS = os.environ.get("HOSTS", "http://localhost,http://127.0.0.1/").split(",")
+HOSTS = os.environ.get("HOSTS", "http://localhost,http://127.0.0.1/,http://0.0.0.0/").split(",")
 CSRF_TRUSTED_ORIGINS = HOSTS
 ALLOWED_HOSTS = [urlparse(url).netloc for url in HOSTS]
 CORS_ALLOWED_ORIGINS = HOSTS
@@ -59,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "sweepstake.urls"
@@ -150,6 +151,9 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+
+WHITENOISE_STATIC_PREFIX = "/static/"
+STATIC_ROOT = BASE_DIR / "productionfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
