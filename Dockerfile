@@ -30,7 +30,7 @@ COPY --chown=app_user:app_user / /sweepstake/
 WORKDIR /sweepstake
 
 RUN chown -R app_user:app_user /sweepstake \
-    && chmod 777 -r /sweepstake
+    && chmod -R 777 /sweepstake
 
 # Collect static files
 RUN python ./manage.py collectstatic
