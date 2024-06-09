@@ -46,8 +46,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "celery",
     "general",
     "competition",
+    "django_celery_beat",
 ]
 AUTH_USER_MODEL = "general.CustomUser"
 
@@ -134,7 +136,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-uk"
 
-TIME_ZONE = CELERY_TIMEZONE = os.getenv("TIME_ZONE", "Europe/London")
+TIME_ZONE = CELERY_TIMEZONE = os.environ.get("TIME_ZONE", "Europe/London")
 TIME_ZONE_OBJ = pytz.timezone(TIME_ZONE)
 
 USE_I18N = True
@@ -143,6 +145,20 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Celery & Redis Caching
+CELERY_TASK_ALWAYS_EAGER = DEBUG  # true to run tasks synchronously for testing and development
+CELERY_BROKER_URL = "redis://localhost:6379"
+CELERY_RESULT_BACKEND = "redis://localhost:6379"
+STATIC_PAGE_CACHE_TIME = int(os.environ.get("STATIC_PAGE_CACHE_TIME", 60 * 60))  # every hour
+DYNAMIC_PAGE_CACHE_TIME = int(os.environ.get("STATIC_PAGE_CACHE_TIME", 60 * 2))  # 2 minutes
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://localhost:6379",
+        "KEY_PREFIX": "sweepstake",
+    }
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/

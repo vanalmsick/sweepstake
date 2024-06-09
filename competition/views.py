@@ -20,6 +20,10 @@ from .forms import (
 # Create your views here.
 def ScheduleView(request, country_name=None, group_name=None):
     """View to see list of scheduled and past matches"""
+    print(
+        f'Get ScheduleView {("for all matches" if group_name is None else "with group " + group_name) if country_name is None else "with country " + country_name}.'
+    )
+
     now = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
     if country_name is not None:
         match_lst = Match.objects.filter(
@@ -191,6 +195,8 @@ def OthersBetView(request, other_user_id):
     if request.user.id is None:
         return redirect("log-in")
 
+    print(f"Get OthersBetView with other_user_id={other_user_id}.")
+
     other_user_obj = CustomUser.objects.get(pk=other_user_id)
     user_data = getMyScore(pk=other_user_id)
 
@@ -278,6 +284,8 @@ def getMyScore(pk):
 
 def LeaderboardView(request):
     """View to show leaderboard of users - who predicted the matches best"""
+    print("Get LeaderboardView.")
+
     return render(
         request, "leaderboard.html", {"ranking": getLeaderboard(), "logged_in": request.user.is_authenticated}
     )
@@ -368,6 +376,8 @@ def OthersGroupPredictionsView(request, group_name):
     # Not logged-in
     if request.user.id is None:
         return redirect("log-in")
+
+    print(f"Get OthersGroupPredictionsView with group_name={group_name}.")
     return render(
         request, "predictions/GroupAndTournament.html", getOthersNonMatchPredictions(level="group", filter=group_name)
     )
@@ -378,6 +388,8 @@ def OthersTournamentPredictionsView(request, tournament_name):
     # Not logged-in
     if request.user.id is None:
         return redirect("log-in")
+
+    print(f"Get OthersTournamentPredictionsView with tournament_name={tournament_name}.")
     return render(
         request,
         "predictions/GroupAndTournament.html",
@@ -390,4 +402,6 @@ def OthersMatchPredictionsView(request, match_id):
     # Not logged-in
     if request.user.id is None:
         return redirect("log-in")
+
+    print(f"Get OthersMatchPredictionsView with match_id={match_id}.")
     return render(request, "predictions/Match.html", getOthersMatchPredictions(match_id=match_id))

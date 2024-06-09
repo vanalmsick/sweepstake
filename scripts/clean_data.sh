@@ -1,4 +1,5 @@
 #!/bin/sh
+redis-cli flushall || echo "Redis Cache could not be flushed"
 find . -path "./*/migrations/*.py" -not -name "__init__.py" -delete
 find . -path "./data/db_migrations/*" -delete
 find /opt/miniconda3/envs/pydev/ -path "*/site-packages/migrations/*.py" -not -name "__init__.py" -delete

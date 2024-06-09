@@ -5,6 +5,25 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
+from django.core.cache import cache
+from django.conf import settings
+
+
+def delete_dynamic_cached_pages(
+    prefix_lst=[
+        "others-predictions",
+        "group-predictions",
+        "tournament-predictions",
+        "match-predictions",
+        "leaderboard",
+    ],
+):
+    print("Deleting cached dynamic pages")
+    cache_keys = cache_keys = cache._cache.get_client().keys(f"*{settings.CACHES['default']['KEY_PREFIX']}*")
+    for key in cache_keys:
+        if any([i in str(key) for i in prefix_lst]):
+            print("Deleted cached", key)
+            cache.delete(key)
 
 
 USER_TEAMS = [
@@ -81,3 +100,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         else:
             self.username = f'{self.first_name} {".".join([i[0] for i in self.last_name.replace("-"," ").split(" ") if len(i) >= 1])}.'
         super(CustomUser, self).save(*args, **kwargs)
+
+        # Update Leaderboard view
+        delete_dynamic_cached_pages(prefix_lst=["leaderboard"])
