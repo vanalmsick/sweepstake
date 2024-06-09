@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+import os
 
 # Django WSGI application path in pattern MODULE_NAME:VARIABLE_NAME
 wsgi_app = "sweepstake.wsgi:application"
 # The granularity of Error log outputs
 loglevel = "debug"
 # The number of worker processes for handling requests
-workers = 2
+workers = int(os.environ.get("WORKERS", 2))
 # The socket to bind
 bind = "0.0.0.0:80"
 # Restart workers when code changes (development only!)

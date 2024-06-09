@@ -24,10 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-t4@++_fy&@8e670&&s)6p+2glp-o&ms2&_&hc6b!z64q(4pueq"
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-t4@++_fy&@8e670&&s)6p+2glp-o&ms2&_&hc6b!z64q(4pueq")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
 MAIN_HOST = os.environ.get("MAIN_HOST", "http://localhost")
 HOSTS = os.environ.get("HOSTS", "http://localhost,http://127.0.0.1/,http://0.0.0.0/").split(",")
@@ -131,7 +131,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "en-uk"
 
 TIME_ZONE = CELERY_TIMEZONE = os.getenv("TIME_ZONE", "Europe/London")
 TIME_ZONE_OBJ = pytz.timezone(TIME_ZONE)
