@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=1
 
 # Install basic packages
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends lsb-release curl gpg nano netcat-traditional
+    && apt-get install -y --no-install-recommends lsb-release curl gpg nano netcat-traditional nginx
 
 # Install redis
 RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
@@ -29,8 +29,8 @@ COPY --chown=app_user:app_user / /sweepstake/
 
 WORKDIR /sweepstake
 
-RUN chown -R app_user:app_user /sweepstake \
-    && chmod 777 /sweepstake
+RUN mkdir -p /sweepstake/data \
+    && chown -R app_user:app_user /sweepstake
 
 # Add docker container labels
 LABEL org.opencontainers.image.title="Sweepstake"

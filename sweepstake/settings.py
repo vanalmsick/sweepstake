@@ -18,19 +18,20 @@ from urllib.parse import urlparse
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+print("Working dir:", BASE_DIR)
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-t4@++_fy&@8e670&&s)6p+2glp-o&ms2&_&hc6b!z64q(4pueq"
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-t4@++_fy&@8e670&&s)6p+2glp-o&ms2&_&hc6b!z64q(4pueq")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
 MAIN_HOST = os.environ.get("MAIN_HOST", "http://localhost")
-HOSTS = os.environ.get("HOSTS", "http://localhost,http://127.0.0.1/").split(",")
+HOSTS = os.environ.get("HOSTS", "http://localhost,http://127.0.0.1/,http://0.0.0.0/").split(",")
 CSRF_TRUSTED_ORIGINS = HOSTS
 ALLOWED_HOSTS = [urlparse(url).netloc for url in HOSTS]
 CORS_ALLOWED_ORIGINS = HOSTS
@@ -45,8 +46,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "celery",
     "general",
     "competition",
+    "django_celery_beat",
 ]
 AUTH_USER_MODEL = "general.CustomUser"
 
@@ -59,6 +62,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "sweepstake.urls"
@@ -130,9 +134,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "en-uk"
 
-TIME_ZONE = CELERY_TIMEZONE = os.getenv("TIME_ZONE", "Europe/London")
+TIME_ZONE = CELERY_TIMEZONE = os.environ.get("TIME_ZONE", "Europe/London")
 TIME_ZONE_OBJ = pytz.timezone(TIME_ZONE)
 
 USE_I18N = True
@@ -141,6 +145,20 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Celery & Redis Caching
+CELERY_TASK_ALWAYS_EAGER = DEBUG  # true to run tasks synchronously for testing and development
+CELERY_BROKER_URL = "redis://localhost:6379"
+CELERY_RESULT_BACKEND = "redis://localhost:6379"
+STATIC_PAGE_CACHE_TIME = int(os.environ.get("STATIC_PAGE_CACHE_TIME", 60 * 60))  # every hour
+DYNAMIC_PAGE_CACHE_TIME = int(os.environ.get("STATIC_PAGE_CACHE_TIME", 60 * 2))  # 2 minutes
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://localhost:6379",
+        "KEY_PREFIX": "sweepstake",
+    }
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -150,6 +168,9 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+
+WHITENOISE_STATIC_PREFIX = "/static/"
+STATIC_ROOT = BASE_DIR / "productionfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

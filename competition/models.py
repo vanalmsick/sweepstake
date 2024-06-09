@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models import Q
 from django.conf import settings
 
-from general.models import CustomUser
+from general.models import CustomUser, delete_dynamic_cached_pages
 
 
 # Create your models here.
@@ -76,6 +76,9 @@ class Tournament(models.Model):
             setattr(bet, "points", bet_points)
             bet.save()
 
+        # Update cached pages
+        delete_dynamic_cached_pages()
+
 
 class Group(models.Model):
     """2nd highest level for grouping Tournament participants for group-phase"""
@@ -121,6 +124,9 @@ class Group(models.Model):
             bet_points = bet.get_points()
             setattr(bet, "points", bet_points)
             bet.save()
+
+        # Update cached pages
+        delete_dynamic_cached_pages()
 
 
 MATCH_PHASES_DICT = {
@@ -196,6 +202,9 @@ class Match(models.Model):
             goal_difference = bet.get_goal_difference()
             setattr(bet, "goal_difference", goal_difference)
             bet.save()
+
+        # Update cached pages
+        delete_dynamic_cached_pages()
 
 
 class MatchBet(models.Model):

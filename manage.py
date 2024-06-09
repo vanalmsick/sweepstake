@@ -75,9 +75,15 @@ if __name__ == "__main__":
             sys.argv = [INITIAL_ARGV[0], "add_EURO_2024_data"]
             main()
 
-            print("Add test data")
-            sys.argv = [INITIAL_ARGV[0], "add_test_data"]
-            main()
+            if os.environ.get("DEBUG", "True").lower() == "true":
+                print("Add test data")
+                sys.argv = [INITIAL_ARGV[0], "add_test_data"]
+                main()
+
+        # Collect static files
+        print("Collect static files")
+        sys.argv = [INITIAL_ARGV[0], "collectstatic", "--noinput"]
+        main()
 
     else:
         print(
