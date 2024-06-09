@@ -37,7 +37,7 @@ def daily_emails():
         prev_email_eta += datetime.timedelta(minute=1)
 
         for i, user in enumerate(user_lst):
-            email_to_send.apply_async((user), eta=prev_email_eta)
+            email_to_send.apply_async((user.pk), eta=prev_email_eta)
             if i < 3:
                 prev_email_eta += datetime.timedelta(minute=5)
             else:
@@ -45,8 +45,9 @@ def daily_emails():
 
 
 @app.task()
-def daily_matchday_email(user_obj, override_date=None):
+def daily_matchday_email(user_pk, override_date=None):
     """Email to remind the users to put in predictions for today's matches"""
+    user_obj = CustomUser.objects.get(user_pk)
     today = datetime.datetime.today()
     if override_date is not None:
         today = "2024-06-15"
@@ -84,8 +85,9 @@ def daily_matchday_email(user_obj, override_date=None):
 
 
 @app.task()
-def last_admission_email(user_obj):
+def last_admission_email(user_pk):
     """Email to remind users that tomorrow the first match kicks-off and they need to put in predictions"""
+    user_obj = CustomUser.objects.get(user_pk)
     email_template = EmailTemplates.objects.get(name="final_reminder")
     email_subject = email_template.email_subject
     email_body = email_template.html
@@ -107,8 +109,9 @@ def last_admission_email(user_obj):
 
 
 @app.task()
-def welcome_email(user_obj):
+def welcome_email(user_pk):
     """Welcome with email verification and payment instructions"""
+    user_obj = CustomUser.objects.get(user_pk)
     email_template = EmailTemplates.objects.get(name="welcome_email")
     email_subject = email_template.email_subject
     email_body = email_template.html
@@ -134,7 +137,7 @@ def welcome_email(user_obj):
 def user_welcome_email_post_save(sender, instance, created, *args, **kwargs):
     """When a new user is created send an welcome email"""
     if created:
-        welcome_email.apply_async((instance,))
+        welcome_email.apply_async((instance.pk,))
 
 
 def bs_tag_visible(element):

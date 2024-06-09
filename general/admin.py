@@ -114,14 +114,14 @@ def send_test_email(modeladmin, request, queryset):
         if test_template.name == "daily_email":
             daily_matchday_email.apply_async(
                 (
-                    user_obj,
+                    user_obj.pk,
                     "2024-06-15",
                 )
             )
         elif test_template.name == "welcome_email":
-            welcome_email.apply_async((user_obj,))
+            welcome_email.apply_async((user_obj.pk,))
         elif test_template.name == "final_reminder":
-            last_admission_email.apply_async((user_obj,))
+            last_admission_email.apply_async((user_obj.pk,))
 
 
 @admin.register(EmailTemplates)
