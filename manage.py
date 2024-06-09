@@ -83,6 +83,7 @@ if __name__ == "__main__":
         # Collect static files
         print("Collect static files")
         sys.argv = [INITIAL_ARGV[0], "collectstatic"]
+        main()
 
     else:
         print(
