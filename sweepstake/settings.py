@@ -15,6 +15,8 @@ import os
 import pytz
 from pathlib import Path
 from urllib.parse import urlparse
+import sentry_sdk
+from sentry_sdk.integrations.celery import CeleryIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -176,3 +178,25 @@ STATIC_ROOT = BASE_DIR / "productionfiles"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# Error reporting with Sentry.io
+if (sentry_sdk_url := os.environ.get("SENTRY_URL", None)) is not None:
+    sentry_sdk.init(
+        dsn=sentry_sdk_url,
+        enable_tracing=True,
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+        integrations=[
+            CeleryIntegration(monitor_beat_tasks=True),
+        ],
+    )
+    SENTRY_SCRIPT_HEAD = """
+        <script
+          src="https://browser.sentry-cdn.com/8.7.0/bundle.tracing.replay.min.js"
+          integrity="sha384-dJxmSf43HczZBLC024NWeK3CvBfqLuL4bPv3lAKeMZty0jA7AHnefU1jEzx7VbUo"
+          crossorigin="anonymous"
+        ></script>
+    """
+else:
+    SENTRY_SCRIPT_HEAD = ""
