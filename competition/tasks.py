@@ -136,7 +136,7 @@ def welcome_email(user_pk):
 @receiver(post_save, sender=CustomUser)
 def user_welcome_email_post_save(sender, instance, created, *args, **kwargs):
     """When a new user is created send an welcome email"""
-    if created:
+    if created and "admin" not in instance.email and "local" not in instance.email:
         welcome_email.apply_async((instance.pk,))
 
 
