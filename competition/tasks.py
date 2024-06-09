@@ -12,8 +12,8 @@ from competition.models import Match
 from general.models import EmailTemplates, CustomUser
 
 
-@app.task(bind=True)
-def daily_emails(self):
+@app.task()
+def daily_emails():
     """clery beat daily 14:00 scheduled task - this task will trigger either the last_admission_email or daily_matchday_email"""
     today = datetime.datetime.today()
     first_match_date = Match.objects.all().order_by("match_time").first().match_time
@@ -44,7 +44,7 @@ def daily_emails(self):
                 prev_email_eta += datetime.timedelta(minute=2)
 
 
-@app.task(bind=True)
+@app.task()
 def daily_matchday_email(user_obj, override_date=None):
     """Email to remind the users to put in predictions for today's matches"""
     today = datetime.datetime.today()
@@ -83,7 +83,7 @@ def daily_matchday_email(user_obj, override_date=None):
     send_email(subject=email_subject, body=email_body, to_user=user_obj)
 
 
-@app.task(bind=True)
+@app.task()
 def last_admission_email(user_obj):
     """Email to remind users that tomorrow the first match kicks-off and they need to put in predictions"""
     email_template = EmailTemplates.objects.get(name="final_reminder")
@@ -106,7 +106,7 @@ def last_admission_email(user_obj):
     send_email(subject=email_subject, body=email_body, to_user=user_obj)
 
 
-@app.task(bind=True)
+@app.task()
 def welcome_email(user_obj):
     """Welcome with email verification and payment instructions"""
     email_template = EmailTemplates.objects.get(name="welcome_email")
