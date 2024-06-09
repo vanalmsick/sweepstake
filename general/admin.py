@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+import celery
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import CustomUser, EmailTemplates
 from competition.models import MatchBet, GroupBet, TournamentBet
-from competition.tasks import welcome_email, last_admission_email, daily_matchday_email
+from competition.tasks import last_admission_email, daily_matchday_email
 
 
 class MatchBetInline(admin.TabularInline):
@@ -119,7 +120,8 @@ def send_test_email(modeladmin, request, queryset):
                 )
             )
         elif test_template.name == "welcome_email":
-            welcome_email.apply_async((user_obj.pk,))
+            # welcome_email.apply_async((user_obj.pk,))
+            celery.execute.send_task("competition.tasks.welcome_email", args=[user_obj.pk], kwargs={})
         elif test_template.name == "final_reminder":
             last_admission_email.apply_async((user_obj.pk,))
 
@@ -137,9 +139,11 @@ class EmailTemplatesAdmin(admin.ModelAdmin):
     actions = [send_test_email]
 
     def has_add_permission(self, request, obj=None):
+        """New email templates can't be added by admins"""
         return False
 
     def has_delete_permission(self, request, obj=None):
+        """Email templates can't be deleted by admins"""
         return False
 
 
