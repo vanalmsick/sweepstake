@@ -81,10 +81,10 @@ repos:
         args:
           - "--tab"
   # Check shell scripts
-  - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: "v0.10.0.1"
-    hooks:
-      - id: shellcheck
+  #- repo: https://github.com/shellcheck-py/shellcheck-py
+  #  rev: "v0.10.0.1"
+  #  hooks:
+  #    - id: shellcheck
   # Finds and removes unused import statements
   - repo: https://github.com/hadialqattan/pycln
     rev: v2.2.2

@@ -2,12 +2,8 @@
 import os
 import datetime
 from django.core.mail import EmailMultiAlternatives, get_connection
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-import celery
 from sweepstake.celery import app
 from django.conf import settings
-from bs4 import BeautifulSoup
 
 from competition.models import Match
 from general.models import EmailTemplates, CustomUser
@@ -39,7 +35,7 @@ def daily_emails():
         prev_email_eta += datetime.timedelta(minute=1)
 
         for i, user in enumerate(user_lst):
-            celery.execute.send_task(
+            app.send_task(
                 email_to_send,
                 args=[
                     user.pk,
@@ -92,7 +88,7 @@ def daily_matchday_email(user_pk, override_date=None):
         table_today_matches=upcomming_matches_html,
     )
 
-    send_email(subject=email_subject, body=email_body, to_user=user_obj)
+    send_email(subject=email_subject, body=email_body, to_email=user_obj.email)
 
 
 @app.task()
@@ -116,7 +112,7 @@ def last_admission_email(user_pk):
         my_predictions_link=my_predictions_link,
     )
 
-    send_email(subject=email_subject, body=email_body, to_user=user_obj)
+    send_email(subject=email_subject, body=email_body, to_email=user_obj.email)
 
 
 @app.task()
@@ -141,19 +137,7 @@ def welcome_email(user_pk):
         verify_link=verify_link,
     )
 
-    send_email(subject=email_subject, body=email_body, to_user=user_obj)
-
-
-@receiver(post_save, sender=CustomUser)
-def user_welcome_email_post_save(sender, instance, created, *args, **kwargs):
-    """When a new user is created send an welcome email"""
-    if created and "admin" not in instance.email and "local" not in instance.email:
-        celery.execute.send_task(
-            "competition.tasks.welcome_email",
-            args=[
-                instance.pk,
-            ],
-        )
+    send_email(subject=email_subject, body=email_body, to_email=user_obj.email)
 
 
 def bs_tag_visible(element):
@@ -165,11 +149,11 @@ def bs_tag_visible(element):
     return True
 
 
-def send_email(subject, body, to_user):
+def send_email(subject, body, to_email):
     """General function via which all emails are sent out"""
-    to_email = [settings.EMAIL_FROM] if settings.DEBUG else to_user.email
+    to_email = [settings.EMAIL_FROM] if settings.DEBUG else [to_email]
     from_email = settings.EMAIL_FROM
-    reply_to_email = settings.EMAIL_REPLY_TO
+    reply_to_email = [from_email] if settings.EMAIL_REPLY_TO is None else settings.EMAIL_REPLY_TO
     with open(os.path.join("templates", "emails", "base.html"), "r") as file:
         email_template = file.read()
 
@@ -178,15 +162,13 @@ def send_email(subject, body, to_user):
         MAIN_BODY=body, EMAIL_SUBJECT=subject, EMAIL_REPLY_TO=reply_to_email[0], MAIN_HOST=settings.MAIN_HOST
     ).items():
         html_message = html_message.replace("{" + f"{tag}" + "}", str(replace_value))
-    bs_soup = BeautifulSoup(body, "html.parser")
-    bs_texts = bs_soup.findAll(text=True)
-    visible_texts = filter(bs_tag_visible, bs_texts)
-    text_message = " ".join(t.strip() for t in visible_texts)
+    # bs_soup = BeautifulSoup(body, "html.parser")
+    # bs_texts = bs_soup.findAll(text=True)
+    # visible_texts = filter(bs_tag_visible, bs_texts)
+    # text_message = " ".join(t.strip() for t in visible_texts)
 
     connection = get_connection()
-    mail = EmailMultiAlternatives(
-        subject=subject, body=text_message, from_email=from_email, to=to_email, connection=connection
-    )
+    mail = EmailMultiAlternatives(subject=subject, body="", from_email=from_email, to=to_email, connection=connection)
     mail.attach_alternative(html_message, "text/html")
     mail.content_subtype = "html"
 

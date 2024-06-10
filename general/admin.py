@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-import celery
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import CustomUser, EmailTemplates
 from competition.models import MatchBet, GroupBet, TournamentBet
+from sweepstake.celery import app
 
 
 class MatchBetInline(admin.TabularInline):
@@ -112,7 +112,7 @@ def send_test_email(modeladmin, request, queryset):
     for test_template in queryset:
         print(f"Sending test email triggered by {user_obj.username}")
         if test_template.name == "daily_email":
-            celery.execute.send_task(
+            app.send_task(
                 "competition.tasks.daily_matchday_email",
                 args=[
                     user_obj.pk,
@@ -120,14 +120,14 @@ def send_test_email(modeladmin, request, queryset):
                 ],
             )
         elif test_template.name == "welcome_email":
-            celery.execute.send_task(
+            app.send_task(
                 "competition.tasks.welcome_email",
                 args=[
                     user_obj.pk,
                 ],
             )
         elif test_template.name == "final_reminder":
-            celery.execute.send_task(
+            app.send_task(
                 "competition.tasks.last_admission_email",
                 args=[
                     user_obj.pk,
