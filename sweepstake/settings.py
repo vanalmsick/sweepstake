@@ -74,6 +74,7 @@ MIGRATION_MODULES = {
     "competition": "data.db_migrations.competition",
     "preferences": "data.db_migrations.preferences",
     "django_celery_beat": "data.db_migrations.django_celery_beat",
+    "django_celery_beat_periodictask": "data.db_migrations.django_celery_beat_periodictask",
     "sessions": "data.db_migrations.sessions",
     "auth": "data.db_migrations.auth",
     "authtoken": "data.db_migrations.authtoken",
