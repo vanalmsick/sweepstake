@@ -7,6 +7,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
 from django.core.cache import cache
 from django.conf import settings
+from sweepstake.celery import app
 
 
 def delete_dynamic_cached_pages(
@@ -18,6 +19,7 @@ def delete_dynamic_cached_pages(
         "leaderboard",
     ],
 ):
+    """delete cached pages - used e.g. if match scores are entered"""
     print("Deleting cached dynamic pages")
     cache_keys = cache_keys = cache._cache.get_client().keys(f"*{settings.CACHES['default']['KEY_PREFIX']}*")
     for key in cache_keys:
@@ -99,7 +101,25 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             self.username = self.email.split("@")[0]
         else:
             self.username = f'{self.first_name} {".".join([i[0] for i in self.last_name.replace("-"," ").split(" ") if len(i) >= 1])}.'
+        _state_adding = self._state.adding
         super(CustomUser, self).save(*args, **kwargs)
 
         # Update Leaderboard view
         delete_dynamic_cached_pages(prefix_lst=["leaderboard"])
+
+        # Send Welcome email
+        if _state_adding and "admin" not in self.email and "local" not in self.email:
+            app.send_task(
+                "competition.tasks.welcome_email",
+                args=[
+                    self.pk,
+                ],
+            )
+
+
+class EmailTemplates(models.Model):
+    """Email Templates"""
+
+    name = models.CharField(max_length=30, unique=True)
+    email_subject = models.CharField(max_length=30, blank=True, null=True)
+    html = models.TextField()

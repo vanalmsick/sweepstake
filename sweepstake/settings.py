@@ -15,6 +15,8 @@ import os
 import pytz
 from pathlib import Path
 from urllib.parse import urlparse
+import sentry_sdk
+from sentry_sdk.integrations.celery import CeleryIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -71,7 +73,8 @@ MIGRATION_MODULES = {
     "general": "data.db_migrations.general",
     "competition": "data.db_migrations.competition",
     "preferences": "data.db_migrations.preferences",
-    # "django_celery_beat": "data.db_migrations.django_celery_beat",
+    "django_celery_beat": "data.db_migrations.django_celery_beat",
+    #    "django_celery_beat_periodictask": "data.db_migrations.django_celery_beat_periodictask",
     "sessions": "data.db_migrations.sessions",
     "auth": "data.db_migrations.auth",
     "authtoken": "data.db_migrations.authtoken",
@@ -102,13 +105,24 @@ WSGI_APPLICATION = "sweepstake.wsgi.application"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "data/db.sqlite3",
-        "OPTIONS": {
-            "timeout": 20,  # seconds
-        },
-    }
+    "default": (
+        {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "data/db.sqlite3",
+            "OPTIONS": {
+                "timeout": 20,  # seconds
+            },
+        }
+        if os.environ.get("POSTGRESQL_HOST", None) is None
+        else {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("POSTGRESQL_DB", "postgres"),
+            "USER": os.environ.get("POSTGRESQL_USER", "postgres"),
+            "PASSWORD": os.environ.get("POSTGRESQL_PASSWORD", "postgres"),
+            "HOST": os.environ.get("POSTGRESQL_HOST", "localhost"),
+            "PORT": "",
+        }
+    )
 }
 
 
@@ -150,7 +164,8 @@ CELERY_TASK_ALWAYS_EAGER = DEBUG  # true to run tasks synchronously for testing 
 CELERY_BROKER_URL = "redis://localhost:6379"
 CELERY_RESULT_BACKEND = "redis://localhost:6379"
 STATIC_PAGE_CACHE_TIME = int(os.environ.get("STATIC_PAGE_CACHE_TIME", 60 * 60))  # every hour
-DYNAMIC_PAGE_CACHE_TIME = int(os.environ.get("STATIC_PAGE_CACHE_TIME", 60 * 2))  # 2 minutes
+DYNAMIC_PAGE_CACHE_TIME = int(os.environ.get("STATIC_PAGE_CACHE_TIME", 60 * 5))  # 5 minutes
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 CACHES = {
     "default": {
@@ -176,3 +191,37 @@ STATIC_ROOT = BASE_DIR / "productionfiles"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# Error reporting with Sentry.io
+if (sentry_sdk_url := os.environ.get("SENTRY_URL", None)) is not None:
+    sentry_sdk.init(
+        dsn=sentry_sdk_url,
+        enable_tracing=True,
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+        integrations=[
+            CeleryIntegration(monitor_beat_tasks=True),
+        ],
+    )
+    SENTRY_SCRIPT_HEAD = """
+        <script
+          src="https://browser.sentry-cdn.com/8.7.0/bundle.tracing.replay.min.js"
+          integrity="sha384-dJxmSf43HczZBLC024NWeK3CvBfqLuL4bPv3lAKeMZty0jA7AHnefU1jEzx7VbUo"
+          crossorigin="anonymous"
+        ></script>
+    """
+else:
+    SENTRY_SCRIPT_HEAD = ""
+
+
+# Emails
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("EMAIL_HOST", None)
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 25))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", None)
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", None)
+EMAIL_USE_TLS = None if (use_ssl := os.environ.get("EMAIL_USE_TLS", None)) is None else bool(use_ssl)
+EMAIL_USE_SSL = None if (use_ssl := os.environ.get("EMAIL_USE_SSL", None)) is None else bool(use_ssl)
+EMAIL_FROM = os.environ.get("EMAIL_FROM", None)
+EMAIL_REPLY_TO = None if (reply_email := os.environ.get("EMAIL_REPLY_TO", None)) is None else reply_email.split(",")

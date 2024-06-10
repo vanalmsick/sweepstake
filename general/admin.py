@@ -3,8 +3,9 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from .forms import CustomUserCreationForm, CustomUserChangeForm
-from .models import CustomUser
+from .models import CustomUser, EmailTemplates
 from competition.models import MatchBet, GroupBet, TournamentBet
+from sweepstake.celery import app
 
 
 class MatchBetInline(admin.TabularInline):
@@ -83,7 +84,7 @@ class CustomUserAdmin(UserAdmin):
             None,
             {
                 "classes": ("wide",),
-                "fields": ("email", "password1", "password2", "is_staff", "is_active", "groups", "user_permissions"),
+                "fields": ("email", "password1", "password2", "is_staff", "groups", "user_permissions"),
             },
         ),
     )
@@ -98,6 +99,61 @@ class CustomUserAdmin(UserAdmin):
         "team",
     )
     ordering = ("email",)
+
+    def has_add_permission(self, request, obj=None):
+        """no user can be added via admin view - user view is enough"""
+        return False
+
+
+@admin.action(description="Send test email to myself")
+def send_test_email(modeladmin, request, queryset):
+    """admin action for EmailTemplates to send test emails to user"""
+    user_obj = request.user
+    for test_template in queryset:
+        print(f"Sending test email triggered by {user_obj.username}")
+        if test_template.name == "daily_email":
+            app.send_task(
+                "competition.tasks.daily_matchday_email",
+                args=[
+                    user_obj.pk,
+                    "2024-06-15",
+                ],
+            )
+        elif test_template.name == "welcome_email":
+            app.send_task(
+                "competition.tasks.welcome_email",
+                args=[
+                    user_obj.pk,
+                ],
+            )
+        elif test_template.name == "final_reminder":
+            app.send_task(
+                "competition.tasks.last_admission_email",
+                args=[
+                    user_obj.pk,
+                ],
+            )
+
+
+@admin.register(EmailTemplates)
+class EmailTemplatesAdmin(admin.ModelAdmin):
+    """Admin view to view for Email templates"""
+
+    model = EmailTemplates
+    list_display = [
+        "name",
+    ]
+    ordering = ("name",)
+    readonly_fields = ("name",)
+    actions = [send_test_email]
+
+    def has_add_permission(self, request, obj=None):
+        """New email templates can't be added by admins"""
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Email templates can't be deleted by admins"""
+        return False
 
 
 admin.site.register(CustomUser, CustomUserAdmin)

@@ -3,6 +3,7 @@
 """Django's command-line utility for administrative tasks."""
 
 import os
+import shutil
 import sys
 import datetime
 
@@ -14,7 +15,8 @@ def __ensure_db_migration_folders_exist():
         "data/db_migrations/__init__.py",
         "data/db_migrations/general/__init__.py",
         "data/db_migrations/competition/__init__.py",
-        # "data/db_migrations/django_celery_beat/__init__.py",
+        "data/db_migrations/django_celery_beat/__init__.py",
+        "data/db_migrations/django_celery_beat_periodictask/__init__.py",
         "data/db_migrations/sessions/__init__.py",
         "data/db_migrations/auth/__init__.py",
         "data/db_migrations/authtoken/__init__.py",
@@ -27,6 +29,20 @@ def __ensure_db_migration_folders_exist():
             dir_only = "/".join(i.split("/")[:-1])
             os.makedirs(dir_only, exist_ok=True)
             open(i, "a").close()
+
+
+def __copy_over_static_files():
+    """copy image files in data folter to productionfiles"""
+    only_img_files = [
+        f
+        for f in os.listdir("./data")
+        if os.path.isfile(os.path.join("./data", f)) and any([i in f.lower() for i in [".jpg", ".png", ".jpeg"]])
+    ]
+    try:
+        for img in only_img_files:
+            shutil.copyfile(os.path.join("./data", img), os.path.join("./productionfiles", img))
+    except Exception as e:
+        print('Image copy error to folder "productionfiles"', e)
 
 
 def main():
@@ -60,6 +76,21 @@ if __name__ == "__main__":
         sys.argv = [INITIAL_ARGV[0], "migrate"]
         main()
 
+        # Load EURO 2024 if empty data
+        from competition.models import Tournament
+
+        _added_data = False
+        if len(Tournament.objects.all()) == 0:
+            print("Add Email templates")
+            sys.argv = [INITIAL_ARGV[0], "add_email_templates"]
+            main()
+
+            print("Add EURO 2024 data")
+            sys.argv = [INITIAL_ARGV[0], "add_EURO_2024_data"]
+            main()
+
+            _added_data = True
+
         # Create Admin
         from general.models import CustomUser
 
@@ -67,23 +98,17 @@ if __name__ == "__main__":
             print('Create super user "admin"')
             CustomUser.objects.create_superuser(email="admin@admin.local", password="password")
 
-        # Load EURO 2024 if empty data
-        from competition.models import Tournament
-
-        if len(Tournament.objects.all()) == 0:
-            print("Add EURO 2024 data")
-            sys.argv = [INITIAL_ARGV[0], "add_EURO_2024_data"]
+        # Add Test users
+        if _added_data and os.environ.get("DEBUG", "True").lower() == "true":
+            print("Add test data")
+            sys.argv = [INITIAL_ARGV[0], "add_test_data"]
             main()
-
-            if os.environ.get("DEBUG", "True").lower() == "true":
-                print("Add test data")
-                sys.argv = [INITIAL_ARGV[0], "add_test_data"]
-                main()
 
         # Collect static files
         print("Collect static files")
         sys.argv = [INITIAL_ARGV[0], "collectstatic", "--noinput"]
         main()
+        __copy_over_static_files()
 
     else:
         print(
