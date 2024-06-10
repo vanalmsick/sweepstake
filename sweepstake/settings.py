@@ -105,22 +105,24 @@ WSGI_APPLICATION = "sweepstake.wsgi.application"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "data/db.sqlite3",
-        "OPTIONS": {
-            "timeout": 20,  # seconds
-        },
-    }
-    if os.environ.get("POSTGRESQL_HOST", None) is None
-    else {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRESQL_DB", "postgres"),
-        "USER": os.environ.get("POSTGRESQL_USER", "postgres"),
-        "PASSWORD": os.environ.get("POSTGRESQL_PASSWORD", "postgres"),
-        "HOST": os.environ.get("POSTGRESQL_HOST", "localhost"),
-        "PORT": "",
-    }
+    "default": (
+        {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "data/db.sqlite3",
+            "OPTIONS": {
+                "timeout": 20,  # seconds
+            },
+        }
+        if os.environ.get("POSTGRESQL_HOST", None) is None
+        else {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("POSTGRESQL_DB", "postgres"),
+            "USER": os.environ.get("POSTGRESQL_USER", "postgres"),
+            "PASSWORD": os.environ.get("POSTGRESQL_PASSWORD", "postgres"),
+            "HOST": os.environ.get("POSTGRESQL_HOST", "localhost"),
+            "PORT": "",
+        }
+    )
 }
 
 
