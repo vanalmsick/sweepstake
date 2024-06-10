@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.exceptions import ValidationError
 from django import forms
 
 from .models import CustomUser
@@ -9,7 +10,7 @@ from .models import USER_TEAMS
 
 def email_domain(value):
     if "@morganstanley.com" not in str(value).lower():
-        raise ValueError("Email must be a @morganstanley.com")
+        raise ValidationError("Email must be a @morganstanley.com")
 
 
 class CustomUserCreationForm(UserCreationForm):
