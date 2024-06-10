@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     "celery",
     "general",
     "competition",
-    "django_celery_beat",
+    #    "django_celery_beat",
 ]
 AUTH_USER_MODEL = "general.CustomUser"
 
@@ -73,8 +73,8 @@ MIGRATION_MODULES = {
     "general": "data.db_migrations.general",
     "competition": "data.db_migrations.competition",
     "preferences": "data.db_migrations.preferences",
-    "django_celery_beat": "data.db_migrations.django_celery_beat",
-    "django_celery_beat_periodictask": "data.db_migrations.django_celery_beat_periodictask",
+    #    "django_celery_beat": "data.db_migrations.django_celery_beat",
+    #    "django_celery_beat_periodictask": "data.db_migrations.django_celery_beat_periodictask",
     "sessions": "data.db_migrations.sessions",
     "auth": "data.db_migrations.auth",
     "authtoken": "data.db_migrations.authtoken",
