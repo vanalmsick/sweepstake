@@ -3,6 +3,7 @@ import datetime
 from django.shortcuts import render, redirect
 from django.db.models import Sum, Q
 from django.conf import settings
+from django.core.cache import cache
 
 from general.models import CustomUser
 from .models import Match, MatchBet, Participant, Group, GroupBet, TournamentBet, MATCH_PHASES_DICT, BROADCASTER_URLS
@@ -20,31 +21,40 @@ from .forms import (
 # Create your views here.
 def ScheduleView(request, country_name=None, group_name=None):
     """View to see list of scheduled and past matches"""
-    print(
-        f'Get ScheduleView {("for all matches" if group_name is None else "with group " + group_name) if country_name is None else "with country " + country_name}.'
-    )
+    match_lst_date_sorted = cache.get(f"schedule_data_{country_name}_{group_name}", None)
 
-    now = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
-    if country_name is not None:
-        match_lst = Match.objects.filter(
-            Q(team_a__name__icontains=country_name) | Q(team_b__name__icontains=country_name)
-        ).order_by("match_time")
-    elif group_name is not None:
-        match_lst = Match.objects.filter(
-            Q(team_a__group__name__icontains=group_name) | Q(team_b__group__name__icontains=group_name)
-        ).order_by("match_time")
-    else:
-        match_lst = Match.objects.all().order_by("match_time")
+    if match_lst_date_sorted is None:
+        print(
+            f'Get ScheduleView {("for all matches" if group_name is None else "with group " + group_name) if country_name is None else "with country " + country_name}.'
+        )
 
-    match_lst_date_sorted = {}
-    last_date = None
-    for match_i in match_lst:
-        if last_date is None or match_i.match_time.date() != last_date:
-            last_date = match_i.match_time.date()
-            match_lst_date_sorted[last_date] = []
-        match_i.tv_broadcaster__url = BROADCASTER_URLS[match_i.tv_broadcaster]
-        match_i.finished = (match_i.match_time + datetime.timedelta(minutes=90)) < now
-        match_lst_date_sorted[last_date].append(match_i)
+        now = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
+        if country_name is not None:
+            match_lst = Match.objects.filter(
+                Q(team_a__name__icontains=country_name) | Q(team_b__name__icontains=country_name)
+            ).order_by("match_time")
+        elif group_name is not None:
+            match_lst = Match.objects.filter(
+                Q(team_a__group__name__icontains=group_name) | Q(team_b__group__name__icontains=group_name)
+            ).order_by("match_time")
+        else:
+            match_lst = Match.objects.all().order_by("match_time")
+
+        match_lst_date_sorted = {}
+        last_date = None
+        for match_i in match_lst:
+            if last_date is None or match_i.match_time.date() != last_date:
+                last_date = match_i.match_time.date()
+                match_lst_date_sorted[last_date] = []
+            match_i.tv_broadcaster__url = BROADCASTER_URLS[match_i.tv_broadcaster]
+            match_i.finished = (match_i.match_time + datetime.timedelta(minutes=90)) < now
+            match_lst_date_sorted[last_date].append(match_i)
+
+        cache.set(
+            f"schedule_data_{country_name}_{group_name}",
+            match_lst_date_sorted,
+            timeout=settings.DYNAMIC_PAGE_CACHE_TIME,
+        )
 
     return render(
         request,
@@ -225,52 +235,62 @@ def OthersBetView(request, other_user_id):
 
 def getLeaderboard():
     """Generate leaderboard table"""
-    combined = {
-        user.pk: {"user__username": user.username, "user__pk": user.pk, "user__team": user.team, "total_points": None}
-        for user in CustomUser.objects.filter(email__isnull=False)
-    }
+    final_ranking = cache.get("leaderboard_data", None)
+    if final_ranking is None:
+        print("Get latest leaderboard")
+        combined = {
+            user.pk: {
+                "user__username": user.username,
+                "user__pk": user.pk,
+                "user__team": user.team,
+                "total_points": None,
+            }
+            for user in CustomUser.objects.filter(email__isnull=False)
+        }
 
-    all_matches = (
-        MatchBet.objects.filter(match__score_a__isnull=False, match__score_b__isnull=False, points__isnull=False)
-        .values("user__username", "user__pk", "user__team")
-        .annotate(total_points=Sum("points"))
-    )
-    all_groups = (
-        GroupBet.objects.filter(group__winner__isnull=False, points__isnull=False)
-        .values("user__username", "user__pk", "user__team")
-        .annotate(total_points=Sum("points"))
-    )
-    all_tournaments = (
-        TournamentBet.objects.filter(points__isnull=False)
-        .values("user__username", "user__pk", "user__team")
-        .annotate(total_points=Sum("points"))
-    )
-    for dataset in [all_matches, all_groups, all_tournaments]:
-        for datapoint in dataset:
-            user__username = datapoint["user__pk"]
-            total_points = datapoint["total_points"]
-            if combined[user__username]["total_points"] is None:
-                combined[user__username]["total_points"] = total_points
+        all_matches = (
+            MatchBet.objects.filter(match__score_a__isnull=False, match__score_b__isnull=False, points__isnull=False)
+            .values("user__username", "user__pk", "user__team")
+            .annotate(total_points=Sum("points"))
+        )
+        all_groups = (
+            GroupBet.objects.filter(group__winner__isnull=False, points__isnull=False)
+            .values("user__username", "user__pk", "user__team")
+            .annotate(total_points=Sum("points"))
+        )
+        all_tournaments = (
+            TournamentBet.objects.filter(points__isnull=False)
+            .values("user__username", "user__pk", "user__team")
+            .annotate(total_points=Sum("points"))
+        )
+        for dataset in [all_matches, all_groups, all_tournaments]:
+            for datapoint in dataset:
+                user__username = datapoint["user__pk"]
+                total_points = datapoint["total_points"]
+                if combined[user__username]["total_points"] is None:
+                    combined[user__username]["total_points"] = total_points
+                else:
+                    combined[user__username]["total_points"] += total_points
+
+        combined = sorted(
+            combined.values(), key=lambda d: -1 if d["total_points"] is None else d["total_points"], reverse=True
+        )
+        final_ranking = []
+        last_points = 1_000_000
+        last_position = 0
+
+        for i in combined:
+            total_points = i["total_points"]
+            if total_points is None:
+                _ = i.pop("total_points")
+                final_ranking.append({**i, "rank": "-/-", "total_points": "-/-"})
             else:
-                combined[user__username]["total_points"] += total_points
+                if total_points < last_points:
+                    last_position += 1
+                    last_points = total_points
+                final_ranking.append({**i, "rank": last_position})
 
-    combined = sorted(
-        combined.values(), key=lambda d: -1 if d["total_points"] is None else d["total_points"], reverse=True
-    )
-    final_ranking = []
-    last_points = 1_000_000
-    last_position = 0
-
-    for i in combined:
-        total_points = i["total_points"]
-        if total_points is None:
-            _ = i.pop("total_points")
-            final_ranking.append({**i, "rank": "-/-", "total_points": "-/-"})
-        else:
-            if total_points < last_points:
-                last_position += 1
-                last_points = total_points
-            final_ranking.append({**i, "rank": last_position})
+        cache.set("leaderboard_data", final_ranking, timeout=settings.DYNAMIC_PAGE_CACHE_TIME)
 
     return final_ranking
 

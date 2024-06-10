@@ -162,7 +162,7 @@ CELERY_TASK_ALWAYS_EAGER = DEBUG  # true to run tasks synchronously for testing 
 CELERY_BROKER_URL = "redis://localhost:6379"
 CELERY_RESULT_BACKEND = "redis://localhost:6379"
 STATIC_PAGE_CACHE_TIME = int(os.environ.get("STATIC_PAGE_CACHE_TIME", 60 * 60))  # every hour
-DYNAMIC_PAGE_CACHE_TIME = int(os.environ.get("STATIC_PAGE_CACHE_TIME", 60 * 2))  # 2 minutes
+DYNAMIC_PAGE_CACHE_TIME = int(os.environ.get("STATIC_PAGE_CACHE_TIME", 60 * 5))  # 5 minutes
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 CACHES = {
