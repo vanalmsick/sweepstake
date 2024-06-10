@@ -16,6 +16,7 @@ from general.models import EmailTemplates, CustomUser
 @app.task()
 def daily_emails():
     """clery beat daily 14:00 scheduled task - this task will trigger either the last_admission_email or daily_matchday_email"""
+    print("Checking if daily emails need to be send out")
     today = datetime.datetime.today()
     first_match_date = Match.objects.all().order_by("match_time").first().match_time
     upcomming_matches = Match.objects.filter(match_time__date=today).order_by("match_time")
@@ -24,12 +25,12 @@ def daily_emails():
     # first match is tomorrow
     if first_match_date - datetime.timedelta(days=1) == today:
         print("Sending final reminder emails today")
-        email_to_send = "last_admission_email"
+        email_to_send = "competition.tasks.last_admission_email"
 
     # today are matches
-    elif len(upcomming_matches) > 0:
+    elif len(upcomming_matches) > 0 or settings.DEBUG:
         print("Sending daily match emails today")
-        email_to_send = "daily_matchday_email"
+        email_to_send = "competition.tasks.daily_matchday_email"
 
     # if emails are send out today
     if email_to_send is not None:
@@ -45,10 +46,13 @@ def daily_emails():
                 ],
                 eta=prev_email_eta,
             )
+            print(f"Email {email_to_send} for {user.pk} scheduled at {prev_email_eta}")
             if i < 3:
                 prev_email_eta += datetime.timedelta(minute=5)
             else:
                 prev_email_eta += datetime.timedelta(minute=2)
+    else:
+        print("No daily emails today")
 
 
 @app.task()
