@@ -77,7 +77,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_("email address"), unique=True)
     first_name = models.CharField(max_length=30, null=False, blank=False)
     last_name = models.CharField(max_length=40, null=False, blank=False)
-    team = models.CharField(choices=USER_TEAMS, max_length=30, null=True, blank=True)
+    team = models.CharField(choices=USER_TEAMS, max_length=40, null=True, blank=True)
 
     username = models.CharField(max_length=40, null=True, blank=True)
 
@@ -120,6 +120,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 class EmailTemplates(models.Model):
     """Email Templates"""
 
-    name = models.CharField(max_length=30, unique=True)
-    email_subject = models.CharField(max_length=30, blank=True, null=True)
-    html = models.TextField()
+    name = models.CharField(max_length=40, unique=True)
+    email_subject = models.CharField(max_length=60, blank=True, null=True)
+    html = models.TextField(max_length=3_000)
