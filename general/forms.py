@@ -7,10 +7,15 @@ from .models import CustomUser
 from .models import USER_TEAMS
 
 
+def email_domain(value):
+    if "@morganstanley.com" not in str(value).lower():
+        raise ValueError("Email must be a @morganstanley.com")
+
+
 class CustomUserCreationForm(UserCreationForm):
     """Form to create a new user"""
 
-    email = forms.EmailField(label=False)
+    email = forms.EmailField(label=False, validators=[email_domain])
     first_name = forms.CharField(label=False)
     last_name = forms.CharField(label=False)
     team = forms.CharField(label=False, widget=forms.Select(choices=[("", "---------")] + USER_TEAMS))

@@ -20,7 +20,7 @@ class EmptyStringToNoneField(models.CharField):
 class Tournament(models.Model):
     """Tournament - the highest level e.g. Football World Cup 2024"""
 
-    name = EmptyStringToNoneField(max_length=30, unique=True)
+    name = EmptyStringToNoneField(max_length=50, unique=True)
 
     first_place = models.ForeignKey(
         "Participant",
@@ -153,7 +153,7 @@ BROADCASTER_URLS = {
 class Participant(models.Model):
     """Tournament Participants e.g. countries like Germany, UK, France, etc."""
 
-    name = EmptyStringToNoneField(max_length=30, unique=True)
+    name = EmptyStringToNoneField(max_length=40, unique=True)
     flag = models.URLField(max_length=300)
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)
 
@@ -170,10 +170,10 @@ class Match(models.Model):
     tv_broadcaster = EmptyStringToNoneField(max_length=9, choices=BROADCASTERS, null=True, blank=True)
 
     team_a = models.ForeignKey(Participant, on_delete=models.SET_NULL, null=True, blank=True, related_name="team_a")
-    team_a_placeholder = EmptyStringToNoneField(max_length=30, null=True, blank=True)
+    team_a_placeholder = EmptyStringToNoneField(max_length=40, null=True, blank=True)
     score_a = models.IntegerField(null=True, blank=True)
     team_b = models.ForeignKey(Participant, on_delete=models.SET_NULL, null=True, blank=True, related_name="team_b")
-    team_b_placeholder = EmptyStringToNoneField(max_length=30, null=True, blank=True)
+    team_b_placeholder = EmptyStringToNoneField(max_length=40, null=True, blank=True)
     score_b = models.IntegerField(null=True, blank=True)
 
     @property
