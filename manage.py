@@ -38,8 +38,11 @@ def __copy_over_static_files():
         for f in os.listdir("./data")
         if os.path.isfile(os.path.join("./data", f)) and any([i in f.lower() for i in [".jpg", ".png", ".jpeg"]])
     ]
-    for img in only_img_files:
-        shutil.copyfile(os.path.join("./data", img), os.path.join("./productionfiles", img))
+    try:
+        for img in only_img_files:
+            shutil.copyfile(os.path.join("./data", img), os.path.join("./productionfiles", img))
+    except Exception as e:
+        print('Image copy error to folder "productionfiles"', e)
 
 
 def main():

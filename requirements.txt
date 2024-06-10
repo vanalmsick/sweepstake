@@ -6,7 +6,7 @@ django-filter
 django-import-export>=4.0.0
 python-dotenv
 supervisor
-celery
+celery>4.4.0
 flower
 celery[redis]
 django_celery_beat
