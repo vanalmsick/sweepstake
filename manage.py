@@ -3,6 +3,7 @@
 """Django's command-line utility for administrative tasks."""
 
 import os
+import shutil
 import sys
 import datetime
 
@@ -28,6 +29,17 @@ def __ensure_db_migration_folders_exist():
             dir_only = "/".join(i.split("/")[:-1])
             os.makedirs(dir_only, exist_ok=True)
             open(i, "a").close()
+
+
+def __copy_over_static_files():
+    """copy image files in data folter to productionfiles"""
+    only_img_files = [
+        f
+        for f in os.listdir("./data")
+        if os.path.isfile(os.path.join("./data", f)) and any([i in f.lower() for i in [".jpg", ".png", ".jpeg"]])
+    ]
+    for img in only_img_files:
+        shutil.copyfile(os.path.join("./data", img), os.path.join("./productionfiles", img))
 
 
 def main():
@@ -93,6 +105,7 @@ if __name__ == "__main__":
         print("Collect static files")
         sys.argv = [INITIAL_ARGV[0], "collectstatic", "--noinput"]
         main()
+        __copy_over_static_files()
 
     else:
         print(
