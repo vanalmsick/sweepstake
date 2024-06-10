@@ -99,7 +99,7 @@ if __name__ == "__main__":
             CustomUser.objects.create_superuser(email="admin@admin.local", password="password")
 
         # Add Test users
-        if _added_data and os.environ.get("ADD_TEST_DATA", "True").lower() == "true":
+        if _added_data and os.environ.get("ADD_TEST_DATA", "False").lower() == "true":
             print("Add test data")
             sys.argv = [INITIAL_ARGV[0], "add_test_data"]
             main()

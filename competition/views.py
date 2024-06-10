@@ -324,7 +324,7 @@ def getOthersNonMatchPredictions(level, filter):
         level_obj = Tournament.objects.filter(name=filter)
         if len(level_obj) > 0 and level_obj[0].is_editable is False:
             level_obj = level_obj[0]
-            queryset = TournamentBet.objects.filter(tournament=level_obj).order_by(
+            queryset = TournamentBet.objects.filter(tournament=level_obj, winner__isnull=False).order_by(
                 "-points", "winner", "user__username"
             )
         else:
