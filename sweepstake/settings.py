@@ -112,6 +112,15 @@ DATABASES = {
             "timeout": 20,  # seconds
         },
     }
+    if os.environ.get("POSTGRESQL_HOST", None) is None
+    else {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("POSTGRESQL_DB", "postgres"),
+        "USER": os.environ.get("POSTGRESQL_USER", "postgres"),
+        "PASSWORD": os.environ.get("POSTGRESQL_PASSWORD", "postgres"),
+        "HOST": os.environ.get("POSTGRESQL_HOST", "localhost"),
+        "PORT": "",
+    }
 }
 
 
