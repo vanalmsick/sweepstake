@@ -32,7 +32,7 @@ def daily_emails():
     if email_to_send is not None:
         user_lst = CustomUser.objects.all().order_by("pk")
         prev_email_eta = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
-        prev_email_eta += datetime.timedelta(minute=1)
+        prev_email_eta += datetime.timedelta(minutes=1)
 
         for i, user in enumerate(user_lst):
             app.send_task(
@@ -44,9 +44,9 @@ def daily_emails():
             )
             print(f"Email {email_to_send} for {user.pk} scheduled at {prev_email_eta}")
             if i < 3:
-                prev_email_eta += datetime.timedelta(minute=5)
+                prev_email_eta += datetime.timedelta(minutes=5)
             else:
-                prev_email_eta += datetime.timedelta(minute=2)
+                prev_email_eta += datetime.timedelta(minutes=2)
     else:
         print("No daily emails today")
 
@@ -131,11 +131,9 @@ def welcome_email(user_pk):
     first_name = user_obj.first_name
     id = user_obj.pk
     verify_link = f"{settings.MAIN_HOST}/verify/{id}/"
+    qr_image_link = f"{settings.MAIN_HOST}/static/qr_pay.jpg"
 
-    email_body = email_body.format(
-        first_name=first_name,
-        verify_link=verify_link,
-    )
+    email_body = email_body.format(first_name=first_name, verify_link=verify_link, qr_image_link=qr_image_link)
 
     send_email(subject=email_subject, body=email_body, to_email=user_obj.email)
 
