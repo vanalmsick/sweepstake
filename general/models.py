@@ -122,4 +122,4 @@ class EmailTemplates(models.Model):
 
     name = models.CharField(max_length=40, unique=True)
     email_subject = models.CharField(max_length=60, blank=True, null=True)
-    html = models.TextField()
+    html = models.TextField(max_length=3_000)
