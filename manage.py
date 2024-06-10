@@ -14,7 +14,7 @@ def __ensure_db_migration_folders_exist():
         "data/db_migrations/__init__.py",
         "data/db_migrations/general/__init__.py",
         "data/db_migrations/competition/__init__.py",
-        # "data/db_migrations/django_celery_beat/__init__.py",
+        "data/db_migrations/django_celery_beat/__init__.py",
         "data/db_migrations/sessions/__init__.py",
         "data/db_migrations/auth/__init__.py",
         "data/db_migrations/authtoken/__init__.py",
