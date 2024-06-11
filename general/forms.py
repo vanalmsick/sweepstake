@@ -11,6 +11,7 @@ from .models import USER_TEAMS
 def email_domain(value):
     if "@morganstanley.com" not in str(value).lower():
         raise ValidationError("Email must be a @morganstanley.com")
+    return value
 
 
 class CustomUserCreationForm(UserCreationForm):
