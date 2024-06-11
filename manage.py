@@ -65,57 +65,57 @@ if __name__ == "__main__":
 
     __ensure_db_migration_folders_exist()
 
-    if os.environ.get("RUN_MAIN", "false") == "false":
-        print("Django Server was started at: " f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')}")
+    # if os.environ.get("RUN_MAIN", "false") == "false":
+    print("Django Server was started at: " f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')}")
 
-        # Make data model migrations
-        sys.argv = [INITIAL_ARGV[0], "makemigrations"]
+    # Make data model migrations
+    sys.argv = [INITIAL_ARGV[0], "makemigrations"]
+    main()
+
+    # Apply data model migrations
+    sys.argv = [INITIAL_ARGV[0], "migrate"]
+    main()
+
+    # Load EURO 2024 if empty data
+    from competition.models import Tournament
+
+    _added_data = False
+    if len(Tournament.objects.all()) == 0:
+        print("Add Email templates")
+        sys.argv = [INITIAL_ARGV[0], "add_email_templates"]
         main()
 
-        # Apply data model migrations
-        sys.argv = [INITIAL_ARGV[0], "migrate"]
+        print("Add EURO 2024 data")
+        sys.argv = [INITIAL_ARGV[0], "add_EURO_2024_data"]
         main()
 
-        # Load EURO 2024 if empty data
-        from competition.models import Tournament
+        _added_data = True
 
-        _added_data = False
-        if len(Tournament.objects.all()) == 0:
-            print("Add Email templates")
-            sys.argv = [INITIAL_ARGV[0], "add_email_templates"]
-            main()
+    # Create Admin
+    from general.models import CustomUser
 
-            print("Add EURO 2024 data")
-            sys.argv = [INITIAL_ARGV[0], "add_EURO_2024_data"]
-            main()
+    if len(CustomUser.objects.filter(email="admin@admin.local")) == 0:
+        print('Create super user "admin"')
+        CustomUser.objects.create_superuser(email="admin@admin.local", password="password")
 
-            _added_data = True
-
-        # Create Admin
-        from general.models import CustomUser
-
-        if len(CustomUser.objects.filter(email="admin@admin.local")) == 0:
-            print('Create super user "admin"')
-            CustomUser.objects.create_superuser(email="admin@admin.local", password="password")
-
-        # Add Test users
-        if _added_data and os.environ.get("ADD_TEST_DATA", "False").lower() == "true":
-            print("Add test data")
-            sys.argv = [INITIAL_ARGV[0], "add_test_data"]
-            main()
-
-        # Collect static files
-        print("Collect static files")
-        sys.argv = [INITIAL_ARGV[0], "collectstatic", "--noinput"]
+    # Add Test users
+    if _added_data and os.environ.get("ADD_TEST_DATA", "False").lower() == "true":
+        print("Add test data")
+        sys.argv = [INITIAL_ARGV[0], "add_test_data"]
         main()
-        __copy_over_static_files()
 
-    else:
-        print(
-            "Django auto-reloader process executes second instance of django. "
-            "Please turn-off for production usage by executing: "
-            '"python manage.py runserver --noreload"'
-        )
+    # Collect static files
+    print("Collect static files")
+    sys.argv = [INITIAL_ARGV[0], "collectstatic", "--noinput"]
+    main()
+    __copy_over_static_files()
+
+    # else:
+    #    print(
+    #        "Django auto-reloader process executes second instance of django. "
+    #        "Please turn-off for production usage by executing: "
+    #        '"python manage.py runserver --noreload"'
+    #    )
 
     # Run server
     sys.argv = INITIAL_ARGV
