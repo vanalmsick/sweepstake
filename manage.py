@@ -94,7 +94,7 @@ if __name__ == "__main__":
         # Create Admin
         from general.models import CustomUser
 
-        if len(CustomUser.objects.filter(email="admin@admin.local")) == 0:
+        if len(CustomUser.objects.filter(is_staff=True)) == 0:
             print('Create super user "admin"')
             CustomUser.objects.create_superuser(email="admin@admin.local", password="password")
 
