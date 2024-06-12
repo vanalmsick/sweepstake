@@ -75,6 +75,7 @@ class CustomUserAdmin(UserAdmin):
                     "has_paid",
                     "is_verified",
                     "is_staff",
+                    "is_active",
                 )
             },
         ),

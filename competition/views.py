@@ -273,6 +273,9 @@ def getLeaderboard():
                     combined[user__username]["total_points"] += total_points
 
         combined = sorted(
+            combined.values(), key=lambda d: -1 if d["user__username"] is None else d["total_points"], reverse=False
+        )
+        combined = sorted(
             combined.values(), key=lambda d: -1 if d["total_points"] is None else d["total_points"], reverse=True
         )
         final_ranking = []
