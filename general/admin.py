@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import Group, Permission
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import CustomUser, EmailTemplates
 from competition.models import MatchBet, GroupBet, TournamentBet
@@ -159,5 +158,5 @@ class EmailTemplatesAdmin(admin.ModelAdmin):
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.unregister(Group)
-admin.site.unregister(Permission)
+# admin.site.unregister(Group)
+# admin.site.unregister(Permission)
