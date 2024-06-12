@@ -12,7 +12,7 @@ from general.models import EmailTemplates, CustomUser
 def __get_email_template(template_name):
     email_obj = EmailTemplates.objects.filter(name=template_name)
 
-    if settings.DEBUG or len(email_obj):
+    if settings.DEBUG or len(email_obj) == 0:
         with open(os.path.join("templates", "emails", f"{template_name}.html"), "r") as file:
             email_body = file.read()
         email_subject = template_name
