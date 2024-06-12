@@ -20,6 +20,7 @@ def __get_email_template(template_name):
         # add template if does not exist
         if len(email_obj) == 0:
             email_obj = EmailTemplates(name=template_name, html=email_body)
+            email_obj.save()
 
     else:
         email_obj = email_obj.first()
