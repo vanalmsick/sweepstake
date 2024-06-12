@@ -9,6 +9,7 @@ from .models import USER_TEAMS
 
 
 def email_domain(value):
+    """email validation to only allow certain email dimains to sign-up"""
     if "@morganstanley.com" not in str(value).lower():
         raise ValidationError("Email must be a @morganstanley.com")
     return value
@@ -23,6 +24,7 @@ class CustomUserCreationForm(UserCreationForm):
     team = forms.CharField(label=False, widget=forms.Select(choices=[("", "---------")] + USER_TEAMS))
     password1 = forms.CharField(label=False, widget=forms.PasswordInput())
     password2 = forms.CharField(label=False, widget=forms.PasswordInput())
+    is_active = True
 
     email.widget.attrs.update({"class": "form-control", "placeholder": "Enter email"})
     first_name.widget.attrs.update({"class": "form-control", "placeholder": "First name"})

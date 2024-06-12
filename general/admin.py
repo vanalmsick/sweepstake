@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import Group
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import CustomUser, EmailTemplates
 from competition.models import MatchBet, GroupBet, TournamentBet
@@ -54,7 +53,7 @@ class CustomUserAdmin(UserAdmin):
         "last_name",
         "is_staff",
     )
-    list_filter = ("is_staff", "team")
+    list_filter = ("is_staff", "has_paid", "team")
     fieldsets = (
         (
             None,
@@ -75,6 +74,8 @@ class CustomUserAdmin(UserAdmin):
                     "has_paid",
                     "is_verified",
                     "is_staff",
+                    "groups",
+                    "user_permissions",
                 )
             },
         ),
@@ -157,5 +158,5 @@ class EmailTemplatesAdmin(admin.ModelAdmin):
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.unregister(Group)
+# admin.site.unregister(Group)
 # admin.site.unregister(Permission)
