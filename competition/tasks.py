@@ -9,6 +9,26 @@ from competition.models import Match
 from general.models import EmailTemplates, CustomUser
 
 
+def __get_email_template(template_name):
+    email_obj = EmailTemplates.objects.filter(name=template_name)
+
+    if settings.DEBUG or len(email_obj):
+        with open(os.path.join("templates", "emails", f"{template_name}.html"), "r") as file:
+            email_body = file.read()
+        email_subject = template_name
+
+        # add template if does not exist
+        if len(email_obj) == 0:
+            email_obj = EmailTemplates(name=template_name, html=email_body)
+
+    else:
+        email_obj = email_obj.first()
+        email_subject = email_obj.email_subject
+        email_body = email_obj.html
+
+    return email_subject, email_body
+
+
 @app.task()
 def daily_emails():
     """clery beat daily 14:00 scheduled task - this task will trigger either the last_admission_email or daily_matchday_email"""
@@ -68,14 +88,7 @@ def daily_matchday_email(user_pk, override_date=None):
         upcomming_matches_html += f'<tr><td><b>{match.match_time.strftime("%H:%M")}</b></td><td style="text-align: right;">{match.team_a.name} <img src="{ match.team_a.flag }" height="20" width="20"></td><td style="text-align: center;">{bet_a}:{bet_b}</td><td><img src="{ match.team_b.flag }" height="20" width="20"> {match.team_b.name}</td><td>{match.tv_broadcaster}</td></tr>\n'
     upcomming_matches_html = "<table>\n" + upcomming_matches_html + "</table>\n"
 
-    email_template = EmailTemplates.objects.get(name="daily_email")
-    email_subject = email_template.email_subject
-    email_body = email_template.html
-
-    if settings.DEBUG:
-        with open(os.path.join("templates", "emails", "daily_email.html"), "r") as file:
-            email_template = file.read()
-            email_body = email_template
+    email_subject, email_body = __get_email_template("daily_email")
 
     first_name = user_obj.first_name
     my_predictions_link = f"{settings.MAIN_HOST}/predictions/my/"
@@ -95,14 +108,8 @@ def daily_matchday_email(user_pk, override_date=None):
 def last_admission_email(user_pk):
     """Email to remind users that tomorrow the first match kicks-off and they need to put in predictions"""
     user_obj = CustomUser.objects.get(pk=user_pk)
-    email_template = EmailTemplates.objects.get(name="final_reminder")
-    email_subject = email_template.email_subject
-    email_body = email_template.html
 
-    if settings.DEBUG:
-        with open(os.path.join("templates", "emails", "final_reminder.html"), "r") as file:
-            email_template = file.read()
-            email_body = email_template
+    email_subject, email_body = __get_email_template("final_reminder")
 
     first_name = user_obj.first_name
     my_predictions_link = f"{settings.MAIN_HOST}/predictions/my/"
@@ -119,14 +126,8 @@ def last_admission_email(user_pk):
 def welcome_email(user_pk):
     """Welcome with email verification and payment instructions"""
     user_obj = CustomUser.objects.get(pk=user_pk)
-    email_template = EmailTemplates.objects.get(name="welcome_email")
-    email_subject = email_template.email_subject
-    email_body = email_template.html
 
-    if settings.DEBUG:
-        with open(os.path.join("templates", "emails", "welcome_email.html"), "r") as file:
-            email_template = file.read()
-            email_body = email_template
+    email_subject, email_body = __get_email_template("welcome_email")
 
     first_name = user_obj.first_name
     id = user_obj.pk
@@ -143,20 +144,8 @@ def payment_reminder_email(user_pk, cc=[]):
     """Payment reminder email"""
     user_obj = CustomUser.objects.get(pk=user_pk)
     cc_lst = [CustomUser.objects.get(pk=i).email for i in cc]
-    email_template = EmailTemplates.objects.filter(name="payment_reminder")
 
-    if len(email_template) == 0 or settings.DEBUG:
-        with open(os.path.join("templates", "emails", "payment_reminder.html"), "r") as file:
-            email_template = file.read()
-            email_body = email_template
-        if len(email_template) == 0:
-            email_template = EmailTemplates(name="payment_reminder", html=email_body)
-            email_template.save()
-    else:
-        email_template = email_template.first()
-
-    email_subject = email_template.email_subject
-    email_body = email_template.html
+    email_subject, email_body = __get_email_template("payment_reminder")
 
     first_name = user_obj.first_name
     qr_image_link = f"{settings.MAIN_HOST}/static/qr_pay.jpg"
