@@ -85,7 +85,7 @@ def send_payment_reminder_email(modeladmin, request, queryset):
     for user_obj in queryset:
         print(f"Sending payment reminder email to {user_obj.username} triggered by {request.user.username}")
         app.send_task(
-            "competition.tasks.payment_reminder",
+            "competition.tasks.payment_reminder_email",
             args=[user_obj.pk, [request.user.pk]],
         )
 
@@ -192,7 +192,7 @@ def send_test_email(modeladmin, request, queryset):
             )
         elif test_template.name == "final_reminder":
             app.send_task(
-                "competition.tasks.final_reminder",
+                "competition.tasks.payment_reminder_email",
                 args=[user_obj.pk, [user_obj.pk]],
             )
 
