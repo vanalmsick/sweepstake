@@ -17,6 +17,7 @@ class Command(BaseCommand):
             "daily_email.html": "Place your predictions for today's matches",
             "final_reminder.html": "Last chance to place your EURO 2024 Champion prediction",
             "welcome_email.html": "Welcome to the MS Risk 2024 EURO Prediction Game",
+            "payment_reminder": "MS Risk 2024 EURO Prediction Game",
         }.items():
             with open(os.path.join("templates", "emails", file_name), "r") as file:
                 file_contents = file.read()

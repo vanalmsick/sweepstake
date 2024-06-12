@@ -40,10 +40,66 @@ class TournamentBetInline(admin.TabularInline):
     can_delete = False
 
 
+@admin.action(description="Send welcome email again to user")
+def send_weclome_email_again(modeladmin, request, queryset):
+    """admin action for users to re-send welcome email to user"""
+    for user_obj in queryset:
+        print(f"Sending welcome email again to {user_obj.username} triggered by {request.user.username}")
+        app.send_task(
+            "competition.tasks.welcome_email",
+            args=[
+                user_obj.pk,
+            ],
+        )
+
+
+@admin.action(description="Send final reminder email again to user")
+def send_final_reminder_email_again(modeladmin, request, queryset):
+    """admin action for users to re-send final reminder email to user"""
+    for user_obj in queryset:
+        print(f"Sending final remindeer email again to {user_obj.username} triggered by {request.user.username}")
+        app.send_task(
+            "competition.tasks.last_admission_email",
+            args=[
+                user_obj.pk,
+            ],
+        )
+
+
+@admin.action(description="Send daily email again to user")
+def send_daily_email_again(modeladmin, request, queryset):
+    """admin action for users to re-send daily email to user"""
+    for user_obj in queryset:
+        print(f"Sending daily email again to {user_obj.username} triggered by {request.user.username}")
+        app.send_task(
+            "competition.tasks.daily_matchday_email",
+            args=[
+                user_obj.pk,
+            ],
+        )
+
+
+@admin.action(description="Send payment reminder to user")
+def send_payment_reminder_email(modeladmin, request, queryset):
+    """admin action for users to send payment remidner email to user"""
+    for user_obj in queryset:
+        print(f"Sending payment reminder email to {user_obj.username} triggered by {request.user.username}")
+        app.send_task(
+            "competition.tasks.payment_reminder_email",
+            args=[user_obj.pk, [request.user.pk]],
+        )
+
+
 class CustomUserAdmin(UserAdmin):
     """Amin view of Custom User model - needed to use email as login and a few more additional fields"""
 
     add_form = CustomUserCreationForm
+    actions = [
+        send_weclome_email_again,
+        send_final_reminder_email_again,
+        send_daily_email_again,
+        send_payment_reminder_email,
+    ]
     form = CustomUserChangeForm
     model = CustomUser
     list_display = (
@@ -133,6 +189,11 @@ def send_test_email(modeladmin, request, queryset):
                 args=[
                     user_obj.pk,
                 ],
+            )
+        elif test_template.name == "payment_reminder":
+            app.send_task(
+                "competition.tasks.payment_reminder_email",
+                args=[user_obj.pk, [user_obj.pk]],
             )
 
 
