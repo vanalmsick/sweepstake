@@ -53,7 +53,7 @@ class CustomUserAdmin(UserAdmin):
         "last_name",
         "is_staff",
     )
-    list_filter = ("is_staff", "team")
+    list_filter = ("is_staff", "has_paid", "team")
     fieldsets = (
         (
             None,
