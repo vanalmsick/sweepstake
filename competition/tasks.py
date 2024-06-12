@@ -150,7 +150,8 @@ def payment_reminder_email(user_pk, cc=[]):
             email_template = file.read()
             email_body = email_template
         if len(email_template) == 0:
-            email_template = EmailTemplates(name="payment_reminder", html=email_body).save()
+            email_template = EmailTemplates(name="payment_reminder", html=email_body)
+            email_template.save()
     else:
         email_template = email_template.first()
 
