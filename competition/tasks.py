@@ -65,7 +65,7 @@ def daily_matchday_email(user_pk, override_date=None):
         bet = match.matchbet_set.filter(user=user_obj).first()
         bet_a = "-" if bet is None else bet.score_a
         bet_b = "-" if bet is None else bet.score_b
-        upcomming_matches_html += f'<tr><td><b>{match.match_time.strftime("%H:%M")}</b></td><td style="text-align: right;">{match.team_a.name} <img src="{ match.team_a.flag }" height="20px" width="20px"></td><td style="text-align: center;">{bet_a}:{bet_b}</td><td><img src="{ match.team_b.flag }" height="20px" width="20px"> {match.team_b.name}</td><td>{match.tv_broadcaster}</td></tr>\n'
+        upcomming_matches_html += f'<tr><td><b>{match.match_time.strftime("%H:%M")}</b></td><td style="text-align: right;">{match.team_a.name} <img src="{ match.team_a.flag }" height="20" width="20"></td><td style="text-align: center;">{bet_a}:{bet_b}</td><td><img src="{ match.team_b.flag }" height="20" width="20"> {match.team_b.name}</td><td>{match.tv_broadcaster}</td></tr>\n'
     upcomming_matches_html = "<table>\n" + upcomming_matches_html + "</table>\n"
 
     email_template = EmailTemplates.objects.get(name="daily_email")
@@ -138,6 +138,33 @@ def welcome_email(user_pk):
     send_email(subject=email_subject, body=email_body, to_email=user_obj.email)
 
 
+@app.task()
+def payment_reminder_email(user_pk, cc=[]):
+    """Payment reminder email"""
+    user_obj = CustomUser.objects.get(pk=user_pk)
+    cc_lst = [CustomUser.objects.get(pk=i).email for i in cc]
+    email_template = EmailTemplates.objects.filter(name="payment_reminder")
+
+    if len(email_template) == 0 or settings.DEBUG:
+        with open(os.path.join("templates", "emails", "payment_reminder.html"), "r") as file:
+            email_template = file.read()
+            email_body = email_template
+        if len(email_template) == 0:
+            email_template = EmailTemplates(name="payment_reminder", html=email_body).save()
+    else:
+        email_template = email_template.first()
+
+    email_subject = email_template.email_subject
+    email_body = email_template.html
+
+    first_name = user_obj.first_name
+    qr_image_link = f"{settings.MAIN_HOST}/static/qr_pay.jpg"
+
+    email_body = email_body.format(first_name=first_name, qr_image_link=qr_image_link)
+
+    send_email(subject=email_subject, body=email_body, to_email=user_obj.email, cc=cc_lst, reply_to=cc_lst)
+
+
 def bs_tag_visible(element):
     """Remove not visible html from BeautifulSoup soup for clean text extraction"""
     if element.parent.name in ["style", "script", "head", "title", "meta", "[document]"]:
@@ -147,7 +174,7 @@ def bs_tag_visible(element):
     return True
 
 
-def send_email(subject, body, to_email):
+def send_email(subject, body, to_email, cc=[], reply_to=[]):
     """General function via which all emails are sent out"""
     to_email = [settings.EMAIL_FROM] if settings.DEBUG else [to_email]
     from_email = settings.EMAIL_FROM
@@ -166,7 +193,9 @@ def send_email(subject, body, to_email):
     # text_message = " ".join(t.strip() for t in visible_texts)
 
     connection = get_connection()
-    mail = EmailMultiAlternatives(subject=subject, body="", from_email=from_email, to=to_email, connection=connection)
+    mail = EmailMultiAlternatives(
+        subject=subject, body="", from_email=from_email, to=to_email, cc=cc, reply_to=reply_to, connection=connection
+    )
     mail.attach_alternative(html_message, "text/html")
     mail.content_subtype = "html"
 
