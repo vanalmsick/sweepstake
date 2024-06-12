@@ -190,7 +190,7 @@ def send_test_email(modeladmin, request, queryset):
                     user_obj.pk,
                 ],
             )
-        elif test_template.name == "final_reminder":
+        elif test_template.name == "payment_reminder":
             app.send_task(
                 "competition.tasks.payment_reminder_email",
                 args=[user_obj.pk, [user_obj.pk]],
