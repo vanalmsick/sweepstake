@@ -190,6 +190,11 @@ def send_test_email(modeladmin, request, queryset):
                     user_obj.pk,
                 ],
             )
+        elif test_template.name == "final_reminder":
+            app.send_task(
+                "competition.tasks.final_reminder",
+                args=[user_obj.pk, [user_obj.pk]],
+            )
 
 
 @admin.register(EmailTemplates)
