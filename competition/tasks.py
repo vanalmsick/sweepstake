@@ -83,9 +83,9 @@ def daily_matchday_email(user_pk, override_date=None):
     user_obj = CustomUser.objects.get(pk=user_pk)
     today = datetime.datetime.today()
     if override_date is not None:
-        today = "2024-06-15"
+        today = override_date
 
-    if today.weekday() == 4:  # if friday
+    if isinstance(today, str) is False and today.weekday() == 4:  # if friday
         is_friday = True
         upcomming_matches = Match.objects.filter(
             match_time__date__gte=today.date(), match_time__date__lte=(today + datetime.timedelta(days=2)).date()
