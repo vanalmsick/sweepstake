@@ -190,9 +190,9 @@ def MyBetView(request):
             "stake_received": request.user.has_paid,
             "email_verified": request.user.is_verified,
             "errors": errors,
-            "user_name": user_data["user__username"],
-            "user_rank": user_data["rank"],
-            "user_points": "-/-" if user_data["total_points"] is None else user_data["total_points"],
+            "user_name": '-/-' if user_data is None else user_data["user__username"],
+            "user_rank": '-/-' if user_data is None else user_data["rank"],
+            "user_points": '-/-' if user_data is None else user_data["total_points"],
             "edit": True,
         },
     )
