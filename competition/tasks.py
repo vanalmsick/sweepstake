@@ -85,7 +85,10 @@ def daily_matchday_email(user_pk, override_date=None):
     if override_date is not None:
         today = override_date
 
-    if isinstance(today, str) is False and today.weekday() == 4:  # if friday
+    if isinstance(today, str):
+        is_friday = False
+        upcomming_matches = Match.objects.filter(match_time__date=today).order_by("match_time")
+    elif today.weekday() == 4:  # if friday
         is_friday = True
         upcomming_matches = Match.objects.filter(
             match_time__date__gte=today.date(), match_time__date__lte=(today + datetime.timedelta(days=2)).date()
