@@ -36,11 +36,16 @@ def daily_emails():
     print("Checking if daily emails need to be send out")
     today = datetime.datetime.today()
     first_match_date = Match.objects.all().order_by("match_time").first().match_time
-    upcomming_matches = Match.objects.filter(match_time__date=today).order_by("match_time")
+    if today.weekday() == 4:  # if friday
+        upcomming_matches = Match.objects.filter(
+            match_time__date__gte=today.date(), match_time__date__lte=(today + datetime.timedelta(days=2)).date()
+        ).order_by("match_time")
+    else:  # not friday
+        upcomming_matches = Match.objects.filter(match_time__date=today.date()).order_by("match_time")
     email_to_send = None
 
     # first match is tomorrow
-    if first_match_date - datetime.timedelta(days=1) == today:
+    if (first_match_date - datetime.timedelta(days=1)).date() == today.date():
         print("Sending final reminder emails today")
         email_to_send = "competition.tasks.last_admission_email"
 
@@ -79,14 +84,22 @@ def daily_matchday_email(user_pk, override_date=None):
     today = datetime.datetime.today()
     if override_date is not None:
         today = "2024-06-15"
-    upcomming_matches = Match.objects.filter(match_time__date=today).order_by("match_time")
+
+    if today.weekday() == 4:  # if friday
+        is_friday = True
+        upcomming_matches = Match.objects.filter(
+            match_time__date__gte=today.date(), match_time__date__lte=(today + datetime.timedelta(days=2)).date()
+        ).order_by("match_time")
+    else:  # not friday
+        is_friday = False
+        upcomming_matches = Match.objects.filter(match_time__date=today.date()).order_by("match_time")
 
     upcomming_matches_html = ""
     for match in upcomming_matches:
         bet = match.matchbet_set.filter(user=user_obj).first()
         bet_a = "-" if bet is None else bet.score_a
         bet_b = "-" if bet is None else bet.score_b
-        upcomming_matches_html += f'<tr><td><b>{match.match_time.strftime("%H:%M")}</b></td><td style="text-align: right;">{match.team_a.name} <img src="{ match.team_a.flag }" height="20" width="20"></td><td style="text-align: center;">{bet_a}:{bet_b}</td><td><img src="{ match.team_b.flag }" height="20" width="20"> {match.team_b.name}</td><td>{match.tv_broadcaster}</td></tr>\n'
+        upcomming_matches_html += f'<tr><td><b>{match.match_time.strftime("%a %H:%M" if is_friday else "%H:%M")}</b></td><td style="text-align: right;">{match.team_a.name} <img src="{ match.team_a.flag }" height="20" width="20"></td><td style="text-align: center;">{bet_a}:{bet_b}</td><td><img src="{ match.team_b.flag }" height="20" width="20"> {match.team_b.name}</td><td>{match.tv_broadcaster}</td></tr>\n'
     upcomming_matches_html = "<table>\n" + upcomming_matches_html + "</table>\n"
 
     email_subject, email_body = __get_email_template("daily_email")

@@ -22,7 +22,7 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     "daily_matchday_email": {
         "task": "competition.tasks.daily_emails",
-        "schedule": crontab(minute="0", hour="14"),
+        "schedule": crontab(minute="0", hour="14", day_of_week="1-5"),
         "args": (),
     },
 }
