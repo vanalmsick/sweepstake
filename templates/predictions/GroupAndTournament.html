@@ -20,12 +20,14 @@
                 </div>
 
                 <div clas="row">
-                    {% for prediction, user_lst in predictions.items %}
-                        <hr class="featurette-divider my-3">
 
-                        <div class="row highlighted">
+                    <hr class="featurette-divider mt-3 mb-0">
+
+                    {% for prediction, user_lst in predictions.items %}
+
+                        <div class="row highlighted mt-3">
                             <div class="col-3"></div>
-                            <div class="col-6 h4">{{ prediction }}</div>
+                            <div class="col-6 h4 my-1">{{ prediction }}</div>
                             <div class="col-3 fst-italic text-secondary">
                                 {% if user_lst.0.points is not None %}
                                     (Points: {{ user_lst.0.points }})
