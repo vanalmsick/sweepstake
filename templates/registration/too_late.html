@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Too Late! Sign Up id closed!{% endblock %}
+
+{% block content %}
+    <div class="hero-home">
+        <div class="hero-text py-5 h-100 overflow-auto">
+            <div class="p-5 rounded shadow" style="background: rgba(0,0,0,0.7);">
+                <h2>Too Late!<br>Sign Up is closed as the Tournament already kicked-off!</h2>
+                <p>Now you can only watch...</p>
+                <div class="d-flex justify-content-around w-75 mx-auto p-1">
+                        <a class="btn btn-primary" href="{% url 'leaderboard' %}">Go to Leaderboard</a>
+                        <a class="btn btn-outline-primary" href="{% url 'schedule' %}">Go to Match Schedule</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

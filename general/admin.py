@@ -107,6 +107,7 @@ class CustomUserAdmin(UserAdmin):
         "email",
         "first_name",
         "last_name",
+        "date_joined",
         "is_staff",
     )
     list_filter = ("is_staff", "has_paid", "team")
