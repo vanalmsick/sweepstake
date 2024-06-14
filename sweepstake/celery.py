@@ -26,6 +26,9 @@ app.conf.beat_schedule = {
         "args": (),
     },
 }
+app.conf.broker_transport_options = {
+    "visibility_timeout": 60 * 60 * 24
+}  # 24 hours to fix double execution of tasks with ETA
 
 
 def is_task_already_executing(task_name: str) -> bool:
