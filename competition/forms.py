@@ -94,7 +94,7 @@ def getGroupBetFormSet(user, prefix=None, only_not_editable=False):
             if editable:
                 remaining_days, remaining_hours, remaining_minutes = __days_hours_minutes(data_i.first_match_time - now)
                 if remaining_days > 0:
-                    text = f"{remaining_days + 1} days left to place bet"
+                    text = f"{remaining_days} days left to place bet"
                 elif remaining_hours > 0:
                     text = f"{remaining_hours} hours left to place bet"
                 else:
@@ -113,7 +113,9 @@ def getGroupBetFormSet(user, prefix=None, only_not_editable=False):
                 {
                     "group_id": data_i.pk,
                     "group_name": data_i.name,
-                    "first_match_time": data_i.first_match_time.strftime("%a %d %B - %H:%M"),
+                    "first_match_time": data_i.first_match_time.astimezone(settings.TIME_ZONE_OBJ).strftime(
+                        "%a %d %B - %H:%M"
+                    ),
                     "bet": bet_winner,
                     "winner": data_i.winner,
                     "text": text,
@@ -184,7 +186,7 @@ def getMatchBetFormSet(user, random=False, prefix=None, only_not_editable=False)
             else:
                 remaining_days, remaining_hours, remaining_minutes = __days_hours_minutes(data_i.match_time - now)
                 if remaining_days > 0:
-                    text = f"{remaining_days+1} days left to place bet"
+                    text = f"{remaining_days} days left to place bet"
                 elif remaining_hours > 0:
                     text = f"{remaining_hours} hours left to place bet"
                 else:
@@ -217,7 +219,7 @@ def getMatchBetFormSet(user, random=False, prefix=None, only_not_editable=False)
         formset_data.append(
             {
                 "match_id": data_i.pk,
-                "match_time": data_i.match_time.strftime("%a %d %B - %H:%M"),
+                "match_time": data_i.match_time.astimezone(settings.TIME_ZONE_OBJ).strftime("%a %d %B - %H:%M"),
                 "tv_broadcaster": data_i.tv_broadcaster,
                 "phase": data_i.team_a.group.name if data_i.phase == "group" else MATCH_PHASES_DICT[data_i.phase],
                 "flag_a": "https://panenka.uefa.com/panenka/assets/ntc-generic-badge-02.svg"
@@ -318,7 +320,7 @@ def getTournamentForm(user, charity_editable=True):
         now = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
         remaining_days, remaining_hours, remaining_minutes = __days_hours_minutes(tournament.first_match_time - now)
         if remaining_days > 0:
-            text = f"{remaining_days + 1} days left to place bet"
+            text = f"{remaining_days} days left to place bet"
         elif remaining_hours > 0:
             text = f"{remaining_hours} hours left to place bet"
         else:
@@ -335,7 +337,7 @@ def getTournamentForm(user, charity_editable=True):
     form_data = {
         "tournament_id": tournament.pk,
         "tournament_name": tournament.name,
-        "first_match_time": tournament.first_match_time.strftime("%a %d %B - %H:%M"),
+        "first_match_time": tournament.first_match_time.astimezone(settings.TIME_ZONE_OBJ).strftime("%a %d %B - %H:%M"),
         "bet": None if tournament_bet is None else tournament_bet.winner,
         "winner": winner,
         "charity": None if tournament_bet is None else tournament_bet.charity,
