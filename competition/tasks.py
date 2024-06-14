@@ -69,10 +69,10 @@ def daily_emails():
                 eta=prev_email_eta,
             )
             print(f"Email {email_to_send} for {user.pk} scheduled at {prev_email_eta}")
-            if i < 3:
+            if i == 0:
                 prev_email_eta += datetime.timedelta(minutes=5)
             else:
-                prev_email_eta += datetime.timedelta(minutes=2)
+                prev_email_eta += datetime.timedelta(seconds=45)
     else:
         print("No daily emails today")
 
