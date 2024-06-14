@@ -1,10 +1,24 @@
 # -*- coding: utf-8 -*-
+import datetime
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib.auth import logout
+from django.conf import settings
 
+from competition.models import Tournament
 from .models import CustomUser
 from .forms import LoginForm, CustomUserCreationForm
+
+
+def SignupParentView(request):
+    """Parent sign-up view to check if it is still possible to sign-up or too late"""
+    tournament = Tournament.objects.all().first()
+    now = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
+
+    if (now + datetime.timedelta(minutes=30)) < tournament.first_match_time:
+        return SignupView(request)
+    else:
+        return TooLateView(request)
 
 
 def SignupView(request):
@@ -55,3 +69,8 @@ def VerifyEmailView(request, user_id):
     setattr(user, "is_verified", True)
     user.save()
     return redirect("predictions")
+
+
+def TooLateView(request):
+    """View to say too late - that signup is closed"""
+    return render(request, "registration/too_late.html", {})
