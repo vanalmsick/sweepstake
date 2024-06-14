@@ -253,7 +253,7 @@ class MatchBet(models.Model):
         """Function for leaderboard sorting of goal difference"""
         # Bet - Match Score
         return (
-            ((self.score_a - self.match.score_a) + (self.score_b - self.match.score_b))
+            (abs(self.score_a - self.match.score_a) + abs(self.score_b - self.match.score_b))
             if self.score_a is not None
             and self.score_b is not None
             and self.match.score_a is not None
