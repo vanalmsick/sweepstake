@@ -190,9 +190,9 @@ def MyBetView(request):
             "stake_received": request.user.has_paid,
             "email_verified": request.user.is_verified,
             "errors": errors,
-            "user_name": '-/-' if user_data is None else user_data["user__username"],
-            "user_rank": '-/-' if user_data is None else user_data["rank"],
-            "user_points": '-/-' if user_data is None else user_data["total_points"],
+            "user_name": "-/-" if user_data is None else user_data["user__username"],
+            "user_rank": "-/-" if user_data is None else user_data["rank"],
+            "user_points": "-/-" if user_data is None else user_data["total_points"],
             "edit": True,
         },
     )
@@ -355,9 +355,7 @@ def getOthersMatchPredictions(match_id):
     match_obj = Match.objects.get(pk=match_id)
     title = f'{match_obj.match_time.strftime("%a %d %b")} ({match_obj.team_a.group.name if match_obj.phase == "group" else MATCH_PHASES_DICT[match_obj.phase]}): {match_obj.team_a_placeholder} vs. {match_obj.team_b_placeholder} Predictions'
     if match_obj.is_editable is False:
-        queryset = MatchBet.objects.filter(match=match_obj).order_by(
-            "goal_difference", "-score_a", "score_b", "user__username"
-        )
+        queryset = MatchBet.objects.filter(match=match_obj).order_by("-score_a", "score_b", "user__username")
         if match_obj.score_a is None or match_obj.score_b is None:
             best_bet = None
         else:
@@ -382,7 +380,7 @@ def getOthersMatchPredictions(match_id):
                     "user__id": bet.user.id,
                     "user__username": bet.user.username,
                     "user__team": bet.user.team,
-                    "points": bet.points,
+                    "points": "-/-" if bet.points is None else bet.points,
                     "goal_difference": bet.goal_difference,
                     "score_a": bet.score_a,
                     "score_b": bet.score_b,
@@ -392,7 +390,12 @@ def getOthersMatchPredictions(match_id):
     else:
         predictions = []
 
-    return {"title": title, "predictions": predictions}
+    return {
+        "title": title,
+        "predictions": predictions,
+        "flag_a": match_obj.team_a.flag,
+        "flag_b": match_obj.team_b.flag,
+    }
 
 
 def OthersGroupPredictionsView(request, group_name):
