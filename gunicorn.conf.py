@@ -16,6 +16,6 @@ accesslog = errorlog = "./data/gunicorn.log"
 # Redirect stdout/stderr to log file
 capture_output = False
 # PID file so you can easily fetch process ID
-pidfile = "./data/gunicorn.pid"
+pidfile = "./gunicorn.pid"
 # Daemonize the Gunicorn process (detach & enter background)
 daemon = False
