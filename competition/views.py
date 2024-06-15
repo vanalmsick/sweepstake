@@ -403,6 +403,7 @@ def getOthersMatchPredictions(match_id):
             else:
                 best_bet = queryset.order_by("-points", "goal_difference").first()
             predictions = []
+            prev_section = 1
             for bet in queryset:
                 if best_bet is not None and best_bet == bet:
                     predictions.append(
@@ -417,6 +418,7 @@ def getOthersMatchPredictions(match_id):
                             "is_match": True,
                         }
                     )
+                curr_section = 0 if bet.score_a == bet.score_b else (1 if bet.score_a > bet.score_b else -1)
                 predictions.append(
                     {
                         "user__id": bet.user.id,
@@ -427,8 +429,10 @@ def getOthersMatchPredictions(match_id):
                         "score_a": bet.score_a,
                         "score_b": bet.score_b,
                         "is_match": False,
+                        "is_new_section": curr_section != prev_section,
                     }
                 )
+                prev_section = curr_section
         else:
             predictions = []
 
