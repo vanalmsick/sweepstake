@@ -405,7 +405,7 @@ def getOthersMatchPredictions(match_id):
                 if best_bet.score_a < best_bet.score_b:
                     queryset = queryset.reverse()
             predictions = []
-            prev_section = 1
+            prev_section = 1 if best_bet is None or best_bet.score_a >= best_bet.score_b else -1
             for bet in queryset:
                 if best_bet is not None and bet.score_a == best_bet.score_a and bet.score_b == best_bet.score_b:
                     predictions.append(
