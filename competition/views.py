@@ -358,7 +358,7 @@ def getOthersNonMatchPredictions(level, filter):
             timeout=settings.STATIC_PAGE_CACHE_TIME,
         )
 
-    return {"title": title, "predictions": grouped_queryset}
+    return {"title": title, "predictions": grouped_queryset, "type": level}
 
 
 def getOthersMatchPredictions(match_id):
