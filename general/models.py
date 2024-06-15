@@ -12,11 +12,10 @@ from sweepstake.celery import app
 
 def delete_dynamic_cached_pages(
     prefix_lst=[
-        "others-predictions",
-        "group-predictions",
-        "tournament-predictions",
-        "match-predictions",
-        "leaderboard",
+        "schedule_data_",
+        "leaderboard_data",
+        "predictions_nonmatch_",
+        "predictions_match_",
     ],
 ):
     """delete cached pages - used e.g. if match scores are entered"""

@@ -316,86 +316,108 @@ def LeaderboardView(request):
 
 
 def getOthersNonMatchPredictions(level, filter):
+    grouped_queryset = cache.get(f"predictions_nonmatch_{level}_{filter}", None)
     title = f"{filter} Predictions"
-    if level == "group":
-        level_obj = Group.objects.filter(name=filter)
-        if len(level_obj) > 0 and level_obj[0].is_editable is False:
-            level_obj = level_obj[0]
-            queryset = GroupBet.objects.filter(group=level_obj).order_by("-points", "winner", "user__username")
-        else:
-            queryset = []
-    elif level == "tournament":
-        level_obj = Tournament.objects.filter(name=filter)
-        if len(level_obj) > 0 and level_obj[0].is_editable is False:
-            level_obj = level_obj[0]
-            queryset = TournamentBet.objects.filter(tournament=level_obj, winner__isnull=False).order_by(
-                "-points", "winner", "user__username"
-            )
-        else:
-            queryset = []
 
-    grouped_queryset = {}
-    for bet in queryset:
-        winner_name = bet.winner.name
-        if winner_name not in grouped_queryset:
-            grouped_queryset[winner_name] = []
-        grouped_queryset[winner_name].append(
-            {
-                "user__id": bet.user.id,
-                "user__username": bet.user.username,
-                "user__team": bet.user.team,
-                "points": bet.points,
-            }
+    if grouped_queryset is None:
+        print(f"Get latest predictions for {level}={filter}")
+        if level == "group":
+            level_obj = Group.objects.filter(name=filter)
+            if len(level_obj) > 0 and level_obj[0].is_editable is False:
+                level_obj = level_obj[0]
+                queryset = GroupBet.objects.filter(group=level_obj).order_by("-points", "winner", "user__username")
+            else:
+                queryset = []
+        elif level == "tournament":
+            level_obj = Tournament.objects.filter(name=filter)
+            if len(level_obj) > 0 and level_obj[0].is_editable is False:
+                level_obj = level_obj[0]
+                queryset = TournamentBet.objects.filter(tournament=level_obj, winner__isnull=False).order_by(
+                    "-points", "winner", "user__username"
+                )
+            else:
+                queryset = []
+
+        grouped_queryset = {}
+        for bet in queryset:
+            winner_name = bet.winner.name
+            if winner_name not in grouped_queryset:
+                grouped_queryset[winner_name] = []
+            grouped_queryset[winner_name].append(
+                {
+                    "user__id": bet.user.id,
+                    "user__username": bet.user.username,
+                    "user__team": bet.user.team,
+                    "points": bet.points,
+                }
+            )
+
+        cache.set(
+            f"predictions_nonmatch_{level}_{filter}",
+            grouped_queryset,
+            timeout=settings.STATIC_PAGE_CACHE_TIME,
         )
 
     return {"title": title, "predictions": grouped_queryset}
 
 
 def getOthersMatchPredictions(match_id):
-    match_obj = Match.objects.get(pk=match_id)
-    title = f'{match_obj.match_time.strftime("%a %d %b")} ({match_obj.team_a.group.name if match_obj.phase == "group" else MATCH_PHASES_DICT[match_obj.phase]}): {match_obj.team_a_placeholder} vs. {match_obj.team_b_placeholder} Predictions'
-    if match_obj.is_editable is False:
-        queryset = MatchBet.objects.filter(match=match_obj).order_by("-score_a", "score_b", "user__username")
-        if match_obj.score_a is None or match_obj.score_b is None:
-            best_bet = None
-        else:
-            best_bet = queryset.order_by("-points", "goal_difference").first()
-        predictions = []
-        for bet in queryset:
-            if best_bet is not None and best_bet == bet:
+    out = cache.get(f"predictions_match_{match_id}", None)
+
+    if out is None:
+        print(f"Get latest predictions for match={match_id}")
+        match_obj = Match.objects.get(pk=match_id)
+        title = f'{match_obj.match_time.strftime("%a %d %b")} ({match_obj.team_a.group.name if match_obj.phase == "group" else MATCH_PHASES_DICT[match_obj.phase]}): {match_obj.team_a_placeholder} vs. {match_obj.team_b_placeholder} Predictions'
+        if match_obj.is_editable is False:
+            queryset = MatchBet.objects.filter(match=match_obj).order_by("-score_a", "score_b", "user__username")
+            if match_obj.score_a is None or match_obj.score_b is None:
+                best_bet = None
+            else:
+                best_bet = queryset.order_by("-points", "goal_difference").first()
+            predictions = []
+            for bet in queryset:
+                if best_bet is not None and best_bet == bet:
+                    predictions.append(
+                        {
+                            "user__id": None,
+                            "user__username": f"MATCH: {match_obj.team_a_placeholder} vs. {match_obj.team_b_placeholder}",
+                            "user__team": None,
+                            "points": "-/-",
+                            "goal_difference": 0,
+                            "score_a": match_obj.score_a,
+                            "score_b": match_obj.score_b,
+                            "is_match": True,
+                        }
+                    )
                 predictions.append(
                     {
-                        "user__id": None,
-                        "user__username": f"MATCH: {match_obj.team_a_placeholder} vs. {match_obj.team_b_placeholder}",
-                        "user__team": None,
-                        "points": "-/-",
-                        "goal_difference": 0,
-                        "score_a": match_obj.score_a,
-                        "score_b": match_obj.score_b,
-                        "is_match": True,
+                        "user__id": bet.user.id,
+                        "user__username": bet.user.username,
+                        "user__team": bet.user.team,
+                        "points": "-/-" if bet.points is None else bet.points,
+                        "goal_difference": bet.goal_difference,
+                        "score_a": bet.score_a,
+                        "score_b": bet.score_b,
+                        "is_match": False,
                     }
                 )
-            predictions.append(
-                {
-                    "user__id": bet.user.id,
-                    "user__username": bet.user.username,
-                    "user__team": bet.user.team,
-                    "points": "-/-" if bet.points is None else bet.points,
-                    "goal_difference": bet.goal_difference,
-                    "score_a": bet.score_a,
-                    "score_b": bet.score_b,
-                    "is_match": False,
-                }
-            )
-    else:
-        predictions = []
+        else:
+            predictions = []
 
-    return {
-        "title": title,
-        "predictions": predictions,
-        "flag_a": match_obj.team_a.flag,
-        "flag_b": match_obj.team_b.flag,
-    }
+        out = {
+            "title": title,
+            "predictions": predictions,
+            "flag_a": match_obj.team_a.flag,
+            "flag_b": match_obj.team_b.flag,
+        }
+
+        cache.set(
+            f"predictions_match_{match_id}",
+            out,
+            timeout=settings.STATIC_PAGE_CACHE_TIME,
+        )
+
+    return out
 
 
 def OthersGroupPredictionsView(request, group_name):
