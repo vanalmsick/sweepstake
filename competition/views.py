@@ -408,8 +408,7 @@ def getOthersMatchPredictions(match_id):
                 if (
                     has_match_score
                     and match_was_added is False
-                    and bet.score_a < match_obj.score_a
-                    or bet.score_b < match_obj.score_b
+                    and (bet.score_a < match_obj.score_a or bet.score_b < match_obj.score_b)
                 ):
                     predictions.append(
                         {
