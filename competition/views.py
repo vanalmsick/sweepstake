@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
 from django.shortcuts import render, redirect
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, F, Case, When
+from django.db import models
 from django.conf import settings
 from django.core.cache import cache
 
@@ -369,7 +370,34 @@ def getOthersMatchPredictions(match_id):
         match_obj = Match.objects.get(pk=match_id)
         title = f'{match_obj.match_time.strftime("%a %d %b")} ({match_obj.team_a.group.name if match_obj.phase == "group" else MATCH_PHASES_DICT[match_obj.phase]}): {match_obj.team_a_placeholder} vs. {match_obj.team_b_placeholder} Predictions'
         if match_obj.is_editable is False:
-            queryset = MatchBet.objects.filter(match=match_obj).order_by("-score_a", "score_b", "user__username")
+            queryset = (
+                MatchBet.objects.filter(match=match_obj)
+                .annotate(
+                    winner=Case(
+                        When(Q(score_a__gt=F("score_b")), then=1),
+                        When(Q(score_b__gt=F("score_a")), then=-1),
+                        default=0,
+                        output_field=models.IntegerField(),
+                    )
+                )
+                .annotate(
+                    winner_score=Case(
+                        When(Q(winner=1), then=-F("score_a")),
+                        When(Q(winner=-1), then=F("score_b")),
+                        default=-F("score_a"),
+                        output_field=models.IntegerField(),
+                    )
+                )
+                .annotate(
+                    loser_score=Case(
+                        When(Q(winner=1), then=-F("score_b")),
+                        When(Q(winner=-1), then=F("score_a")),
+                        default=-F("score_b"),
+                        output_field=models.IntegerField(),
+                    )
+                )
+                .order_by("-winner", "winner_score", "loser_score", "user__username")
+            )
             if match_obj.score_a is None or match_obj.score_b is None:
                 best_bet = None
             else:
