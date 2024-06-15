@@ -18,6 +18,13 @@
                             Predictions</a>
                     </div>
                 </div>
+                <div class="row">
+                    {% if type == "group" %}
+                    <p>Each correct group winner is worth 8 points.<br>
+                    {% else %}
+                    <p>The correct EURO Champion is worth 25 points, the runner-up 15 points.<br>
+                    {% endif %}
+                </div>
 
                 <div clas="row">
 
