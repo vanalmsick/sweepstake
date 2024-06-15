@@ -47,6 +47,9 @@
                         </thead>
                         <tbody>
                         {% for row in predictions %}
+                            {% if row.is_new_section %}
+                            <hr class="featurette-divider mt-1 mb-0" style="width: 100%;">
+                            {% endif %}
                             <tr {% if row.is_match %}class="highlighted"{% else %}class="hover-highlighted"
                                 onclick="window.location='{% url 'others-predictions' other_user_id=row.user__id %}';"{% endif %}>
                                 <td>{{ row.user__username }}
