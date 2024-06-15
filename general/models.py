@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
+import os
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
-from django.core.cache import cache
-from django.conf import settings
 from sweepstake.celery import app
 
 
@@ -20,11 +19,12 @@ def delete_dynamic_cached_pages(
 ):
     """delete cached pages - used e.g. if match scores are entered"""
     print("Deleting cached dynamic pages")
-    cache_keys = cache_keys = cache._cache.get_client().keys(f"*{settings.CACHES['default']['KEY_PREFIX']}*")
-    for key in cache_keys:
-        if any([i in str(key) for i in prefix_lst]):
-            print("Deleted cached", key)
-            cache.delete(key)
+    os.system("redis-cli flushall")
+    # cache_keys = cache_keys = cache._cache.get_client().keys(f"*{settings.CACHES['default']['KEY_PREFIX']}*")
+    # for key in cache_keys:
+    #     if any([i in str(key) for i in prefix_lst]):
+    #         print("Deleted cached", key)
+    #         cache.delete(key)
 
 
 USER_TEAMS = [
