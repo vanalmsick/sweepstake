@@ -77,7 +77,7 @@ class Tournament(models.Model):
             bet.save()
 
         # Update cached pages
-        delete_dynamic_cached_pages()
+        delete_dynamic_cached_pages(prefix_lst=["leaderboard_data", "predictions_nonmatch_"])
 
 
 class Group(models.Model):
@@ -126,7 +126,7 @@ class Group(models.Model):
             bet.save()
 
         # Update cached pages
-        delete_dynamic_cached_pages()
+        delete_dynamic_cached_pages(prefix_lst=["leaderboard_data", "predictions_nonmatch_"])
 
 
 MATCH_PHASES_DICT = {
