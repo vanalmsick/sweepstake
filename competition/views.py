@@ -398,16 +398,19 @@ def getOthersMatchPredictions(match_id):
                 )
                 .order_by("-winner", "winner_score", "loser_score", "user__username")
             )
-            if match_obj.score_a is None or match_obj.score_b is None:
-                best_bet = None
-            else:
-                best_bet = queryset.order_by("-points", "goal_difference").first()
-                if best_bet.score_a < best_bet.score_b:
-                    queryset = queryset.reverse()
+            has_match_score = match_obj.score_a is not None and match_obj.score_b is not None
+            if has_match_score and match_obj.score_a < match_obj.score_b:
+                queryset = queryset.reverse()
             predictions = []
-            prev_section = 1 if best_bet is None or best_bet.score_a >= best_bet.score_b else -1
+            prev_section = 1 if has_match_score is False or match_obj.score_a >= match_obj.score_b else -1
+            match_was_added = False
             for bet in queryset:
-                if best_bet is not None and bet.score_a == best_bet.score_a and bet.score_b == best_bet.score_b:
+                if (
+                    has_match_score
+                    and match_was_added is False
+                    and bet.score_a < match_obj.score_a
+                    or bet.score_b < match_obj.score_b
+                ):
                     predictions.append(
                         {
                             "user__id": None,
@@ -420,7 +423,7 @@ def getOthersMatchPredictions(match_id):
                             "is_match": True,
                         }
                     )
-                    best_bet = None
+                    match_was_added = True
                 curr_section = 0 if bet.score_a == bet.score_b else (1 if bet.score_a > bet.score_b else -1)
                 predictions.append(
                     {
