@@ -93,12 +93,16 @@ def getGroupBetFormSet(user, prefix=None, only_not_editable=False):
 
             if editable:
                 remaining_days, remaining_hours, remaining_minutes = __days_hours_minutes(data_i.first_match_time - now)
-                if remaining_days > 0:
+                if remaining_days > 1:
                     text = f"{remaining_days} days left to place bet"
-                elif remaining_hours > 0:
+                elif remaining_days > 0:
+                    text = "1 day left to place bet"
+                elif remaining_hours > 1:
                     text = f"{remaining_hours} hours left to place bet"
+                elif remaining_hours > 0:
+                    text = f"1h {remaining_minutes}min left to place bet"
                 else:
-                    text = f"{remaining_minutes - 1} minutes left to place bet"
+                    text = f"{remaining_minutes} minutes left to place bet"
             else:
                 if points is None:
                     if bet_placed:
@@ -185,10 +189,14 @@ def getMatchBetFormSet(user, random=False, prefix=None, only_not_editable=False)
                 text = ""
             else:
                 remaining_days, remaining_hours, remaining_minutes = __days_hours_minutes(data_i.match_time - now)
-                if remaining_days > 0:
+                if remaining_days > 1:
                     text = f"{remaining_days} days left to place bet"
-                elif remaining_hours > 0:
+                elif remaining_days > 0:
+                    text = "1 day left to place bet"
+                elif remaining_hours > 1:
                     text = f"{remaining_hours} hours left to place bet"
+                elif remaining_hours > 0:
+                    text = f"1h {remaining_minutes}min left to place bet"
                 else:
                     text = f"{remaining_minutes-1} minutes left to place bet"
                 remaining_time_used = data_i.match_time.date()
@@ -319,12 +327,16 @@ def getTournamentForm(user, charity_editable=True):
     if editable:
         now = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
         remaining_days, remaining_hours, remaining_minutes = __days_hours_minutes(tournament.first_match_time - now)
-        if remaining_days > 0:
+        if remaining_days > 1:
             text = f"{remaining_days} days left to place bet"
-        elif remaining_hours > 0:
+        elif remaining_days > 0:
+            text = "1 day left to place bet"
+        elif remaining_hours > 1:
             text = f"{remaining_hours} hours left to place bet"
+        elif remaining_hours > 0:
+            text = f"1h {remaining_minutes}min left to place bet"
         else:
-            text = f"{remaining_minutes - 1} minutes left to place bet"
+            text = f"{remaining_minutes} minutes left to place bet"
     else:
         if points is None:
             if bet_placed:
