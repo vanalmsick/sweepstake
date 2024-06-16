@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load cust_str_tags %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -34,7 +35,9 @@
 
                         <div class="row highlighted mt-3">
                             <div class="col-3"></div>
-                            <div class="col-6 h4 my-1">{{ prediction }}</div>
+                            <a class="col-6 h4 my-1 normal-text-link"
+                               href="{% url 'country-schedule' country_name=prediction|clean_str %}"
+                            >{{ prediction }}</a>
                             <div class="col-3 fst-italic text-secondary">
                                 {% if user_lst.0.points is not None %}
                                     (Points: {{ user_lst.0.points }})
