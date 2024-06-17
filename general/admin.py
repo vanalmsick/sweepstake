@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from import_export.admin import ExportMixin
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import CustomUser, EmailTemplates
 from competition.models import MatchBet, GroupBet, TournamentBet
@@ -90,7 +91,7 @@ def send_payment_reminder_email(modeladmin, request, queryset):
         )
 
 
-class CustomUserAdmin(UserAdmin):
+class CustomUserAdmin(ExportMixin, UserAdmin):
     """Amin view of Custom User model - needed to use email as login and a few more additional fields"""
 
     add_form = CustomUserCreationForm
