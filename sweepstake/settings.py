@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "general",
     "competition",
     "django_celery_beat",
+    "import_export",
 ]
 AUTH_USER_MODEL = "general.CustomUser"
 
