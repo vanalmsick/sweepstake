@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path
 from django.views.generic.base import TemplateView
 
-from general.views import LoginView, LogoutView, SignupParentView, VerifyEmailView
+from general.views import LoginView, LogoutView, SignupView, SignupParentView, VerifyEmailView
 from competition.views import (
     ScheduleView,
     MyBetView,
@@ -79,6 +79,7 @@ urlpatterns = [
         name="leaderboard",
     ),
     path("signup/", SignupParentView, name="sign-up"),
+    path("late-signup/", SignupView, name="late-sign-up"),
     path("verify/<int:user_id>/", VerifyEmailView, name="verify-email"),
     path("login/", LoginView, name="log-in"),
     path("logout/", LogoutView, name="log-out"),
