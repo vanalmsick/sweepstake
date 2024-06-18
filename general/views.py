@@ -15,7 +15,7 @@ def SignupParentView(request):
     tournament = Tournament.objects.all().first()
     now = settings.TIME_ZONE_OBJ.localize(datetime.datetime.now())
 
-    if (now + datetime.timedelta(minutes=30)) < tournament.first_match_time:
+    if request.method == "POST" or (now + datetime.timedelta(minutes=30)) < tournament.first_match_time:
         return SignupView(request)
     else:
         return TooLateView(request)
