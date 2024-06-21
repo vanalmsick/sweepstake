@@ -5,9 +5,9 @@
 
 {% block content %}
     <div class="hero-schedule">
-        <div class="container marketing bg-white h-100 overflow-auto" style="max-width: 85%;">
+        <div class="container marketing bg-white" style="max-width: 85%; height: 100%; overflow-y: auto; overflow-x: hidden;">
 
-            <div class="row  mt-4 mx-4">
+            <div class="row mt-4 mx-4">
                 <div class="col-3">
                     {% if 'Matches' in title %}
                         <a class="text-end btn btn-outline-primary text-end" href="{% url 'schedule' %}">See all
@@ -25,7 +25,7 @@
             </div>
 
 
-            <div class="container m-3" style="width: 100%; max-width: 100%;">
+            <div class="m-3">
                 <hr class="featurette-divider my-4">
                 {% for date, match_lst in match_dict.items %}
                     <h4>{{ date|date:'l j F o' }}</h4>
