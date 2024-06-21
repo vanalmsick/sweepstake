@@ -1,11 +1,12 @@
 {% extends "base.html" %}
+{% load cust_num_tags %}
 
 {% block title %}Leaderboard{% endblock %}
 
 {% block content %}
 
     <div class="hero-winner">
-        <div class="hero-text h-100 py-5 overflow-auto" style="max-width: 80%;">
+        <div class="hero-text py-5" style="max-width: 80%; height: 100vh; overflow-y: auto; overflow-x: hidden;">
             <div class="container p-5 rounded shadow" style="background: rgba(0,0,0,0.7);">
 
                 <div class="row">
@@ -48,7 +49,7 @@
                     {% for row in ranking %}
                         <tr class="hover-highlighted"
                             onclick="window.location='{% url 'others-predictions' other_user_id=row.user__pk %}';">
-                            <td>{{ row.rank }}</td>
+                            <td>{{ row.rank }}<small><small><small>{{ row.rank|st_nd_rd_th }}</small></small></small></td>
                             <td>
                                 {{ row.user__username }}
                                 {% if row.user__team is not None %} ({{ row.user__team }}){% endif %}
