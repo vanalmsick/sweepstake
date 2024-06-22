@@ -25,6 +25,11 @@ app.conf.beat_schedule = {
         "schedule": crontab(minute="45", hour="12", day_of_week="1-5"),
         "args": (),
     },
+    "daily_matchday_api_scores": {
+        "task": "competition.tasks.daily_api_scores",
+        "schedule": crontab(minute="00", hour="14"),
+        "args": (),
+    },
 }
 app.conf.broker_transport_options = {
     "visibility_timeout": 60 * 60 * 24

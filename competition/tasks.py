@@ -5,6 +5,7 @@ from django.core.mail import EmailMultiAlternatives, get_connection
 from sweepstake.celery import app
 from django.conf import settings
 
+from .api_football_scores import get_api_match_data
 from competition.models import Match
 from general.models import EmailTemplates, CustomUser
 
@@ -31,8 +32,65 @@ def __get_email_template(template_name):
 
 
 @app.task()
+def daily_api_scores():
+    """clery beat daily 14:00 scheduled task - this task will check if matches are scheduled for today and schedule api fetching of the scores"""
+    print("Checking if matches today and schedule api match score fetching")
+
+    today = datetime.datetime.today()
+    todays_matches = Match.objects.filter(match_time__date=today.date()).order_by("match_time")
+
+    for match in todays_matches:
+        match_id = match.id
+        match_id_api = match.api_match_id
+        match_eta = match.match_time + datetime.timedelta(minutes=90 + 15 + 15)
+
+        if match_id_api is not None:
+            app.send_task(
+                "competition.tasks.api_match_score_request",
+                args=[
+                    match_id,
+                    match_id_api,
+                ],
+                eta=match_eta,
+            )
+            print(f"Scheduled API Match Score request for {match} at {match_eta}")
+
+
+@app.task()
+def api_match_score_request(match_id, match_id_api):
+    """API request to fetch match data"""
+    print(f"Checking match score via API for match {match_id}")
+
+    match_obj = Match.objects.get(pk=match_id)
+
+    match_finished = False
+    wait_time = 0
+    while match_finished is False and wait_time < 45:
+        match_api_data = get_api_match_data(match_id=match_id_api)
+
+        if match_api_data is not None and match_api_data["fixture"]["status"]["short"] == "FT":
+            match_finished = True
+            setattr(match_obj, "api_match_data", match_api_data)
+            if match_obj.score_a is None:
+                setattr(match_obj, "score_a", match_api_data["goals"]["home"])
+            if match_obj.score_b is None:
+                setattr(match_obj, "score_b", match_api_data["goals"]["away"])
+            match_obj.save()
+            print(f"Match scores for {match_obj} successfully fetched via API.")
+
+        else:
+            print(f"Match {match_obj} did not finish yet - wait 10min and try again...")
+            wait_time += 10
+
+    if match_finished is False:
+        raise Exception(
+            f"Match {match_obj} did not finish even after {wait_time}min of waiting - no api scores fetched"
+        )
+
+
+@app.task()
 def daily_emails():
-    """clery beat daily 14:00 scheduled task - this task will trigger either the last_admission_email or daily_matchday_email"""
+    """clery beat daily 12:45 scheduled task - this task will trigger either the last_admission_email or daily_matchday_email"""
     print("Checking if daily emails need to be send out")
     today = datetime.datetime.today()
     first_match_date = Match.objects.all().order_by("match_time").first().match_time

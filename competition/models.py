@@ -176,6 +176,9 @@ class Match(models.Model):
     team_b_placeholder = EmptyStringToNoneField(max_length=40, null=True, blank=True)
     score_b = models.IntegerField(null=True, blank=True)
 
+    api_match_id = models.IntegerField(null=True, blank=False)
+    api_match_data = models.JSONField(null=True, blank=False)
+
     @property
     def is_editable(self):
         """check if bet can still be placed or if match already started"""

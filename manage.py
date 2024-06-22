@@ -104,12 +104,6 @@ if __name__ == "__main__":
             sys.argv = [INITIAL_ARGV[0], "add_test_data"]
             main()
 
-        # Collect static files
-        print("Collect static files")
-        sys.argv = [INITIAL_ARGV[0], "collectstatic", "--noinput"]
-        main()
-        __copy_over_static_files()
-
     else:
         print(
             "Django auto-reloader process executes second instance of django. "

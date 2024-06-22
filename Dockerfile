@@ -30,7 +30,8 @@ COPY --chown=app_user:app_user / /sweepstake/
 WORKDIR /sweepstake
 
 RUN mkdir -p /sweepstake/data \
-    && chown -R app_user:app_user /sweepstake
+    && chown -R app_user:app_user /sweepstake \
+    && chmod +x launch.sh
 
 # Add docker container labels
 LABEL org.opencontainers.image.title="Sweepstake"
