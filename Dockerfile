@@ -53,7 +53,7 @@ VOLUME /sweepstake/data
 
 # Configure automatic docker container healthcheck
 HEALTHCHECK --interval=5m --timeout=60s --retries=3 --start-period=120s \
-    CMD echo Successful Docker Container Healthcheck && curl --max-time 30 --connect-timeout 30 --silent --output /dev/null --show-error --fail http://localhost:80/ || exit 1
+    CMD echo Successful Docker Container Healthcheck && curl --max-time 30 --connect-timeout 30 --silent --output /dev/null --show-error --fail http://localhost:80/?utm_medium=healthcheck || exit 1
 
 # Start News Platform using supervisord
 CMD ["supervisord", "-c", "./supervisord.conf"]
