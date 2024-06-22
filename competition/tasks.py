@@ -38,7 +38,9 @@ def daily_api_scores():
     print("Checking if matches today and schedule api match score fetching")
 
     today = datetime.datetime.today()
-    todays_matches = Match.objects.filter(match_time__date=today.date()).order_by("match_time")
+    todays_matches = Match.objects.filter(
+        match_time__date=today.date(), score_a__isnull=True, score_b__isnull=True
+    ).order_by("match_time")
 
     for match in todays_matches:
         match_id = match.id
