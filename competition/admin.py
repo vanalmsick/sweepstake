@@ -59,3 +59,4 @@ class MatchesAdmin(admin.ModelAdmin):
         "team_a_placeholder",
         "team_b_placeholder",
     )
+    readonly_fields = ("api_match_id", "api_match_data")
