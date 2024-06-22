@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import datetime
+import time
 from django.core.mail import EmailMultiAlternatives, get_connection
 from sweepstake.celery import app
 from django.conf import settings
@@ -81,6 +82,7 @@ def api_match_score_request(match_id, match_id_api):
         else:
             print(f"Match {match_obj} did not finish yet - wait 10min and try again...")
             wait_time += 10
+            time.sleep(60 * 10)
 
     if match_finished is False:
         raise Exception(
