@@ -10,6 +10,7 @@ API_HEADERS = {
 
 
 def __api_limit(api_limit=100):
+    """API limit of 100 requests per day"""
     today = datetime.datetime.today().strftime("%Y-%m-%d")
     api_requests = os.environ.get("API_REQUESTS_FOOTBALL_SCORES", {})
 
@@ -25,6 +26,7 @@ def __api_limit(api_limit=100):
 
 
 def get_api_match_ids(season_year):
+    """get match list of tounament which also contains the match ids"""
     url = "https://api-football-v1.p.rapidapi.com/v3/fixtures"
 
     querystring = {
@@ -36,13 +38,14 @@ def get_api_match_ids(season_year):
         response = requests.get(url, headers=API_HEADERS, params=querystring)
         all_match_data = response.json()
 
-        return all_match_data["response"]
+        return all_match_data["response"] if "response" in all_match_data else None
 
     else:
         return None
 
 
 def get_api_match_data(match_id):
+    """get match result and statistics via API"""
     url = "https://api-football-v1.p.rapidapi.com/v3/fixtures"
 
     querystring = {"id": str(match_id)}
@@ -51,7 +54,7 @@ def get_api_match_data(match_id):
         response = requests.get(url, headers=API_HEADERS, params=querystring)
         match_data = response.json()
 
-        return match_data["response"][0]
+        return match_data["response"][0] if "response" in match_data else None
 
     else:
         return None
