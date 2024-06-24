@@ -17,11 +17,13 @@ from .forms import (
     getTournamentForm,
     Tournament,
 )
+from .tasks import daily_api_scores
 
 
 # Create your views here.
 def ScheduleView(request, country_name=None, group_name=None):
     """View to see list of scheduled and past matches"""
+    daily_api_scores()
     match_lst_date_sorted = cache.get(f"schedule_data_{country_name}_{group_name}", None)
 
     if match_lst_date_sorted is None:
