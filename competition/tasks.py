@@ -3,10 +3,11 @@ import os
 import datetime
 import time
 from django.core.mail import EmailMultiAlternatives, get_connection
+from django.db.models import Min, Q
 from sweepstake.celery import app
 from django.conf import settings
 
-from .api_football_scores import get_api_match_data
+from .api_football_scores import get_api_match_data, get_api_match_ids
 from competition.models import Match
 from general.models import EmailTemplates, CustomUser
 
@@ -32,12 +33,48 @@ def __get_email_template(template_name):
     return email_subject, email_body
 
 
+def update_api_match_ids(override_date=False):
+    match_id_data = get_api_match_ids(season_year="2024")
+    for match in match_id_data:
+        match_search = Match.objects.filter(match_time=match["fixture"]["date"])
+        if len(match_search) > 1:
+            match_search = match_search.filter(
+                Q(team_a__name__icontains=match["teams"]["home"]["name"])
+                | Q(team_a__name__icontains=match["teams"]["away"]["name"])
+                | Q(team_b__name__icontains=match["teams"]["home"]["name"])
+                | Q(team_b__name__icontains=match["teams"]["away"]["name"])
+            )
+        if len(match_search) == 1:
+            match_found = match_search[0]
+            setattr(match_found, "api_match_id", int(match["fixture"]["id"]))
+            if match["fixture"]["status"]["short"] == "FT":
+                if match_found.api_match_data is None or override_date:
+                    setattr(match_found, "api_match_data", match)
+                if match_found.score_a is None or override_date:
+                    setattr(match_found, "score_a", match["goals"]["home"])
+                if match_found.score_b is None or override_date:
+                    setattr(match_found, "score_b", match["goals"]["away"])
+            match_found.save()
+        print(f"API data added for match {match_found}")
+
+
 @app.task()
 def daily_api_scores():
     """clery beat daily 14:00 scheduled task - this task will check if matches are scheduled for today and schedule api fetching of the scores"""
     print("Checking if matches today and schedule api match score fetching")
-
     today = datetime.datetime.today()
+
+    # Check if today first day if new group phase to fetch match ids if so
+    first_day_new_phase = False
+    for min_dict in Match.objects.all().values("phase").annotate(min_match_date=Min("match_time__date")):
+        if min_dict["min_match_date"] == today.date():
+            first_day_new_phase = True
+
+    if first_day_new_phase:
+        print("Today is new tournament phase - fetching match ids from API...")
+        update_api_match_ids()
+
+    # Check if today matches to schedule match score api requests
     todays_matches = Match.objects.filter(
         match_time__date=today.date(), score_a__isnull=True, score_b__isnull=True
     ).order_by("match_time")
