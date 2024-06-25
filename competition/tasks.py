@@ -33,7 +33,7 @@ def __get_email_template(template_name):
     return email_subject, email_body
 
 
-def update_api_match_ids(override_date=False):
+def update_api_match_ids(override_data=False):
     match_id_data = get_api_match_ids(season_year="2024")
     for match in match_id_data:
         match_search = Match.objects.filter(match_time=match["fixture"]["date"])
@@ -48,12 +48,16 @@ def update_api_match_ids(override_date=False):
             match_found = match_search[0]
             setattr(match_found, "api_match_id", int(match["fixture"]["id"]))
             if match["fixture"]["status"]["short"] == "FT":
-                if match_found.api_match_data is None or override_date:
+                if match_found.api_match_data is None or override_data:
                     setattr(match_found, "api_match_data", match)
-                if match_found.score_a is None or override_date:
-                    setattr(match_found, "score_a", match["goals"]["home"])
-                if match_found.score_b is None or override_date:
-                    setattr(match_found, "score_b", match["goals"]["away"])
+                if match_found.score_a is None:
+                    home_score = match["goals"]["home"]
+                    home_score -= 0 if match["score"]["penalty"]["home"] is None else match["score"]["penalty"]["home"]
+                    setattr(match_found, "score_a", home_score)
+                if match_found.score_b is None:
+                    away_score = match["goals"]["away"]
+                    away_score -= 0 if match["score"]["penalty"]["away"] is None else match["score"]["penalty"]["away"]
+                    setattr(match_found, "score_b", away_score)
             match_found.save()
         print(f"API data added for match {match_found}")
 
@@ -97,7 +101,7 @@ def daily_api_scores():
 
 
 @app.task()
-def api_match_score_request(match_id, match_id_api):
+def api_match_score_request(match_id, match_id_api, override_data=False):
     """API request to fetch match data"""
     print(f"Checking match score via API for match {match_id}")
 
@@ -111,10 +115,22 @@ def api_match_score_request(match_id, match_id_api):
         if match_api_data is not None and match_api_data["fixture"]["status"]["short"] == "FT":
             match_finished = True
             setattr(match_obj, "api_match_data", match_api_data)
-            if match_obj.score_a is None:
-                setattr(match_obj, "score_a", match_api_data["goals"]["home"])
-            if match_obj.score_b is None:
-                setattr(match_obj, "score_b", match_api_data["goals"]["away"])
+            if match_obj.score_a is None or override_data:
+                home_score = match_api_data["goals"]["home"]
+                home_score -= (
+                    0
+                    if match_api_data["score"]["penalty"]["home"] is None
+                    else match_api_data["score"]["penalty"]["home"]
+                )
+                setattr(match_obj, "score_a", home_score)
+            if match_obj.score_b is None or override_data:
+                away_score = match_api_data["goals"]["away"]
+                away_score -= (
+                    0
+                    if match_api_data["score"]["penalty"]["away"] is None
+                    else match_api_data["score"]["penalty"]["away"]
+                )
+                setattr(match_obj, "score_b", away_score)
             match_obj.save()
             print(f"Match scores for {match_obj} successfully fetched via API.")
 

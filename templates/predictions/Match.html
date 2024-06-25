@@ -18,8 +18,14 @@
                             Predictions</a>
                     </div>
                 </div>
+                {% if is_group_phase %}
+                    <div class="row">
+                        <p><i>As per the rules, for games in the <u>knock-out stages</u> the score & match winner<br>
+                            to predict is <u>excluding the penalties shoot-out</u>.</i></p>
+                    </div>
+                {% endif %}
                 <div class="row">
-                    <p>The correct match score is worth 5 points, the correct winner 3 points.<br>
+                    <p>The correct match score is worth 5 points, the correct winner 3 points.</p>
                 </div>
 
                 {% if predictions|length == 0 %}
