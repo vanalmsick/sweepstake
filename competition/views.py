@@ -423,9 +423,8 @@ def getOthersMatchPredictions(match_id):
                         or (
                             match_obj.score_a == match_obj.score_b
                             and (
-                                bet.score_a < match_obj.score_a
-                                or bet.score_b < match_obj.score_b
-                                or not bet.score_a == bet.score_b
+                                (bet.score_a == bet.score_b and bet.score_a < match_obj.score_a)
+                                or bet.score_a < bet.score_b
                             )
                         )
                         # Team A won
