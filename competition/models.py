@@ -131,7 +131,7 @@ class Group(models.Model):
 
 MATCH_PHASES_DICT = {
     "group": "Group Phase",
-    "8": "Group Finals",
+    "8": "Round of 16",
     "4": "Quarter Finals",
     "2": "Semi Finals",
     "1": "Finals",

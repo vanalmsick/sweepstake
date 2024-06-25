@@ -17,13 +17,12 @@ from .forms import (
     getTournamentForm,
     Tournament,
 )
-from .tasks import daily_api_scores
 
 
 # Create your views here.
 def ScheduleView(request, country_name=None, group_name=None):
     """View to see list of scheduled and past matches"""
-    daily_api_scores()
+
     match_lst_date_sorted = cache.get(f"schedule_data_{country_name}_{group_name}", None)
 
     if match_lst_date_sorted is None:
@@ -108,8 +107,8 @@ def MyBetView(request):
                             errors_i["bet_a"] = "Score has to be between 0 and 20"
                         if 0 > bet_b or bet_b > 20:
                             errors_i["bet_b"] = "Score has to be between 0 and 20"
-                        if searched_match.phase != "group" and bet_a == bet_b:
-                            errors[i] = {"bet_a & bet_b": "Matches after the group-phase cannot end in a tie!"}
+                        # if searched_match.phase != "group" and bet_a == bet_b:
+                        #     errors[i] = {"bet_a & bet_b": "Matches after the group-phase cannot end in a tie!"}
                         if len(errors_i) == 0:
                             if searched_match.is_editable:
                                 bet_obj = MatchBet.objects.filter(user=request.user, match=searched_match)
@@ -453,6 +452,7 @@ def getOthersMatchPredictions(match_id):
             "predictions": predictions,
             "flag_a": match_obj.team_a.flag,
             "flag_b": match_obj.team_b.flag,
+            "is_group_phase": match_obj.phase == "group",
         }
 
         cache.set(
