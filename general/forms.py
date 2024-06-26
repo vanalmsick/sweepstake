@@ -26,12 +26,12 @@ class CustomUserCreationForm(UserCreationForm):
     password2 = forms.CharField(label=False, widget=forms.PasswordInput())
     is_active = True
 
-    email.widget.attrs.update({"class": "form-control", "placeholder": "Enter email"})
+    email.widget.attrs.update({"class": "form-control", "placeholder": "Enter email", "autocomplete": "email"})
     first_name.widget.attrs.update({"class": "form-control", "placeholder": "First name"})
     last_name.widget.attrs.update({"class": "form-control", "placeholder": "Last name"})
     team.widget.attrs.update({"class": "form-control", "placeholder": "Department"})
-    password1.widget.attrs.update({"class": "form-control", "placeholder": "Password"})
-    password2.widget.attrs.update({"class": "form-control", "placeholder": "Password"})
+    password1.widget.attrs.update({"class": "form-control", "placeholder": "Password", "autocomplete": "new-password"})
+    password2.widget.attrs.update({"class": "form-control", "placeholder": "Password", "autocomplete": "new-password"})
 
     class Meta:
         model = CustomUser
@@ -56,5 +56,7 @@ class LoginForm(AuthenticationForm):
     username = forms.EmailField(label=False)
     password = forms.CharField(label=False, widget=forms.PasswordInput())
 
-    username.widget.attrs.update({"class": "form-control", "placeholder": "Enter email", "autofocus": True})
-    password.widget.attrs.update({"class": "form-control", "placeholder": "Password"})
+    username.widget.attrs.update(
+        {"class": "form-control", "placeholder": "Enter email", "autofocus": True, "autocomplete": "email"}
+    )
+    password.widget.attrs.update({"class": "form-control", "placeholder": "Password", "autocomplete": "password"})

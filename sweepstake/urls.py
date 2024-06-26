@@ -17,7 +17,8 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, RedirectView
+from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView
 
 from general.views import LoginView, LogoutView, SignupView, SignupParentView, VerifyEmailView
 from competition.views import (
@@ -29,6 +30,12 @@ from competition.views import (
     OthersTournamentPredictionsView,
     OthersMatchPredictionsView,
 )
+
+
+admin.site.site_title = "Prediction Game Admin"
+admin.site.site_header = "Prediction Game Admin Space"
+admin.site.index_title = "Prediction Game"
+PasswordResetView.title = "Prediction Game Admin"
 
 urlpatterns = [
     path(
@@ -84,4 +91,23 @@ urlpatterns = [
     path("login/", LoginView, name="log-in"),
     path("logout/", LogoutView, name="log-out"),
     path("admin/", admin.site.urls),
+    path(
+        "reset-password/",
+        PasswordResetView.as_view(
+            template_name="registration/password_reset.html",
+            html_email_template_name="registration/password_reset_email.html",
+        ),
+        name="password_reset",
+    ),
+    path(
+        "reset-password/done/",
+        PasswordResetDoneView.as_view(template_name="registration/reset_password_done.html"),
+        name="password_reset_done",
+    ),
+    path(
+        "reset-password/confirm/<uidb64>[0-9A-Za-z]+)-<token>/",
+        PasswordResetConfirmView.as_view(template_name="registration/password_reset_complete.html"),
+        name="password_reset_confirm",
+    ),
+    path("reset-password/complete/", RedirectView.as_view(url="/predictions/my/"), name="password_reset_complete"),
 ]
