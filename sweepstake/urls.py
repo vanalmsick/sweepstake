@@ -20,6 +20,7 @@ from django.urls import path
 from django.views.generic.base import TemplateView, RedirectView
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView
 
+from competition.models import Tournament
 from general.views import LoginView, LogoutView, SignupView, SignupParentView, VerifyEmailView
 from competition.views import (
     ScheduleView,
@@ -40,7 +41,10 @@ PasswordResetView.title = "Prediction Game Admin"
 urlpatterns = [
     path(
         "",
-        TemplateView.as_view(template_name="home.html"),
+        TemplateView.as_view(
+            template_name="home.html",
+            extra_context=dict(tournament_editable=Tournament.objects.all().first().is_editable),
+        ),
         name="home",
     ),
     path(
