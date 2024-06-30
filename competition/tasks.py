@@ -47,7 +47,7 @@ def update_api_match_ids(override_data=False):
         if len(match_search) == 1:
             match_found = match_search[0]
             setattr(match_found, "api_match_id", int(match["fixture"]["id"]))
-            if match["fixture"]["status"]["short"] == "FT":
+            if match["fixture"]["status"]["short"] in ["FT", "AET", "PEN"]:
                 if match_found.api_match_data is None or override_data:
                     setattr(match_found, "api_match_data", match)
                 if match_found.score_a is None:
@@ -112,7 +112,7 @@ def api_match_score_request(match_id, match_id_api, override_data=False):
     while match_finished is False and wait_time < 45:
         match_api_data = get_api_match_data(match_id=match_id_api)
 
-        if match_api_data is not None and match_api_data["fixture"]["status"]["short"] == "FT":
+        if match_api_data is not None and match_api_data["fixture"]["status"]["short"] in ["FT", "AET", "PEN"]:
             match_finished = True
             setattr(match_obj, "api_match_data", match_api_data)
             if match_obj.score_a is None or override_data:
