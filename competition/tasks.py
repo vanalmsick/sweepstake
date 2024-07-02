@@ -52,11 +52,9 @@ def update_api_match_ids(override_data=False):
                     setattr(match_found, "api_match_data", match)
                 if match_found.score_a is None:
                     home_score = match["goals"]["home"]
-                    home_score -= 0 if match["score"]["penalty"]["home"] is None else match["score"]["penalty"]["home"]
                     setattr(match_found, "score_a", home_score)
                 if match_found.score_b is None:
                     away_score = match["goals"]["away"]
-                    away_score -= 0 if match["score"]["penalty"]["away"] is None else match["score"]["penalty"]["away"]
                     setattr(match_found, "score_b", away_score)
             match_found.save()
         print(f"API data added for match {match_found}")
@@ -109,7 +107,7 @@ def api_match_score_request(match_id, match_id_api, override_data=False):
 
     match_finished = False
     wait_time = 0
-    while match_finished is False and wait_time < 45:
+    while match_finished is False and wait_time <= 60:
         match_api_data = get_api_match_data(match_id=match_id_api)
 
         if match_api_data is not None and match_api_data["fixture"]["status"]["short"] in ["FT", "AET", "PEN"]:
@@ -117,19 +115,9 @@ def api_match_score_request(match_id, match_id_api, override_data=False):
             setattr(match_obj, "api_match_data", match_api_data)
             if match_obj.score_a is None or override_data:
                 home_score = match_api_data["goals"]["home"]
-                home_score -= (
-                    0
-                    if match_api_data["score"]["penalty"]["home"] is None
-                    else match_api_data["score"]["penalty"]["home"]
-                )
                 setattr(match_obj, "score_a", home_score)
             if match_obj.score_b is None or override_data:
                 away_score = match_api_data["goals"]["away"]
-                away_score -= (
-                    0
-                    if match_api_data["score"]["penalty"]["away"] is None
-                    else match_api_data["score"]["penalty"]["away"]
-                )
                 setattr(match_obj, "score_b", away_score)
             match_obj.save()
             print(f"Match scores for {match_obj} successfully fetched via API.")
