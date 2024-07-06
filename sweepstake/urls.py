@@ -38,12 +38,17 @@ admin.site.site_header = "Prediction Game Admin Space"
 admin.site.index_title = "Prediction Game"
 PasswordResetView.title = "Prediction Game Admin"
 
+try:
+    tournament_editable = Tournament.objects.all().first().is_editable
+except Exception as _:
+    tournament_editable = True
+
 urlpatterns = [
     path(
         "",
         TemplateView.as_view(
             template_name="home.html",
-            extra_context=dict(tournament_editable=Tournament.objects.all().first().is_editable),
+            extra_context=dict(tournament_editable=tournament_editable),
         ),
         name="home",
     ),
