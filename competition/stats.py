@@ -86,7 +86,7 @@ def get_chart_data(user_id):
     stats_chart_data = cache.get("stats_data", None)
 
     if stats_chart_data is None:
-        simulations = 1_000_000
+        simulations = 100_000
 
         num_matches, num_a_won, num_draw, num_b_won = _get_real_match_distribution()
 
