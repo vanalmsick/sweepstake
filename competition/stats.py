@@ -22,8 +22,8 @@ def _get_user_match_predictions(user_id):
     """get a user's match prediction stats"""
     all_match_bets = MatchBet.objects.filter(points__isnull=False, user__pk=user_id).annotate(
         match_winner=Case(
-            When(match__score_a__gt=F("match__score_b"), then=1),
-            When(match__score_b__gt=F("match__score_a"), then=-1),
+            When(score_a__gt=F("score_b"), then=1),
+            When(score_b__gt=F("score_a"), then=-1),
             default=0,
         )
     )

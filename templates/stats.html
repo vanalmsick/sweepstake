@@ -58,7 +58,6 @@
             data: {
                 labels: ["Home Won", "Draw", "Away Won"],
                 datasets: [{
-                    label: "Population (millions)",
                     backgroundColor: ["#005AA4", "#00A1E2", "#3BC3A3"],
                     data: [{{ stats_data.num_a_won|safe }}, {{ stats_data.num_draw|safe }}, {{ stats_data.num_b_won|safe }}]
                 }]
@@ -74,11 +73,10 @@
         var config_my = {
             type: 'horizontalBar',
             data: {
-                labels: ["Home Won", "Draw", "Away Won"],
+                labels: ["Home Win", "Draw", "Away Win"],
                 datasets: [
                     {
-                        label: "Matches",
-
+                        label: "Match",
                         data: {{ stats_data.data_matches|safe }},
                         stack: 'Stack 0'
                     }, {
@@ -92,7 +90,7 @@
                         data: {{ stats_data.my_correct_winner|safe }},
                         stack: 'Stack 1'
                     }, {
-                        label: "False Predictions",
+                        label: "Wrong Prediction",
                         backgroundColor: "#B4425D",
                         data: {{ stats_data.my_false_prediction|safe }},
                         stack: 'Stack 1'
