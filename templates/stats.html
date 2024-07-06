@@ -1,0 +1,130 @@
+<div class="row my-2 mx-4">
+    <div id="container text-center" style="width: 70%;">
+        <canvas id="bar-chart"></canvas>
+        <div class="ps-5 text-center"><small><small style="background-color: #FFFF00; color: #003064;">(My Correct Predictions: {{ stats_data.my_correct_winner_sum|safe }} out of {{ stats_data.num_total|safe }})</small></small></div>
+    </div>
+
+    <div id="container" style="width: 30%;">
+        <canvas id="pie-chart"></canvas>
+        <br><br>
+        <canvas id="my-stats"></canvas>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <script>
+
+        var config_bar = {
+            type: 'bar',
+            data: {
+                labels: {{ stats_data.labels|safe }},
+                datasets: [
+                    {
+                        label: "Random Distribution",
+                        backgroundColor: "#dcdcdc",
+                        data: {{ stats_data.data_random|safe }}
+                    }, {
+                        label: "Participants",
+                        backgroundColor: "#003064",
+                        data: {{ stats_data.data_participants|safe }}
+                    }
+                ]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: 'Match Predictions'
+                },
+                scales: {
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: '# Particpants'
+                        }
+                    }],
+                    xAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: '# Correct Match Winner Predictions'
+                        }
+                    }]
+                }
+            }
+        };
+
+
+        var config_pie = {
+            type: 'pie',
+            data: {
+                labels: ["Home Won", "Draw", "Away Won"],
+                datasets: [{
+                    label: "Population (millions)",
+                    backgroundColor: ["#005AA4", "#00A1E2", "#3BC3A3"],
+                    data: [{{ stats_data.num_a_won|safe }}, {{ stats_data.num_draw|safe }}, {{ stats_data.num_b_won|safe }}]
+                }]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: 'Match Outcomes'
+                }
+            }
+        };
+
+        var config_my = {
+            type: 'horizontalBar',
+            data: {
+                labels: ["Home Won", "Draw", "Away Won"],
+                datasets: [
+                    {
+                        label: "Matches",
+
+                        data: {{ stats_data.data_matches|safe }},
+                        stack: 'Stack 0'
+                    }, {
+                        label: "Correct Score",
+                        backgroundColor: "#2D8F78",
+                        data: {{ stats_data.my_correct_score|safe }},
+                        stack: 'Stack 1'
+                    }, {
+                        label: "Correct Winner",
+                        backgroundColor: "#3BC3A3",
+                        data: {{ stats_data.my_correct_winner|safe }},
+                        stack: 'Stack 1'
+                    }, {
+                        label: "False Predictions",
+                        backgroundColor: "#B4425D",
+                        data: {{ stats_data.my_false_prediction|safe }},
+                        stack: 'Stack 1'
+                    }
+                ]
+            },
+            options: {
+                legend: {display: true},
+                title: {
+                    display: true,
+                    text: 'My Predictions'
+                },
+                scales: {
+                    xAxes: [{
+                        display: true,
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        };
+
+        window.onload = function () {
+            var ctx_bar = document.getElementById('bar-chart').getContext('2d');
+            window.myBar = new Chart(ctx_bar, config_bar);
+            var ctx_pie = document.getElementById('pie-chart').getContext('2d');
+            window.myPie = new Chart(ctx_pie, config_pie);
+            var ctx_my = document.getElementById('my-stats').getContext('2d');
+            window.myStats = new Chart(ctx_my, config_my);
+        };
+
+    </script>
+
+</div>

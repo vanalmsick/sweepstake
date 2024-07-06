@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.cache import cache
 
 from general.models import CustomUser
+from .stats import get_chart_data
 from .models import Match, MatchBet, Participant, Group, GroupBet, TournamentBet, MATCH_PHASES_DICT, BROADCASTER_URLS
 from .forms import (
     getMatchBetFormSet,
@@ -81,6 +82,7 @@ def MyBetView(request):
         return redirect("log-in")
 
     user_data = getMyScore(request.user.pk)
+    stats_data = get_chart_data(user_id=request.user.pk)
 
     # Save/update Request
     errors = {}
@@ -192,6 +194,7 @@ def MyBetView(request):
             "stake_received": request.user.has_paid,
             "email_verified": request.user.is_verified,
             "errors": errors,
+            "stats_data": stats_data,
             "user_name": "-/-" if user_data is None else user_data["user__username"],
             "user_rank": "-/-" if user_data is None else user_data["rank"],
             "user_points": "-/-" if user_data is None else user_data["total_points"],
