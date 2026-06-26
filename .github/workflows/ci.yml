@@ -27,7 +27,7 @@ jobs:
         run: echo "python=$(grep -m1 '^FROM python:' ../Dockerfile | sed 's/FROM python:\([0-9.]*\).*/\1/')" >> $GITHUB_OUTPUT
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v6.2.0
         with:
           python-version: ${{ steps.versions.outputs.python }}
           cache: pip
@@ -41,7 +41,7 @@ jobs:
 
       - name: Publish test results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@v2.23.0
         with:
           files: backend/test-results.xml
 
