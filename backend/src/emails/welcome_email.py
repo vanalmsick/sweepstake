@@ -141,6 +141,7 @@ async def send_competition_welcome_email(
     first_place_points: Optional[int],
     second_place_points: Optional[int],
     third_place_points: Optional[int],
+    match_score_method: str = "no-penalty",
     admins: Optional[list[dict]] = None,
     user_id: Optional[int] = None,
 ) -> None:
@@ -150,6 +151,11 @@ async def send_competition_welcome_email(
     footer_entries = _admin_footer_entries(admins)
     tournament_url = f"{settings.main_host.rstrip('/')}/tournament/{tournament_id}"
 
+    match_score_method_desc = (
+        '(regular time + extra time + penalties)' if match_score_method == 'final' else
+        '(regular time only; no extra time & penalties)' if match_score_method == 'regular-time' else
+        '(regular time + extra time; no penalties)'
+    )
     stake_html: Optional[Markup] = _linkify_stake(stake) if stake else None
     context = {
         "first_name": first_name,
@@ -163,6 +169,7 @@ async def send_competition_welcome_email(
         "first_place_points": first_place_points or None,
         "second_place_points": second_place_points or None,
         "third_place_points": third_place_points or None,
+        "match_score_method_desc": match_score_method_desc,
         "admin_sign_off": sign_off,
         "admin_footer": footer_entries,
     }

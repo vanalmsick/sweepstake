@@ -104,14 +104,18 @@ export function TournamentPage() {
     </button>
   ) : undefined
 
+  const matchScoreMethodDesc = 
+    tournament.match_score_method === 'final' ? '(regular time + extra time + penalties)' :
+        tournament.match_score_method === 'regular-time' ? '(regular time only; no extra time & penalties)' :
+        '(regular time + extra time; no penalties)';
   const rules: { label: string; points: number | null }[] = [
     { label: '🥇 Correct tournament winner', points: tournament.first_place_points },
     { label: '🥈 Correct runner-up', points: tournament.second_place_points },
     { label: '🥉 Correct third place', points: tournament.third_place_points },
     { label: '👥 Correct group winner', points: tournament.group_winner_points },
     { label: '🏆 Correct stage winner', points: tournament.stage_winner_points },
-    { label: '⚽ Correct match winner', points: tournament.match_winner_points },
-    { label: '🎯 Exact match score', points: tournament.match_score_points },
+    { label: `⚽ Correct match winner ${matchScoreMethodDesc}`, points: tournament.match_winner_points },
+    { label: `🎯 Exact match score ${matchScoreMethodDesc}`, points: tournament.match_score_points },
   ].filter((r) => r.points != null && r.points !== 0)
 
   const cutoff = new Date(Date.now() - 36 * 60 * 60 * 1000)

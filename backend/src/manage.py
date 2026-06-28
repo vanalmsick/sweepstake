@@ -27,7 +27,7 @@ from src.tournaments.crud import get_tournament_by_id
 from src.users.crud import get_user_by_id, get_user_by_email, update_user
 from src.users.models import UserUpdate
 from src.emails.welcome_email import send_competition_welcome_email
-from src.api_football_data_org.update_tournament import update_tournaments
+from src.api_football_data.football_data_org import update_tournament
 from src.predictions import scoring as predictions_scoring
 
 
@@ -97,24 +97,20 @@ async def _cmd_update_tournament(tournament_id: int | None = None) -> None:
             if tournament is None:
                 print(f"Error: tournament {tournament_id} not found.", file=sys.stderr)
                 sys.exit(1)
-            if not tournament.football_data_org_id:
-                print(f"Error: tournament {tournament_id} has no football_data_org_id set.", file=sys.stderr)
-                sys.exit(1)
-            football_data_org_ids = [tournament.football_data_org_id]
+            tournament_lst = [tournament]
         else:
             result = await db.execute(
-                select(Tournament.football_data_org_id)
+                select(Tournament)
                 .where(Tournament.football_data_org_id.is_not(None))
-                .distinct()
             )
-            football_data_org_ids = result.scalars().all()
-            if not football_data_org_ids:
-                print("No tournaments with a football_data_org_id found.", file=sys.stderr)
+            tournament_lst = result.scalars().all()
+            if not tournament_lst:
+                print("No tournaments with a api connection found.", file=sys.stderr)
                 sys.exit(1)
 
-        for fdo_id in football_data_org_ids:
-            print(f"Fetching match data for football-data.org ID {fdo_id}…")
-            await update_tournaments(db, fdo_id)
+        for tournament in tournament_lst:
+            print(f"Fetching match data for tournament '{tournament.name}' ({tournament.id})…")
+            await update_tournament(db, tournament)
         print("Done.")
 
 

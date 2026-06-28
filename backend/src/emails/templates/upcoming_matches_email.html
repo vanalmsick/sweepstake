@@ -80,7 +80,7 @@
 
 <!-- ── Message ── -->
 <p style="margin:0 0 20px 0;color:#374151;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;mso-line-height-rule:exactly;">
-  Have you already placed your predictions for the next matches in <strong>{{ tournament_name }}</strong>? Or do you want to change them? Don't forget to do so, as your predictions will be locked as soon as the match starts!
+  Have you placed your predictions for the upcoming matches in <strong>{{ tournament_name }}</strong> yet? Want to change any of them? Don't forget to do so, as your predictions will be locked as soon as the match starts!
 </p>
 
 <!-- ── Match table ── -->
@@ -229,6 +229,11 @@
   Good luck! &#127942;<br><br>
   Best regards,<br>
   <strong style="color:#111827;font-family:Arial,Helvetica,sans-serif;">{{ admin_sign_off }}</strong>
+</p>
+
+<!-- ── P.S. Note about match scoring method ── -->
+<p style="margin:20px 0 0 0;color:#6b7280;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-style:italic;line-height:1.6;mso-line-height-rule:exactly;">
+  <strong>P.S.</strong> Match predictions are based on the score after {{ match_score_method_desc }}.
 </p>
 
 {% endblock %}

@@ -14,7 +14,7 @@ from src.users.routers import verify_access_token
 from src.users.crud import get_user_by_id
 from src.emails.welcome_email import send_competition_welcome_email
 from src.emails.payment_reminder_email import send_payment_reminder_email
-from src.api_football_data_org.update_tournament import update_tournaments
+from src.api_football_data.football_data_org import update_tournament
 from src.config import settings
 from src.logging_config import get_logger
 
@@ -46,6 +46,8 @@ async def create_tournament_endpoint(
     - **match_score_points**: Points for correctly predicting the exact score of a match (default: 3)
     - **group_winner_points**: Points for correctly predicting the winner of a group (default: null/disabled)
     - **stage_winner_points**: Points for correctly predicting the winner of a knockout stage (default: null/disabled)
+    - **predictions_open**: Control when predictions can be submitted: 'automatic' (default), 'open', or 'closed'
+    - **match_score_method**: Which score to use for match predictions: 'final' (regular + extra + penalties), 'no-penalty' (default, regular + extra), 'regular-time' (regular time only)
 
     Returns the created tournament with its ID.  A welcome email is dispatched to the creator in the background.
     """
@@ -75,6 +77,7 @@ async def create_tournament_endpoint(
             first_place_points=new_tournament.first_place_points,
             second_place_points=new_tournament.second_place_points,
             third_place_points=new_tournament.third_place_points,
+            match_score_method=new_tournament.match_score_method,
             admins=admins,
             user_id=user_id,
         )
@@ -161,6 +164,8 @@ async def patch_tournament_endpoint(
     - **match_score_points**: Points for correctly predicting the exact score of a match (default: 3)
     - **group_winner_points**: Points for correctly predicting the winner of a group (default: null/disabled)
     - **stage_winner_points**: Points for correctly predicting the winner of a knockout stage (default: null/disabled)
+    - **predictions_open**: Control when predictions can be submitted: 'automatic', 'open', or 'closed'
+    - **match_score_method**: Which score to use for match predictions: 'final' (regular + extra + penalties), 'no-penalty' (regular + extra), 'regular-time' (regular time only)
 
     Returns the updated tournament details or 404 if not found.
     """
@@ -347,6 +352,7 @@ async def _bulk_send_welcome_emails(
     first_place_points,
     second_place_points,
     third_place_points,
+    match_score_method,
     requesting_admin: dict,
     wait_seconds: float,
 ) -> None:
@@ -368,6 +374,7 @@ async def _bulk_send_welcome_emails(
             first_place_points=first_place_points,
             second_place_points=second_place_points,
             third_place_points=third_place_points,
+            match_score_method=match_score_method,
             admins=[requesting_admin],
             user_id=r["user_id"],
         )
@@ -439,11 +446,7 @@ async def tournament_admin_action_endpoint(
     elif body.action == models.TournamentAdminAction.update_tournament:
         if not tournament.football_data_org_id:
             raise CustomError("This tournament has no football-data.org ID configured", status_code=400)
-        background_tasks.add_task(
-            update_tournaments,
-            db,
-            tournament.football_data_org_id,
-        )
+        background_tasks.add_task(update_tournament, db, tournament)
 
     elif body.action == models.TournamentAdminAction.send_welcome_email:
         recipients = [
@@ -463,6 +466,7 @@ async def tournament_admin_action_endpoint(
             first_place_points=tournament.first_place_points,
             second_place_points=tournament.second_place_points,
             third_place_points=tournament.third_place_points,
+            match_score_method=tournament.match_score_method,
             requesting_admin=requesting_admin,
             wait_seconds=_email_wait(len(recipients)),
         )

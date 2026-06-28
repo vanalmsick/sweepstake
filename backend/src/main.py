@@ -52,7 +52,7 @@ from src.predictions.routers import (
     predict_match_router,
 )
 from src.users.routers import router as auth_router
-from src.api_football_data_org.routers import router as football_data_org_router
+from src.api_football_data.routers import router as football_data_org_router
 from src.stats.routers import router as stats_router
 from src.exceptions import CustomError, custom_error_handler
 from src.scripts.load_test_data import load_test_data

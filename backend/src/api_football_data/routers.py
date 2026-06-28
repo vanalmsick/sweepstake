@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends
 
 from src.users.routers import verify_access_token
-from src.api_football_data_org.list_tournaments import list_tournaments
+from src.api_football_data.football_data_org import list_tournaments
 
 router = APIRouter(prefix="/football-data-org", tags=["football-data-org"])
 
