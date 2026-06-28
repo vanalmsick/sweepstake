@@ -48,7 +48,7 @@ FROM python:3.14.6-slim AS runtime
 # Install nginx + supervisor in a single layer and clean up apt caches
 # immediately so they don't bloat the layer.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         nginx \
         supervisor \
         curl \
