@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6.0.3
         with:
-          ref: dev
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
