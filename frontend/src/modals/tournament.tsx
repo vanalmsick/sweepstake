@@ -299,7 +299,7 @@ function TournamentInfoFields({
           disabled={disabled}
           className={fieldClass}
         >
-          <option value="final">Final Score (regular time + extra time + penalties)</option>
+          <option value="final">Final Match Score (regular time + extra time + penalties)</option>
           <option value="no-penalty">Score Excluding Penalties (regular time + extra time; no penalties)</option>
           <option value="regular-time">Regular Time Score (regular time; no extra time &amp; penalties)</option>
         </select>
