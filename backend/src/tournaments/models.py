@@ -52,6 +52,12 @@ class PredictionsOpen(str, Enum):
     closed = "closed"
 
 
+class MatchScoreMethod(str, Enum):
+    final = "final"
+    no_penalty = "no-penalty"
+    regular_time = "regular-time"
+
+
 class TournamentBase(SQLModel):
     """Shared tournament fields used across create, read, and update schemas."""
     name: str = Field(..., min_length=1, max_length=255)
@@ -68,6 +74,7 @@ class TournamentBase(SQLModel):
     group_winner_points: Optional[int] = Field(default=8, ge=0)
     stage_winner_points: Optional[int] = Field(default=0, ge=0)
     predictions_open: PredictionsOpen = Field(default=PredictionsOpen.automatic)
+    match_score_method: MatchScoreMethod = Field(default=MatchScoreMethod.no_penalty)
 
 
 class Tournament(TournamentBase, table=True):
@@ -79,6 +86,10 @@ class Tournament(TournamentBase, table=True):
     predictions_open: PredictionsOpen = Field(
         default=PredictionsOpen.automatic,
         sa_column=sa.Column(sa.String(16), nullable=False, default="automatic", server_default="automatic"),
+    )
+    match_score_method: MatchScoreMethod = Field(
+        default=MatchScoreMethod.no_penalty,
+        sa_column=sa.Column(sa.String(16), nullable=False, default="no-penalty", server_default="no-penalty"),
     )
     football_data_org_id: Optional[int] = Field(default=None, unique=False)
     first_place_team_id: Optional[int] = Field(default=None, sa_column=sa.Column(sa.Integer, sa.ForeignKey("team.id", use_alter=True, name="fk_tournament_first_place_team_id"), nullable=True))

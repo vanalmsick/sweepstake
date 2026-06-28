@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func, nullslast
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
-from src.api_football_data_org.import_tournament import import_tournament
+from src.api_football_data.football_data_org import import_tournament
 from src.tournaments import models
 from src.matches.models import Match
 from src.predictions import scoring as predictions_scoring
@@ -85,6 +85,8 @@ async def create_tournament(db: AsyncSession, tournament: models.TournamentCreat
         match_score_points=tournament.match_score_points,
         group_winner_points=tournament.group_winner_points,
         stage_winner_points=tournament.stage_winner_points,
+        predictions_open=tournament.predictions_open,
+        match_score_method=tournament.match_score_method,
         join_code=_generate_join_code(tournament.name, user_id)
     )
     db.add(db_tournament)
@@ -98,7 +100,7 @@ async def create_tournament(db: AsyncSession, tournament: models.TournamentCreat
 
     # If football_data_org_id is provided, import tournament data from football-data.org
     if tournament.football_data_org_id is not None:
-        await import_tournament(db, competition_id=tournament.football_data_org_id, tournament=db_tournament)
+        await import_tournament(db, db_tournament)
 
     return await get_tournament_by_id(db, db_tournament.id)
 
@@ -138,7 +140,7 @@ async def update_tournament(
         "second_place_points",
         "third_place_points",
     }
-    _MATCH_SCORING_FIELDS = {"match_winner_points", "match_score_points"}
+    _MATCH_SCORING_FIELDS = {"match_winner_points", "match_score_points", "match_score_method"}
     _GROUP_SCORING_FIELDS = {"group_winner_points"}
     _STAGE_SCORING_FIELDS = {"stage_winner_points"}
 

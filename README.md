@@ -207,7 +207,7 @@ sweepstake/
 │   │   ├── teams/             # Team data
 │   │   ├── users/             # Auth, accounts, password reset, email
 │   │   ├── stats/             # Leaderboard and scoring aggregates
-│   │   └── api_football_data_org/  # football-data.org import scripts
+│   │   └── api_football_data/  # folder for apis to sync tournament data automatically (e.g. from football-data.org)
 │   └── tests/
 ├── frontend/
 │   └── src/

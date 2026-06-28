@@ -54,6 +54,7 @@ def _build_text_body(
     admin_sign_off: str,
     admin_footer: Optional[list[dict]],
     winner_reminder: Optional[dict] = None,
+    match_score_method_desc: str = "regular time + extra time - no penalties",
 ) -> str:
     n = len(matches)
     lines = [
@@ -99,6 +100,8 @@ def _build_text_body(
         "Best regards,",
         admin_sign_off,
         "",
+        f"P.S. Match predictions are based on the score after {match_score_method_desc}.",
+        "",
         "---",
         "SweepStake — Football Prediction Competition",
         f"You received this email because you are a participant in {tournament_name}.",
@@ -118,6 +121,7 @@ async def send_upcoming_matches_email(
     admins: Optional[list[dict]] = None,
     user_id: Optional[int] = None,
     winner_reminder: Optional[dict] = None,
+    match_score_method: str = "no-penalty",
 ) -> None:
     """Send the upcoming-matches reminder for one user / tournament.
 
@@ -135,6 +139,12 @@ async def send_upcoming_matches_email(
     footer_entries = _admin_footer_entries(admins)
     tournament_url = f"{settings.main_host.rstrip('/')}/tournament/{tournament_id}"
 
+    match_score_method_desc = (
+        'regular time + extra time + penalties' if match_score_method == 'final' else
+        'regular time only - no extra time & penalties' if match_score_method == 'regular-time' else
+        'regular time + extra time - no penalties'
+    )
+
     context = {
         "first_name": first_name,
         "tournament_name": tournament_name,
@@ -143,6 +153,7 @@ async def send_upcoming_matches_email(
         "winner_reminder": winner_reminder,
         "admin_sign_off": sign_off,
         "admin_footer": footer_entries,
+        "match_score_method_desc": match_score_method_desc,
     }
     html_body = render_html("upcoming_matches_email.html", context)
     text_body = _build_text_body(
@@ -153,6 +164,7 @@ async def send_upcoming_matches_email(
         admin_sign_off=sign_off,
         admin_footer=footer_entries,
         winner_reminder=winner_reminder,
+        match_score_method_desc=match_score_method_desc,
     )
     await send_email(
         to_email,

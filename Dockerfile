@@ -3,7 +3,7 @@
 # =============================================================================
 # node:20-alpine is tiny (≈ 70 MB compressed) and fine for build-only stages
 # because musl-libc incompatibility only matters for the Python runtime.
-FROM node:20-alpine AS frontend-build
+FROM node:26-alpine AS frontend-build
 
 WORKDIR /app
 
@@ -48,7 +48,7 @@ FROM python:3.14.6-slim AS runtime
 # Install nginx + supervisor in a single layer and clean up apt caches
 # immediately so they don't bloat the layer.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         nginx \
         supervisor \
         curl \

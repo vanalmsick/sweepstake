@@ -21,13 +21,15 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v6.0.3
+        with:
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Read Python version from Dockerfile
         id: versions
         run: echo "python=$(grep -m1 '^FROM python:' ../Dockerfile | sed 's/FROM python:\([0-9.]*\).*/\1/')" >> $GITHUB_OUTPUT
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v6.2.0
         with:
           python-version: ${{ steps.versions.outputs.python }}
           cache: pip
@@ -41,7 +43,7 @@ jobs:
 
       - name: Publish test results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@v2.23.0
         with:
           files: backend/test-results.xml
 
@@ -53,6 +55,8 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v6.0.3
+        with:
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Read Node version from Dockerfile
         id: versions
@@ -125,6 +129,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.3
+        with:
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4

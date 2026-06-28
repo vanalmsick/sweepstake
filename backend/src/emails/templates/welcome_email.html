@@ -103,7 +103,7 @@
   {% if match_winner_points %}
   <tr>
     <td style="padding:10px 14px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#374151;background-color:#ffffff;border-bottom:1px solid #e5e7eb;">
-      <p style="margin:0;line-height:18px;mso-line-height-rule:exactly;">⚽ Correct match winner</p>
+      <p style="margin:0;line-height:18px;mso-line-height-rule:exactly;">⚽ Correct match winner {{ match_score_method_desc }}</p>
     </td>
     <td align="right" style="padding:10px 14px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;color:#001440;background-color:#ffffff;border-bottom:1px solid #e5e7eb;white-space:nowrap;">
       <p style="margin:0;line-height:18px;mso-line-height-rule:exactly;">{{ match_winner_points }}&nbsp;pts</p>
@@ -114,7 +114,7 @@
   {% if match_score_points %}
   <tr>
     <td style="padding:10px 14px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#374151;background-color:#f9fafb;">
-      <p style="margin:0;line-height:18px;mso-line-height-rule:exactly;">🎯 Exact match score</p>
+      <p style="margin:0;line-height:18px;mso-line-height-rule:exactly;">🎯 Exact match score {{ match_score_method_desc }}</p>
     </td>
     <td align="right" style="padding:10px 14px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;color:#001440;background-color:#f9fafb;white-space:nowrap;">
       <p style="margin:0;line-height:18px;mso-line-height-rule:exactly;">{{ match_score_points }}&nbsp;pts</p>

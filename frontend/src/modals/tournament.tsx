@@ -10,7 +10,7 @@ import {
   useSendAdminActionMutation,
 } from '../api/tournamentApi'
 import { useGetParticipantActivityQuery } from '../api/statsApi'
-import type { PredictionsOpen, TournamentAdminAction } from '../types'
+import type { PredictionsOpen, MatchScoreMethod, TournamentAdminAction } from '../types'
 import { useListFootballDataOrgTournamentsQuery } from '../api/footballDataOrgApi'
 import { useListTeamsQuery } from '../api/teamApi'
 import { useGetMeQuery } from '../api/authApi'
@@ -189,6 +189,8 @@ function TournamentInfoFields({
   setFootballDataOrgId,
   predictionsOpen,
   setPredictionsOpen,
+  matchScoreMethod,
+  setMatchScoreMethod,
   autoFocusName,
   disabled,
 }: {
@@ -200,6 +202,8 @@ function TournamentInfoFields({
   setFootballDataOrgId: (v: string) => void
   predictionsOpen: PredictionsOpen
   setPredictionsOpen: (v: PredictionsOpen) => void
+  matchScoreMethod: MatchScoreMethod
+  setMatchScoreMethod: (v: MatchScoreMethod) => void
   autoFocusName?: boolean
   disabled?: boolean
 }) {
@@ -276,6 +280,30 @@ function TournamentInfoFields({
           <option value="closed">Closed</option>
         </select>
       </div>
+      <div>
+        <FieldLabel>
+          Match Score Method{' '}
+          <span className="relative inline-flex items-center group/tip cursor-help">
+            <HelpCircle size={13} className="text-gray-400 dark:text-gray-500" />
+            <span className="pointer-events-none absolute bottom-full left-0 mb-2 w-72 rounded-lg bg-gray-800 dark:bg-gray-900 text-white text-xs font-normal px-3 py-2 shadow-lg opacity-0 group-hover/tip:opacity-100 transition-opacity z-50 normal-case tracking-normal leading-relaxed">
+              <strong>Final Match Score</strong>: The match score after regular time, extra time, and penalties.
+              {' '}<strong>Excluding Penalties</strong>: After regular time and extra time, but excludes penalty shootouts.
+              {' '}<strong>Regular Time Only</strong>: The match score at the end of regular time (90 minutes), excluding extra time and penalties.
+              <span className="absolute top-full left-3 border-4 border-transparent border-t-gray-800 dark:border-t-gray-900" />
+            </span>
+          </span>
+        </FieldLabel>
+        <select
+          value={matchScoreMethod}
+          onChange={(e) => setMatchScoreMethod(e.target.value as MatchScoreMethod)}
+          disabled={disabled}
+          className={fieldClass}
+        >
+          <option value="final">Final Match Score (regular time + extra time + penalties)</option>
+          <option value="no-penalty">Score Excluding Penalties (regular time + extra time; no penalties)</option>
+          <option value="regular-time">Regular Time Score (regular time; no extra time &amp; penalties)</option>
+        </select>
+      </div>
     </>
   )
 }
@@ -299,6 +327,7 @@ export function CreateTournamentModal({ onClose }: { onClose: () => void }) {
   const [groupWinnerPoints, setGroupWinnerPoints] = useState('8')
   const [stageWinnerPoints, setStageWinnerPoints] = useState('')
   const [predictionsOpen, setPredictionsOpen] = useState<PredictionsOpen>('automatic')
+  const [matchScoreMethod, setMatchScoreMethod] = useState<MatchScoreMethod>('no-penalty')
   const [error, setError] = useState<string | null>(null)
 
   async function handleCreate() {
@@ -317,6 +346,7 @@ export function CreateTournamentModal({ onClose }: { onClose: () => void }) {
         group_winner_points: groupWinnerPoints !== '' ? Number(groupWinnerPoints) : undefined,
         stage_winner_points: stageWinnerPoints !== '' ? Number(stageWinnerPoints) : undefined,
         predictions_open: predictionsOpen,
+        match_score_method: matchScoreMethod,
       }).unwrap()
       onClose()
       navigate(`/tournament/${tournament.id}?guide=admin`)
@@ -337,6 +367,8 @@ export function CreateTournamentModal({ onClose }: { onClose: () => void }) {
           setFootballDataOrgId={setFootballDataOrgId}
           predictionsOpen={predictionsOpen}
           setPredictionsOpen={setPredictionsOpen}
+          matchScoreMethod={matchScoreMethod}
+          setMatchScoreMethod={setMatchScoreMethod}
           autoFocusName
           disabled={isLoading}
         />
@@ -447,6 +479,9 @@ export function EditTournamentModal({
   )
   const [predictionsOpen, setPredictionsOpen] = useState<PredictionsOpen>(
     tournament.predictions_open ?? 'automatic',
+  )
+  const [matchScoreMethod, setMatchScoreMethod] = useState<MatchScoreMethod>(
+    tournament.match_score_method ?? 'no-penalty',
   )
   const [error, setError] = useState<string | null>(null)
   const [memberError, setMemberError] = useState<string | null>(null)
@@ -564,6 +599,7 @@ export function EditTournamentModal({
           group_winner_points: groupWinnerPoints !== '' ? Number(groupWinnerPoints) : undefined,
           stage_winner_points: stageWinnerPoints !== '' ? Number(stageWinnerPoints) : undefined,
           predictions_open: predictionsOpen,
+          match_score_method: matchScoreMethod,
         },
       }).unwrap()
       onClose()
@@ -584,6 +620,8 @@ export function EditTournamentModal({
           setFootballDataOrgId={setFootballDataOrgId}
           predictionsOpen={predictionsOpen}
           setPredictionsOpen={setPredictionsOpen}
+          matchScoreMethod={matchScoreMethod}
+          setMatchScoreMethod={setMatchScoreMethod}
           disabled={isLoading}
         />
         <EditPointAndTeamFields

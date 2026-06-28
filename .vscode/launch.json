@@ -94,8 +94,7 @@
             "type": "debugpy",
             "request": "launch",
             "python": "${workspaceFolder}/backend/.venv/bin/python",
-            "program": "${workspaceFolder}/backend/src/api_football_data_org/update_tournament.py",
-            "args": ["2000"],
+            "program": "${workspaceFolder}/backend/src/api_football_data/football_data_org.py",
             "cwd": "${workspaceFolder}/backend",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/backend",

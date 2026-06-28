@@ -28,7 +28,7 @@ updates:
         update-types:
           - "major"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "dependabot chore "
       include: "scope"
     labels:
       - "dependencies"
@@ -60,7 +60,7 @@ updates:
         update-types:
           - "major"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "dependabot chore "
       include: "scope"
     labels:
       - "dependencies"
@@ -88,7 +88,7 @@ updates:
         update-types:
           - "major"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "dependabot chore "
       include: "scope"
     labels:
       - "dependencies"
@@ -115,7 +115,7 @@ updates:
         update-types:
           - "major"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "dependabot chore "
       include: "scope"
     labels:
       - "dependencies"

@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
+from src.api_football_data.football_data_org import update_all_tournaments
 from src.config import settings
 from src.logging_config import get_logger
 
@@ -39,26 +40,11 @@ def release_scheduler_lock(fd: IO) -> None:
 
 
 async def _update_all_tournaments() -> None:
-    from sqlalchemy import select
-
     from src.database import AsyncSessionLocal
-    from src.tournaments.models import Tournament
-    from src.api_football_data_org.update_tournament import update_tournaments
+    from src.api_football_data.football_data_org import update_all_tournaments
 
     async with AsyncSessionLocal() as db:
-        result = await db.execute(
-            select(Tournament.football_data_org_id)
-            .where(Tournament.football_data_org_id.is_not(None))
-            .distinct()
-        )
-        ids = result.scalars().all()
-
-    for fdo_id in ids:
-        async with AsyncSessionLocal() as db:
-            try:
-                await update_tournaments(db, fdo_id)
-            except Exception:
-                logger.exception("Failed to update tournament football_data_org_id=%s", fdo_id)
+        await update_all_tournaments(db)
 
 
 async def _cleanup_old_sessions() -> None:
@@ -193,6 +179,7 @@ async def _send_upcoming_match_reminders() -> None:
                     admins=admins_info,
                     user_id=user.id,
                     winner_reminder=winner_reminder,
+                    match_score_method=tournament.match_score_method,
                 )
                 logger.info(
                     "Upcoming-matches reminder sent: user_id=%d tournament_id=%d matches=%d",
