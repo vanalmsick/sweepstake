@@ -24,6 +24,7 @@ services:
   # ---------------------------------------------------------------------------
   app:
     build: .
+    # image: vanalmsick/sweepstake:dev
     restart: unless-stopped
     ports:
       - "80:80"
