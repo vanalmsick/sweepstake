@@ -34,8 +34,6 @@ jobs:
     needs: autotag
     steps:
       - uses: actions/checkout@v6.0.3
-        with:
-          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
