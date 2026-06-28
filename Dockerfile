@@ -3,7 +3,7 @@
 # =============================================================================
 # node:20-alpine is tiny (≈ 70 MB compressed) and fine for build-only stages
 # because musl-libc incompatibility only matters for the Python runtime.
-FROM node:20-alpine AS frontend-build
+FROM node:26-alpine AS frontend-build
 
 WORKDIR /app
 
