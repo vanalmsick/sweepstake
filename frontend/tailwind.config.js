@@ -6,11 +6,7 @@ export default {
   ],
   darkMode: 'media',
   theme: {
-    extend: {
-      backgroundImage: {
-        app: "url('/bg-stadium.webp')",
-      },
-    },
+    extend: {},
   },
   plugins: [],
 }

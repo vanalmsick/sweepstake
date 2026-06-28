@@ -1,6 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --background-image-app: url('/bg-stadium.webp');
+}
 
 @keyframes now-line-sweep {
   0%   { left: -35%; }
