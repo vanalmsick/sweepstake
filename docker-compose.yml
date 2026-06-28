@@ -36,6 +36,8 @@ services:
       # Without this, the DB retains the applied revision ID but the file is gone
       # on the next boot, causing "Can't locate revision" errors.
       - migrations_data:/app/data/db_migrations
+    # env_file:
+    #   - ./data/.env
     environment:
       # ── Testing / Demo / Development ─────────────────────────────────────────
       # Set to "false" for local HTTP testing — HTTPS_AUTH_ONLY=true adds the
