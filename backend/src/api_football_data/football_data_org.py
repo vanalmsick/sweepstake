@@ -251,6 +251,8 @@ async def update_ranking(db: AsyncSession, tournament: Tournament, force_refresh
     if not force_refresh and hash_file.is_file() and hash_file.read_text().strip() == data_hash:
         logger.info(f"No ranking changes detected for tournament {tournament.id} — skipping update.")
         return
+    
+    groups_recalculate_points = []
 
     for fd_standing in fd_standings:
         group_name = transform_name(fd_standing["group"])
@@ -288,8 +290,12 @@ async def update_ranking(db: AsyncSession, tournament: Tournament, force_refresh
 
         matched_group.winner_team_id = winning_team_id
         logger.info(f"Set winner of group '{group_name}' for tournament '{tournament.name}' ({tournament.id}) to team ID {winning_team_id}.")
+        groups_recalculate_points.append(matched_group.id)
     
     await db.commit()
+
+    for group_id in groups_recalculate_points:
+        await predictions_scoring.recalculate_group_points(db, group_id)
 
     hash_file.write_text(data_hash)
 
