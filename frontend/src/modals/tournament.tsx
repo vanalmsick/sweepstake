@@ -287,7 +287,7 @@ function TournamentInfoFields({
             <HelpCircle size={13} className="text-gray-400 dark:text-gray-500" />
             <span className="pointer-events-none absolute bottom-full left-0 mb-2 w-72 rounded-lg bg-gray-800 dark:bg-gray-900 text-white text-xs font-normal px-3 py-2 shadow-lg opacity-0 group-hover/tip:opacity-100 transition-opacity z-50 normal-case tracking-normal leading-relaxed">
               <strong>Final Score</strong>: Includes regular time, extra time, and penalties.
-              {' '}<strong>Excluding Penalties</strong> (default): Includes regular time and extra time, but excludes penalty shootouts.
+              {' '}<strong>Excluding Penalties</strong>: Includes regular time and extra time, but excludes penalty shootouts.
               {' '}<strong>Regular Time Only</strong>: Only the score at the end of regular time (90 minutes), excluding extra time and penalties.
               <span className="absolute top-full left-3 border-4 border-transparent border-t-gray-800 dark:border-t-gray-900" />
             </span>
