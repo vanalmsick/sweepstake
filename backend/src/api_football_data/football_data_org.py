@@ -183,6 +183,8 @@ async def update_matches(db: AsyncSession, tournament: Tournament, force_refresh
         fd_start_datetime = datetime.datetime.fromisoformat(fd_match["utcDate"].replace("Z", "+00:00"))
 
         fd_status = fd_match["status"]
+        fd_home_goals = None
+        fd_away_goals = None
         if fd_status == "TIMED":
             fd_home_goals = None
             fd_away_goals = None
