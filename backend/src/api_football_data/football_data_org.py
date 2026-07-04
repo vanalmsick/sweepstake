@@ -185,22 +185,19 @@ async def update_matches(db: AsyncSession, tournament: Tournament, force_refresh
         fd_status = fd_match["status"]
         fd_home_goals = None
         fd_away_goals = None
-        if fd_status == "TIMED":
-            fd_home_goals = None
-            fd_away_goals = None
         if fd_status in ["FINISHED", "AWARDED"]:
             # final score - regular time + extra time + penalties
             if tournament.match_score_method == "final":
-                fd_home_goals = fd_match["score"]["fullTime"]["home"]
-                fd_away_goals = fd_match["score"]["fullTime"]["away"]
+                fd_home_goals = max(0, fd_match["score"]["fullTime"]["home"])
+                fd_away_goals = max(0, fd_match["score"]["fullTime"]["away"])
             # excluding penalties from the score - regular time + extra time (no penalties)
             elif tournament.match_score_method == "no-penalty":
-                fd_home_goals = fd_match["score"]["fullTime"]["home"] - fd_match.get("score", {}).get("penalties", {}).get("home", 0)
-                fd_away_goals = fd_match["score"]["fullTime"]["away"] - fd_match.get("score", {}).get("penalties", {}).get("away", 0)
+                fd_home_goals = max(0, fd_match["score"]["fullTime"]["home"] - fd_match.get("score", {}).get("penalties", {}).get("home", 0))
+                fd_away_goals = max(0, fd_match["score"]["fullTime"]["away"] - fd_match.get("score", {}).get("penalties", {}).get("away", 0))
             # only regular time - regular time (no extra time, no penalties)
             elif tournament.match_score_method == "regular-time":
-                fd_home_goals = fd_match["score"]["fullTime"]["home"] - fd_match.get("score", {}).get("extraTime", {}).get("home", 0) - fd_match.get("score", {}).get("penalties", {}).get("home", 0)
-                fd_away_goals = fd_match["score"]["fullTime"]["away"] - fd_match.get("score", {}).get("extraTime", {}).get("away", 0) - fd_match.get("score", {}).get("penalties", {}).get("away", 0)
+                fd_home_goals = max(0, fd_match["score"]["fullTime"]["home"] - fd_match.get("score", {}).get("extraTime", {}).get("home", 0) - fd_match.get("score", {}).get("penalties", {}).get("home", 0))
+                fd_away_goals = max(0, fd_match["score"]["fullTime"]["away"] - fd_match.get("score", {}).get("extraTime", {}).get("away", 0) - fd_match.get("score", {}).get("penalties", {}).get("away", 0))
         
         stage_id = await _get_or_create_stage(db, tournament, fd_match["stage"]) if fd_match["stage"] else None
         home_team_id = await _get_or_create_team(db, tournament, {**fd_match["homeTeam"], "group": fd_match.get("group")}) if fd_match["homeTeam"]["id"] else None
