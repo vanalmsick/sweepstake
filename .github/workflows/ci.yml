@@ -29,7 +29,7 @@ jobs:
         run: echo "python=$(grep -m1 '^FROM python:' ../Dockerfile | sed 's/FROM python:\([0-9.]*\).*/\1/')" >> $GITHUB_OUTPUT
 
       - name: Set up Python
-        uses: actions/setup-python@v6.2.0
+        uses: actions/setup-python@v6.3.0
         with:
           python-version: ${{ steps.versions.outputs.python }}
           cache: pip
@@ -43,7 +43,7 @@ jobs:
 
       - name: Publish test results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2.23.0
+        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
         with:
           files: backend/test-results.xml
 
@@ -63,7 +63,7 @@ jobs:
         run: echo "node=$(grep -m1 '^FROM node:' ../Dockerfile | sed 's/FROM node:\([0-9]*\).*/\1/')" >> $GITHUB_OUTPUT
 
       - name: Set up Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v6.4.0
         with:
           node-version: ${{ steps.versions.outputs.node }}
           cache: npm
