@@ -1,9 +1,9 @@
 # =============================================================================
 # Stage 1 — Build the React frontend
 # =============================================================================
-# node:20-alpine is tiny (≈ 70 MB compressed) and fine for build-only stages
-# because musl-libc incompatibility only matters for the Python runtime.
-FROM node:26-alpine AS frontend-build
+# node:26-slim (Debian) avoids musl-libc incompatibility with native Node
+# modules such as lightningcss (used by Tailwind v4 / PostCSS).
+FROM node:26-slim AS frontend-build
 
 WORKDIR /app
 

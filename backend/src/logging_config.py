@@ -33,6 +33,13 @@ class ColorFormatter(logging.Formatter):
         return super().format(record)
 
 
+class SkipSentryFilter(logging.Filter):
+    """Suppress records marked to skip Sentry while leaving them in normal logs."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        return not getattr(record, "skip_sentry", False)
+
+
 def setup_logging() -> None:
     """Configure root and application loggers."""
     logging.basicConfig(
@@ -59,8 +66,13 @@ def get_logger(name: str) -> logging.Logger:
         ))
         logger.addHandler(handler)
         if _SENTRY_LOGGING_AVAILABLE:
-            logger.addHandler(BreadcrumbHandler(level=logging.DEBUG))
-            logger.addHandler(SentryEventHandler(level=logging.WARNING))
+            breadcrumb_handler = BreadcrumbHandler(level=logging.DEBUG)
+            breadcrumb_handler.addFilter(SkipSentryFilter())
+            logger.addHandler(breadcrumb_handler)
+
+            sentry_handler = SentryEventHandler(level=logging.WARNING)
+            sentry_handler.addFilter(SkipSentryFilter())
+            logger.addHandler(sentry_handler)
         logger.propagate = False
     return logger
 

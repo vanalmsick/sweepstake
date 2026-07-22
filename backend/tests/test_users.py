@@ -1,10 +1,12 @@
 """Tests for auth/user endpoints."""
 
+import logging
 import uuid
 
 import pytest
 from httpx import AsyncClient
 
+from src.logging_config import SkipSentryFilter
 from src.users.crud import get_session
 from src.users.utils import hash_password, create_access_token, create_refresh_token, verify_token
 from src.users.routers import verify_access_token
@@ -19,6 +21,17 @@ NEW_USER_1_PAYLOAD = {
     "password": "securepassword123",
     "first_name": "One",
 }
+
+
+def test_skip_sentry_filter_ignores_marked_records():
+    """Records marked to skip Sentry are filtered out of Sentry handlers."""
+    filter_instance = SkipSentryFilter()
+
+    record = logging.LogRecord("auth", logging.WARNING, __file__, 1, "unauthorized", (), None)
+    assert filter_instance.filter(record) is True
+
+    record.skip_sentry = True
+    assert filter_instance.filter(record) is False
 
 
 # ============================================================================
