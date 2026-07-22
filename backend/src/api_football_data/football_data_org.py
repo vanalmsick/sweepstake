@@ -21,6 +21,31 @@ logger = get_logger(__name__)
 _DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data"
 
 
+async def _get_with_retries(url: str, *, headers: dict | None = None, params: dict | None = None, timeout: int = 30):
+    """Perform a football-data.org request with short retries for transient SSL/connection issues."""
+    last_error: Exception | None = None
+
+    for attempt in range(3):
+        try:
+            return await asyncio.to_thread(requests.get, url, headers=headers, params=params, timeout=timeout)
+        except (requests.exceptions.SSLError, requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
+            last_error = exc
+            if attempt == 2:
+                logger.exception("Failed to reach football-data.org after 3 attempts: %s", exc)
+                raise
+            logger.warning(
+                "Transient football-data.org request error on attempt %s/3: %s",
+                attempt + 1,
+                exc,
+            )
+            await asyncio.sleep(2**attempt)
+
+    if last_error is not None:
+        raise last_error
+
+    raise RuntimeError("football-data.org request failed without a captured error")
+
+
 @cached(ttl=10*60)  # Cache for 10 minutes
 async def api_request(endpoint: str, fd_competition_id: int) -> dict:
     """Make a cached API request to the football-data.org API for a specific endpoint (matches, standings).
@@ -35,7 +60,7 @@ async def api_request(endpoint: str, fd_competition_id: int) -> dict:
 
     logger.info(f"Making API request to football-data.org: {url}")
 
-    response = await asyncio.to_thread(requests.get, url, headers=headers, timeout=30)
+    response = await _get_with_retries(url, headers=headers, timeout=30)
     response.raise_for_status()
     data = response.json()
 
@@ -48,7 +73,7 @@ async def list_tournaments() -> list:
     headers = {"X-Auth-Token": settings.football_data_org_api_key}
     tier = settings.football_data_org_api_tier
 
-    response = await asyncio.to_thread(requests.get, url, headers=headers, params={"plan": tier}, timeout=30)
+    response = await _get_with_retries(url, headers=headers, params={"plan": tier}, timeout=30)
     response.raise_for_status()
     data = response.json()
 

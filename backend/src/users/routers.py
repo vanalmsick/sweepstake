@@ -47,6 +47,7 @@ def verify_access_token(
     checked here; that only happens at token refresh time.
     """
     if not access_token:
+        logger.warning("Missing access token", extra={"skip_sentry": True})
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing access token",
@@ -54,7 +55,7 @@ def verify_access_token(
         )
     payload = verify_token(access_token, token_type="access")
     if payload is None:
-        logger.warning("Access token invalid or expired")
+        logger.warning("Access token invalid or expired", extra={"skip_sentry": True})
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
@@ -62,7 +63,7 @@ def verify_access_token(
         )
     user_id = payload.get("uid")
     if not user_id:
-        logger.warning("Access token missing user_id")
+        logger.warning("Access token missing user_id", extra={"skip_sentry": True})
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload",
@@ -81,7 +82,7 @@ async def get_current_user(
     user_id = token_payload["uid"]
     user = await user_crud.get_user_by_id(db, user_id)
     if not user or not user.is_active:
-        logger.warning(f"User not found or inactive: {user_id}")
+        logger.warning(f"User not found or inactive: {user_id}", extra={"skip_sentry": True})
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or inactive",
@@ -228,14 +229,14 @@ async def refresh_token(
     Implements refresh token rotation, session revocation, and replay attack detection.
     """
     if not refresh_token:
-        logger.warning("Missing refresh token on refresh")
+        logger.warning("Missing refresh token on refresh", extra={"skip_sentry": True})
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing refresh token",
         )
     payload = verify_token(refresh_token, token_type="refresh")
     if payload is None:
-        logger.warning("Invalid or expired refresh token")
+        logger.warning("Invalid or expired refresh token", extra={"skip_sentry": True})
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired refresh token",
@@ -243,15 +244,14 @@ async def refresh_token(
     user_id = payload.get("uid")
     session_id = payload.get("sid")
     if not user_id or not session_id:
-        logger.warning("Refresh token missing user_id or session_id")
+        logger.warning("Refresh token missing user_id or session_id", extra={"skip_sentry": True})
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload",
         )
     session = await get_session(db, session_id)
     if not session or session.revoked:
-        logger.warning(f"Replay attack or revoked session: {session_id}")
-        logger.error(f"Replay attack detected for session {session_id} (user {user_id})")
+        logger.warning(f"Replay attack detected for session {session_id} (user {user_id})")
         response.delete_cookie(
             key="access_token",
             secure=settings.https_auth_only,
