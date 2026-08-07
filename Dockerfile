@@ -26,7 +26,7 @@ RUN npm run build
 # =============================================================================
 # Using a venv means Stage 3 only needs to copy /venv — no pip, wheel, or
 # setuptools bleed into the final image.
-FROM python:3.14.6-slim AS py-deps
+FROM python:3.15.0b3-slim AS py-deps
 
 RUN python -m venv /venv
 ENV PATH="/venv/bin:$PATH"
@@ -43,7 +43,7 @@ RUN pip install --no-cache-dir -r requirements.txt gunicorn
 # =============================================================================
 # python:3.12-slim (Debian bookworm) gives us the smallest Python base that is
 # compatible with all manylinux binary wheels (asyncpg, cryptography, argon2 …).
-FROM python:3.14.6-slim AS runtime
+FROM python:3.15.0b3-slim AS runtime
 
 # Install nginx + supervisor in a single layer and clean up apt caches
 # immediately so they don't bloat the layer.
