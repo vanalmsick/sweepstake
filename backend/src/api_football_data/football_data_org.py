@@ -20,6 +20,10 @@ from src.groups_stages.models import Group, Stage
 logger = get_logger(__name__)
 _DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data"
 
+# Only tournaments with a match that kicked off within this window are refreshed by
+# update_all_tournaments() — keeps the scheduled job off the API for dormant tournaments.
+UPDATE_LOOKBACK = datetime.timedelta(hours=48)
+
 
 async def _get_with_retries(url: str, *, headers: dict | None = None, params: dict | None = None, timeout: int = 30):
     """Perform a football-data.org request with short retries for transient SSL/connection issues."""
@@ -329,12 +333,44 @@ async def update_tournament(db: AsyncSession, tournament: Tournament, force_refr
     await update_ranking(db, tournament, force_refresh=force_refresh)
 
 
-async def update_all_tournaments(db: AsyncSession, force_refresh: bool = False):
-    result = await db.execute(
+async def update_all_tournaments(
+    db: AsyncSession,
+    force_refresh: bool = False,
+    lookback: datetime.timedelta | None = UPDATE_LOOKBACK,
+):
+    """Update tournaments linked to football-data.org.
+
+    Args:
+        db: The database session.
+        force_refresh: Ignore the stored data hash and rewrite records even if unchanged.
+        lookback: Only update tournaments with at least one match that kicked off within
+            this window before now (default 48h). Pass ``None`` to update every tournament.
+            Tournaments without any matches in the window — including ones with no matches
+            at all — are skipped.
+    """
+    stmt = (
         select(Tournament)
         .where(Tournament.football_data_org_id.is_not(None))
     )
+
+    if lookback is not None:
+        now = datetime.datetime.now(datetime.timezone.utc)
+        stmt = stmt.where(
+            select(Match.id)
+            .where(Match.tournament_id == Tournament.id)
+            .where(Match.start_datetime >= now - lookback)
+            .where(Match.start_datetime <= now)
+            .exists()
+        )
+
+    result = await db.execute(stmt)
     tournament_lst = result.scalars().all()
+
+    if lookback is not None:
+        logger.info(
+            f"Updating {len(tournament_lst)} tournament(s) with matches in the last "
+            f"{lookback.total_seconds() / 3600:g}h"
+        )
 
     for tournament in tournament_lst:
         try:
@@ -357,6 +393,6 @@ if __name__ == "__main__":
     async def _main():
         await load_test_data()
         async with AsyncSessionLocal() as db:
-            await update_all_tournaments(db, force_refresh=True)
+            await update_all_tournaments(db, force_refresh=True, lookback=None)
 
     asyncio.run(_main())
