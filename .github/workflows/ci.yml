@@ -43,7 +43,7 @@ jobs:
 
       - name: Publish test results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
+        uses: EnricoMi/publish-unit-test-result-action@v2.25.0
         with:
           files: backend/test-results.xml
 
@@ -63,7 +63,7 @@ jobs:
         run: echo "node=$(grep -m1 '^FROM node:' ../Dockerfile | sed 's/FROM node:\([0-9]*\).*/\1/')" >> $GITHUB_OUTPUT
 
       - name: Set up Node
-        uses: actions/setup-node@v7.0.0
+        uses: actions/setup-node@v7.1.0
         with:
           node-version: ${{ steps.versions.outputs.node }}
           cache: npm
